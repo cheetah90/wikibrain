@@ -222,7 +222,7 @@ public class AtlasifyResource {
         }
     */
 
-    static private boolean useNorthWesternAPI = false;
+    static private boolean useNorthWesternAPI = true;
 
 
     @POST
