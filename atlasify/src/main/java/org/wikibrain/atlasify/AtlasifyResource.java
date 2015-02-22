@@ -4,7 +4,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.eclipse.jetty.util.ajax.JSON;
+import org.apache.commons.collections15.map.LRUMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wikibrain.conf.Configurator;
@@ -15,7 +15,6 @@ import org.wikibrain.core.dao.LocalPageDao;
 import org.wikibrain.core.dao.LocalLinkDao;
 import org.wikibrain.core.dao.UniversalPageDao;
 import org.wikibrain.core.lang.Language;
-import org.wikibrain.core.model.NameSpace;
 import org.wikibrain.core.model.Title;
 import org.wikibrain.core.model.LocalPage;
 import org.wikibrain.core.lang.LocalId;
@@ -23,21 +22,20 @@ import org.wikibrain.phrases.PhraseAnalyzer;
 
 import org.wikibrain.sr.Explanation;
 import org.wikibrain.sr.SRMetric;
+import org.wikibrain.sr.wikidata.WikidataMetric;
 import org.wikibrain.sr.disambig.Disambiguator;
 import org.wikibrain.wikidata.WikidataDao;
 import org.wikibrain.spatial.dao.SpatialDataDao;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 
-import org.wikibrain.sr.wikidata.WikidataMetric;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import java.net.URL;
-import java.nio.charset.Charset;
+
+import org.apache.commons.codec.binary.Base64;
 
 // The Java class will be hosted at the URI path "/helloworld"
 @Path("/wikibrain")
@@ -91,6 +89,9 @@ public class AtlasifyResource {
     private static Map<Integer, Geometry> geometryMap = null;
     private static AtlasifyLogger atlasifyLogger;
 
+    // A cache which will keep the last 1000 autocomplete requests
+    private static LRUMap<String, Map<String, String>> autocompleteCache;
+
     private static void wikibrainSRinit(){
 
         try {
@@ -105,6 +106,9 @@ public class AtlasifyResource {
 
             sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
             System.out.println("FINISHED LOADING SR");
+
+            autocompleteCache = new LRUMap<String, Map<String, String>>(1000);
+            System.out.println("FINISHED LOADING CACHES");
 
             wdDao = conf.get(WikidataDao.class);
             System.out.println("FINISHED LOADING WIKIDATA DAO");
@@ -140,15 +144,15 @@ public class AtlasifyResource {
     }
 
     private static LocalId wikibrainPhaseResolution(String title) throws Exception {
-        /*Language language = lang;
+        Language language = lang;
         LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, title, 1);
         for (LocalId p : resolution.keySet()) {
             return p;
         }
 
-        throw new Exception("failed to resolve"); */
+        throw new Exception("failed to resolve");
 
-        return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
+        // return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
     }
 
     private static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN) throws Exception {
@@ -163,7 +167,7 @@ public class AtlasifyResource {
         System.out.println("NU QUERY " + url);
         InputStream inputStream = new URL(url).openStream();
 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder stringBuilder = new StringBuilder();
         int currentChar;
         while ((currentChar = bufferedReader.read()) != -1) {
@@ -363,70 +367,84 @@ public class AtlasifyResource {
             wikibrainSRinit();
         }
 
-        Language language = Language.EN;
+        Language language = lang;
         System.out.println("Received Auto Complete Query " + query.getKeyword());
-        Map<String, String> autocompleteMap = new HashMap<String, String>();
+        Map<String, String> autocompleteMap;
+
+        if ((autocompleteMap = autocompleteCache.get(query.getKeyword())) != null) {
+            System.out.println("Get Auto Complete Result from cache " + new JSONObject(autocompleteMap).toString());
+            return Response.ok(new JSONObject(autocompleteMap).toString()).build();
+        }
+
+        autocompleteMap = new HashMap<String, String>();
         try {
             int i = 0;
-                /* Phrase Analyzer
-                LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, query.getKeyword(), 100);
-                for (LocalId p : resolution.keySet()) {
-                    org.wikibrain.core.model.LocalPage page = lpDao.getById(p);
-                    autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
-                    i++;
-                } */
+            /* Phrase Analyzer */
+            /*LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, query.getKeyword(), 100);
+            for (LocalId p : resolution.keySet()) {
+                org.wikibrain.core.model.LocalPage page = lpDao.getById(p);
+                autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
+                i++;
+            }*/
 
-                /* Page Titles that being/contain search term */
-            Title title = new Title(query.getKeyword(), language);
+            /* Page Titles that being/contain search term */
+            /*Title title = new Title(query.getKeyword(), language);
             List<LocalPage> similarPages = lpaDao.getBySimilarTitle(title, NameSpace.ARTICLE, llDao);
 
             for (LocalPage p : similarPages) {
                 autocompleteMap.put(i + "", p.getTitle().getCanonicalTitle());
                 i++;
+            } */
+
+            /* Bing */
+            String bingAccountKey = "Y+KqEsFSCzEzNB85dTXJXnWc7U4cSUduZsUJ3pKrQfs";
+            byte[] bingAccountKeyBytes = Base64.encodeBase64((bingAccountKey + ":" + bingAccountKey).getBytes());
+            String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
+
+            String bingQuery = query.getKeyword();
+            URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/SearchWeb/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
+
+            HttpURLConnection connection = (HttpURLConnection)bingQueryurl.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Authorization", "Basic " + bingAccountKeyEncoded);
+            connection.setRequestProperty("Accept", "application/json");
+            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+
+            String output;
+            StringBuilder sb = new StringBuilder();
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
             }
 
-                /* Bing */
-                /* String bingAccountKey = "Y+KqEsFSCzEzNB85dTXJXnWc7U4cSUduZsUJ3pKrQfs";
-                byte[] bingAccountKeyBytes = Base64.encodeBase64((bingAccountKey + ":" + bingAccountKey).getBytes());
-                String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
-
-                String bingQuery = query.getKeyword();
-                URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/SearchWeb/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
-
-                HttpURLConnection connection = (HttpURLConnection)bingQueryurl.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Authorization", "Basic " + bingAccountKeyEncoded);
-                connection.setRequestProperty("Accept", "application/json");
-                BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
-
-                String output;
-                StringBuilder sb = new StringBuilder();
-                while ((output = br.readLine()) != null) {
-                    sb.append(output);
-                }
-
-                JSONObject bingResponse = new JSONObject(sb.toString());
-                bingResponse = bingResponse.getJSONObject("d");
-                JSONArray bingResponses = bingResponse.getJSONArray("results");
-                JSONObject response;
-                for (int j = 0; j < bingResponses.length() && i < 10; j++) {
-                    response = bingResponses.getJSONObject(j);
-                    URL url = new URL(response.getString("Url"));
-                    String path = url.getPath();
-                    String title = path.substring(path.lastIndexOf('/') + 1).replace('_', ' ');
-                    LocalPage page = new LocalPage(language, 0, "");
+            JSONObject bingResponse = new JSONObject(sb.toString());
+            bingResponse = bingResponse.getJSONObject("d");
+            JSONArray bingResponses = bingResponse.getJSONArray("results");
+            JSONObject response;
+            for (int j = 0; j < bingResponses.length() && i < 10; j++) {
+                response = bingResponses.getJSONObject(j);
+                URL url = new URL(response.getString("Url"));
+                String path = url.getPath();
+                String title = path.substring(path.lastIndexOf('/') + 1).replace('_', ' ');
+                LocalPage page = new LocalPage(language, 0, "");
+                try {
                     for (LocalId p : pa.resolve(language, title, 1).keySet()) {
                         page = lpDao.getById(p);
                     }
-                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())){
+                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
                         autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
                         i++;
                     }
-                }*/
-
+                } catch (Exception e) {
+                    // There was an error, lets keep keep going
+                }
+            }
         } catch (Exception e) {
             autocompleteMap = new HashMap<String, String>();
         }
+
+        // Cache the autocomplete
+        autocompleteCache.put(query.getKeyword(), autocompleteMap);
+
         System.out.println("Get Auto Complete Result" + new JSONObject(autocompleteMap).toString());
         return Response.ok(new JSONObject(autocompleteMap).toString()).build();
     }
@@ -455,7 +473,7 @@ public class AtlasifyResource {
 
             InputStream inputStream = new URL(url).openStream();
 
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder stringBuilder = new StringBuilder();
             int currentChar;
             while ((currentChar = bufferedReader.read()) != -1) {
@@ -625,7 +643,16 @@ public class AtlasifyResource {
         if (f.isFile()) {
             // Write to the file
             try {
-                String fileContents = new String(Files.readAllBytes(Paths.get(file)), Charset.defaultCharset());
+                int len;
+                char[] chr = new char[4096];
+                FileReader fileReader = new FileReader(file);
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ((len = fileReader.read(chr)) > 0) {
+                    stringBuilder.append(chr, 0, len);
+                }
+
+                String fileContents = stringBuilder.toString();
                 JSONArray fileArray = new JSONArray(fileContents);
                 fileArray.put(fileArray.length(), data);
 
