@@ -31,6 +31,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 
+import java.net.URLConnection;
 import java.util.*;
 
 import java.net.URL;
@@ -165,7 +166,12 @@ public class AtlasifyResource {
             url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId()+ "/top/" + topN.toString();
         }
         System.out.println("NU QUERY " + url);
-        InputStream inputStream = new URL(url).openStream();
+
+        URLConnection urlConnection = new URL(url).openConnection();
+        urlConnection.setConnectTimeout(NorthwesternTimeout);
+        urlConnection.setReadTimeout(NorthwesternTimeout);
+
+        InputStream inputStream = urlConnection.getInputStream();
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder stringBuilder = new StringBuilder();
@@ -227,7 +233,8 @@ public class AtlasifyResource {
         }
     */
 
-    static private boolean useNorthWesternAPI = false;
+    static private boolean useNorthWesternAPI  = false;
+    static private int     NorthwesternTimeout = 3000; // in milliseconds
 
 
     @POST
@@ -291,25 +298,33 @@ public class AtlasifyResource {
             catch (Exception e) {
                 System.out.println("Error when connecting to Northwestern Server ");
                 e.printStackTrace();
-                // do nothing
 
+                // Switch to wikibrain based SR
+                System.out.println("Defaulting to Wikibrain SR");
+                srMap = wikibrainSR(query, featureNameList);
             }
         } else {
-
-            for (int i = 0; i < featureNameList.length; i++) {
-                String color = "#ffffff";
-                try {
-
-                    color = getColorStringFromSR(sr.similarity(query.getKeyword(), featureNameList[i].toString(), false).getScore());
-                } catch (Exception e) {
-                    //do nothing
-                }
-
-                srMap.put(featureNameList[i].toString(), color);
-            }
+            srMap = wikibrainSR(query, featureNameList);
         }
 
         return Response.ok(new JSONObject(srMap).toString()).build();
+    }
+
+    private Map<String, String> wikibrainSR(AtlasifyQuery query, String[] featureNameList) {
+        Map<String, String> srMap = new HashMap<String, String>();
+        for (int i = 0; i < featureNameList.length; i++) {
+            String color = "#ffffff";
+            try {
+
+                color = getColorStringFromSR(sr.similarity(query.getKeyword(), featureNameList[i].toString(), false).getScore());
+            } catch (Exception e) {
+                //do nothing
+            }
+
+            srMap.put(featureNameList[i].toString(), color);
+        }
+
+        return srMap;
     }
 
     private String getColorStringFromSR(double SR){
@@ -471,7 +486,12 @@ public class AtlasifyResource {
 
             String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
 
-            InputStream inputStream = new URL(url).openStream();
+
+            URLConnection urlConnection = new URL(url).openConnection();
+            urlConnection.setConnectTimeout(NorthwesternTimeout);
+            urlConnection.setReadTimeout(NorthwesternTimeout);
+
+            InputStream inputStream = urlConnection.getInputStream();
 
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder stringBuilder = new StringBuilder();
