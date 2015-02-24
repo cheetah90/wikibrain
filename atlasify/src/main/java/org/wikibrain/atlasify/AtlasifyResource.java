@@ -610,6 +610,8 @@ public class AtlasifyResource {
         shuffleJSONArray(explanations);
         JSONObject result = new JSONObject();
         result.put("explanations", explanations);
+        result.put("keyword", keyword);
+        result.put("feature", feature);
 
         System.out.println("REQUESTED explanation between " + keyword + " and " + feature + "\n\n" + explanations.toString());
 
@@ -650,35 +652,29 @@ public class AtlasifyResource {
     public void processesExplanations(String json) throws DaoException {
         JSONObject explanationsData = new JSONObject(json);
         int id = explanationsData.getInt("id");
+        int sessionID = explanationsData.getInt("sessionID");
+        String keyword = explanationsData.getString("keyword");
+        String feature = explanationsData.getString("feature");
 
         JSONArray dataArray = explanationsData.getJSONArray("data");
         JSONObject data = new JSONObject();
         data.put("data", dataArray);
         data.put("time", new Date().getTime());
         data.put("id", id);
+        data.put("sessionID", sessionID);
+        data.put("keyword", keyword);
+        data.put("feature", feature);
 
         // See if log file exists
         String file = "explanation-logs/" + id + ".json";
         File f = new File(file);
         if (f.isFile()) {
-            // Write to the file
+            // Append to the file
             try {
-                int len;
-                char[] chr = new char[4096];
-                FileReader fileReader = new FileReader(file);
-                StringBuilder stringBuilder = new StringBuilder();
-
-                while ((len = fileReader.read(chr)) > 0) {
-                    stringBuilder.append(chr, 0, len);
-                }
-
-                String fileContents = stringBuilder.toString();
-                JSONArray fileArray = new JSONArray(fileContents);
-                fileArray.put(fileArray.length(), data);
-
-                Writer writer = new BufferedWriter(new OutputStreamWriter(
-                        new FileOutputStream(file), "utf-8"));
-                writer.write(fileArray.toString());
+                PrintWriter writer = new PrintWriter(new BufferedWriter(
+                        new FileWriter(file, true)));
+                writer.print("\n");
+                writer.print(data.toString());
                 writer.close();
             } catch (IOException e) {
 
@@ -686,11 +682,9 @@ public class AtlasifyResource {
         } else {
             // Create it
             try {
-                JSONArray fileArray = new JSONArray();
-                fileArray.put(fileArray.length(), data);
-                Writer writer = new BufferedWriter(new OutputStreamWriter(
-                        new FileOutputStream(file), "utf-8"));
-                writer.write(fileArray.toString());
+                PrintWriter writer = new PrintWriter(new BufferedWriter(
+                        new FileWriter(file, true)));
+                writer.print(data.toString());
                 writer.close();
             } catch (IOException e) {
 
