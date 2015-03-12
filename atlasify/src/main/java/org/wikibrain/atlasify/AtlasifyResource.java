@@ -22,7 +22,6 @@ import org.wikibrain.phrases.PhraseAnalyzer;
 
 import org.wikibrain.sr.Explanation;
 import org.wikibrain.sr.SRMetric;
-import org.wikibrain.sr.wikidata.WikidataMetric;
 import org.wikibrain.sr.disambig.Disambiguator;
 import org.wikibrain.wikidata.WikidataDao;
 import org.wikibrain.spatial.dao.SpatialDataDao;
@@ -105,11 +104,10 @@ public class AtlasifyResource {
             llDao = conf.get(LocalLinkDao.class);
             System.out.println("FINISHED LOADING LOCALLINK DAO");
 
-            sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
-            System.out.println("FINISHED LOADING SR");
-
             autocompleteCache = new LRUMap<String, Map<String, String>>(1000);
             System.out.println("FINISHED LOADING CACHES");
+            sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
+            System.out.println("FINISHED LOADING SR");
 
             wdDao = conf.get(WikidataDao.class);
             System.out.println("FINISHED LOADING WIKIDATA DAO");
@@ -234,7 +232,7 @@ public class AtlasifyResource {
     */
 
     static private boolean useNorthWesternAPI  = false;
-    static private int     NorthwesternTimeout = 3000; // in milliseconds
+    static private int     NorthwesternTimeout = 5000; // in milliseconds
 
 
     @POST
@@ -565,6 +563,20 @@ public class AtlasifyResource {
             // return Response.ok("").header("Access-Control-Allow-Origin", "*").build();
         }
 
+        for (int i = 0; i < 30; i++) {
+            JSONObject jsonExplanation = new JSONObject();
+            jsonExplanation.put("explanation", "This is a terrible explanation...");
+
+            JSONObject data = new JSONObject();
+            data.put("algorithm", "wikidata");
+            data.put("page-finder", "disambiguator");
+            data.put("keyword", keyword);
+            data.put("feature", feature);
+            jsonExplanation.put("data", data);
+
+            explanations.put(explanations.length(), jsonExplanation);
+        }
+
         // Get Wikidata Explanations using the disambiguator
         for (Explanation exp : wdMetric.similarity(keyword, feature, true).getExplanations()) {
             String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
@@ -692,8 +704,35 @@ public class AtlasifyResource {
         }
     }
 
+    @POST
+    // The Java method will produce content identified by the MIME Media
+    // type "text/plain"
+    @Path("/SR/CrowdSource/keyword={keyword}&feature={feature}&sr={sr}&explanation={explanation}")
+    @Consumes("text/plain")
+    public void processCrowdSourcedData(@PathParam("keyword") String keyword, @PathParam("feature") String feature, @PathParam("sr") double sr, @PathParam("explanation") String explanation) throws  DaoException, MalformedURLException, IOException, Exception {
+        String srLocation = "crowd-source-data/sr.csv";
+        String expLocation = "crowd-source-data/explanations.csv";
 
-    //return the list of all spatial objects in the top 100 most realted articles
+        System.out.println("RECEIVED crowd sourced data between " + keyword + " and " + feature + "\nSR=" + sr + "\nExplanation=" + explanation);
+
+        if (sr > 0.0) {
+            // Valid SR was provided
+            PrintWriter writer = new PrintWriter(new BufferedWriter(
+                    new FileWriter(srLocation, true)));
+            writer.println("\"" + keyword + "\",\"" + feature + "\",\"" + sr + "\"");
+            writer.close();
+        }
+
+        if (explanation != null && explanation != "") {
+            // Valid explanation was provided
+            PrintWriter writer = new PrintWriter(new BufferedWriter(
+                    new FileWriter(expLocation, true)));
+            writer.println("\"" + keyword + "\",\"" + feature + "\",\"" + explanation + "\"");
+            writer.close();
+        }
+    }
+
+        //return the list of all spatial objects in the top 100 most realted articles
     @GET
     @Path("/getpoi/id={keyword}")
     @Consumes("text/plain")

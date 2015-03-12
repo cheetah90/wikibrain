@@ -1,4 +1,4 @@
-package org.wikibrain.cookbook.wikidata;
+package org.wikibrain.atlasify;
 
 import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.conf.Configurator;
@@ -10,7 +10,8 @@ import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.model.Title;
 import org.wikibrain.sr.Explanation;
 import org.wikibrain.sr.disambig.Disambiguator;
-import org.wikibrain.sr.wikidata.WikidataMetric;
+import org.wikibrain.atlasify.WikidataMetric;
+import org.wikibrain.atlasify.DBpeidaMetric;
 import org.wikibrain.wikidata.WikidataDao;
 
 import org.xml.sax.SAXException;
@@ -23,9 +24,6 @@ import java.util.ArrayList;
 
 /**
  * Created by Josh on 2/4/15.
- * This class is designed to provide explanations using Wikidata
- * It does provide a simple SR metric which will be 0.0 when there
- * are no explanations and 1.0 where there are explanations.
  */
 
 public class WikidataExplanationsTest {
@@ -42,13 +40,18 @@ public class WikidataExplanationsTest {
         parameters.put("language", "simple");
         Disambiguator dis = conf.get(Disambiguator.class, "similarity", parameters);
 
-        metric = new WikidataMetric("wikidata", Language.SIMPLE, lpDao, dis, wdDao);
+        metric = new WikidataMetric("dbpedia", Language.SIMPLE, lpDao, dis, wdDao);
+        metric2 = new DBpeidaMetric("wikidata", Language.SIMPLE, lpDao, dis);
 
         addExplanations("Minnesota", "Canada");
         addExplanations("Mexico", "United States");
         addExplanations("Minnesota", "United States");
-
         addExplanations("University of Minnesota", "Minnesota");
+
+        addExplanations("Minneapolis", "Chile");
+        addExplanations("Minneapolis", "Minnesota");
+        addExplanations("Minneapolis", "United States");
+        addExplanations("Minneapolis", "Canada");
 
         addExplanations("Benjamin Franklin", "Massachusetts");
         addExplanations("Michael Jackson", "California");
@@ -59,6 +62,7 @@ public class WikidataExplanationsTest {
 
     static private List<Explanation> explanations = new ArrayList<Explanation>();
     static private WikidataMetric metric;
+    static private DBpeidaMetric metric2;
 
     private static void addExplanations(String itemOne, String itemTwo) throws DaoException {
         try {
@@ -67,6 +71,13 @@ public class WikidataExplanationsTest {
             explanations.addAll(metric.similarity(page1, page2, true).getExplanations());
         } catch (Exception e) {
             explanations.addAll(metric.similarity(itemOne, itemTwo, true).getExplanations());
+        }
+        try {
+            int page1 = lpDao.getIdByTitle(new Title(itemOne, Language.SIMPLE));
+            int page2 = lpDao.getIdByTitle(new Title(itemTwo, Language.SIMPLE));
+            explanations.addAll(metric2.similarity(page1, page2, true).getExplanations());
+        } catch (Exception e) {
+            explanations.addAll(metric2.similarity(itemOne, itemTwo, true).getExplanations());
         }
     }
 

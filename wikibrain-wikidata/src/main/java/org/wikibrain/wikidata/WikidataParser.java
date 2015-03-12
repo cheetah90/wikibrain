@@ -39,10 +39,10 @@ public class WikidataParser {
     private static BufferedWriter writer;
 
     public WikidataEntity parse(String json) throws WpParseException {
-        JacksonTermedDocument mwDoc;
+        JacksonTermedStatementDocument mwDoc;
 
         try {
-            mwDoc = mapper.readValue(json, JacksonTermedDocument.class);
+            mwDoc = mapper.readValue(json, JacksonTermedStatementDocument.class);
         } catch (IOException e) {
             LOG.info("Error parsing: " + json);
             throw new WpParseException(e);
@@ -78,8 +78,8 @@ public class WikidataParser {
         }
 
         // Claims (only for Item entities)
-        if (mwDoc instanceof JacksonItemDocument) {
-            for (List<JacksonStatement> statements : ((JacksonItemDocument)mwDoc).getJsonClaims().values()) {
+        if (mwDoc instanceof JacksonTermedStatementDocument) {
+            for (List<JacksonStatement> statements : ((JacksonTermedStatementDocument)mwDoc).getJsonClaims().values()) {
                 for (JacksonStatement s : statements) {
                     record.getStatements().add(parseOneClaim(record, s));
                 }
