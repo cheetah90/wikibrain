@@ -5,6 +5,7 @@ import javax.ws.rs.core.Response;
 
 import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.collections15.map.LRUMap;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wikibrain.conf.Configurator;
@@ -474,6 +475,7 @@ public class AtlasifyResource {
         }
 
         JSONArray explanations = new JSONArray();
+        JSONArray explanationSection = new JSONArray();
 
         System.out.println("Received query for explanation between " + keyword + " and " + feature);
         String keywordTitle;
@@ -481,6 +483,51 @@ public class AtlasifyResource {
         try{
             keywordTitle = lpDao.getById(wikibrainPhaseResolution(keyword)).getTitle().getCanonicalTitle().replace(" ", "_");
             featureTitle = lpDao.getById(wikibrainPhaseResolution(feature)).getTitle().getCanonicalTitle().replace(" ", "_");
+
+            // Get Wikidata Explanations using the disambiguator
+            for (Explanation exp : wdMetric.similarity(keyword, feature, true).getExplanations()) {
+                String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                if (containsExplanation(explanationSection, explanationString)) {
+                    continue;
+                }
+
+                JSONObject jsonExplanation = new JSONObject();
+                jsonExplanation.put("explanation", explanationString);
+
+                JSONObject data = new JSONObject();
+                data.put("algorithm", "wikidata");
+                data.put("page-finder", "disambiguator");
+                data.put("keyword", keyword);
+                data.put("feature", feature);
+                jsonExplanation.put("data", data);
+
+                explanationSection.put(explanationSection.length(), jsonExplanation);
+            }
+
+            // Get Wikidata Explanations using the LocalPageDao
+            int keywordID = lpDao.getIdByTitle(new Title(keyword, Language.SIMPLE));
+            int featureID = lpDao.getIdByTitle(new Title(feature, Language.SIMPLE));
+            for (Explanation exp : wdMetric.similarity(keywordID, featureID, true).getExplanations()) {
+                String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                if (containsExplanation(explanationSection, explanationString)) {
+                    continue;
+                }
+
+                JSONObject jsonExplanation = new JSONObject();
+                jsonExplanation.put("explanation", explanationString);
+
+                JSONObject data = new JSONObject();
+                data.put("algorithm", "wikidata");
+                data.put("page-finder", "local-page-dao");
+                data.put("keyword", keyword);
+                data.put("feature", feature);
+                jsonExplanation.put("data", data);
+
+                explanationSection.put(explanationSection.length(), jsonExplanation);
+            }
+
+            shuffleJSONArray(explanationSection);
+            addElementesToArray(explanations, explanationSection);
 
             String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
 
@@ -516,7 +563,7 @@ public class AtlasifyResource {
                         explanationString = northwesternExplanation.getString("completeContent");
                     }
                     // Make sure the string is still valid
-                    if (explanationString.equals("") || explanationString.contains("Category:") || containsExplanation(explanations, explanationString)) {
+                    if (explanationString.equals("") || explanationString.contains("Category:") || containsExplanation(explanationSection, explanationString)) {
                         continue;
                     }
 
@@ -552,9 +599,10 @@ public class AtlasifyResource {
                     data.put("feature", feature);
                     data.put("srval", srval);
                     data.put("title", title);
+                    data.put("header-title", title);
                     jsonExplanation.put("data", data);
 
-                    explanations.put(explanations.length(), jsonExplanation);
+                    explanationSection.put(explanationSection.length(), jsonExplanation);
                 }
             }
         }
@@ -563,61 +611,8 @@ public class AtlasifyResource {
             // return Response.ok("").header("Access-Control-Allow-Origin", "*").build();
         }
 
-        for (int i = 0; i < 30; i++) {
-            JSONObject jsonExplanation = new JSONObject();
-            jsonExplanation.put("explanation", "This is a terrible explanation...");
-
-            JSONObject data = new JSONObject();
-            data.put("algorithm", "wikidata");
-            data.put("page-finder", "disambiguator");
-            data.put("keyword", keyword);
-            data.put("feature", feature);
-            jsonExplanation.put("data", data);
-
-            explanations.put(explanations.length(), jsonExplanation);
-        }
-
-        // Get Wikidata Explanations using the disambiguator
-        for (Explanation exp : wdMetric.similarity(keyword, feature, true).getExplanations()) {
-            String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-            if (containsExplanation(explanations, explanationString)) {
-                continue;
-            }
-
-            JSONObject jsonExplanation = new JSONObject();
-            jsonExplanation.put("explanation", explanationString);
-
-            JSONObject data = new JSONObject();
-            data.put("algorithm", "wikidata");
-            data.put("page-finder", "disambiguator");
-            data.put("keyword", keyword);
-            data.put("feature", feature);
-            jsonExplanation.put("data", data);
-
-            explanations.put(explanations.length(), jsonExplanation);
-        }
-
-        // Get Wikidata Explanations using the LocalPageDao
-        int keywordID = lpDao.getIdByTitle(new Title(keyword, Language.SIMPLE));
-        int featureID = lpDao.getIdByTitle(new Title(feature, Language.SIMPLE));
-        for (Explanation exp : wdMetric.similarity(keywordID, featureID, true).getExplanations()) {
-            String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-            if (containsExplanation(explanations, explanationString)) {
-                continue;
-            }
-
-            JSONObject jsonExplanation = new JSONObject();
-            jsonExplanation.put("explanation", explanationString);
-
-            JSONObject data = new JSONObject();
-            data.put("algorithm", "wikidata");
-            data.put("page-finder", "local-page-dao");
-            data.put("keyword", keyword);
-            data.put("feature", feature);
-            jsonExplanation.put("data", data);
-
-            explanations.put(explanations.length(), jsonExplanation);
-        }
+        shuffleJSONArray(explanationSection);
+        addElementesToArray(explanations, explanationSection);
 
         shuffleJSONArray(explanations);
         JSONObject result = new JSONObject();
@@ -654,6 +649,12 @@ public class AtlasifyResource {
         }
 
         return false;
+    }
+
+    private void addElementesToArray(JSONArray array, JSONArray elementsToAppend) {
+        for (int i = 0; i < elementsToAppend.length(); i++) {
+            array.put(array.length(), elementsToAppend.get(i));
+        }
     }
 
     // This method is used to progress the explanations information from Atlasify
