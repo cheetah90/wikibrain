@@ -5,7 +5,6 @@ import javax.ws.rs.core.Response;
 
 import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.collections15.map.LRUMap;
-import org.eclipse.jetty.util.ajax.JSON;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wikibrain.conf.Configurator;
@@ -26,6 +25,9 @@ import org.wikibrain.sr.SRMetric;
 import org.wikibrain.sr.disambig.Disambiguator;
 import org.wikibrain.wikidata.WikidataDao;
 import org.wikibrain.spatial.dao.SpatialDataDao;
+import org.wikibrain.atlasify.LocalPageAutocompleteSqlDao;
+import org.wikibrain.atlasify.AtlasifyLogger;
+
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -84,6 +86,7 @@ public class AtlasifyResource {
     private static LocalPageAutocompleteSqlDao lpaDao = null;
     private static LocalLinkDao llDao = null;
     private static WikidataMetric wdMetric = null;
+    private static DBpeidaMetric dbMetric = null;
     private static WikidataDao wdDao = null;
     private static SpatialDataDao sdDao = null;
     private static UniversalPageDao upDao = null;
@@ -117,6 +120,8 @@ public class AtlasifyResource {
             Disambiguator dis = conf.get(Disambiguator.class, "similarity", parameters);
             wdMetric = new WikidataMetric("wikidata", lang, lpDao, dis, wdDao);
             System.out.println("FINISHED LOADING WIKIDATA METRIC");
+            dbMetric = new DBpeidaMetric("dbpedia", lang, lpDao, dis);
+            System.out.println("FINISHED LOADING DBPEDIA METRIC");
 
             atlasifyLogger = new AtlasifyLogger("./log/AtlasifyLogin.csv", "./log/AtlasifyQuery.csv");
             System.out.println("FINISHED LOADING LOGGER");
@@ -526,6 +531,26 @@ public class AtlasifyResource {
                 explanationSection.put(explanationSection.length(), jsonExplanation);
             }
 
+            // Get DBPedia Explanations using the disambiguator
+            for (Explanation exp : dbMetric.similarity(keyword, feature, true).getExplanations()) {
+                String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                if (containsExplanation(explanationSection, explanationString)) {
+                    continue;
+                }
+
+                JSONObject jsonExplanation = new JSONObject();
+                jsonExplanation.put("explanation", explanationString);
+
+                JSONObject data = new JSONObject();
+                data.put("algorithm", "dbpedia");
+                data.put("page-finder", "disambiguator");
+                data.put("keyword", keyword);
+                data.put("feature", feature);
+                jsonExplanation.put("data", data);
+
+                explanationSection.put(explanationSection.length(), jsonExplanation);
+            }
+
             shuffleJSONArray(explanationSection);
             addElementesToArray(explanations, explanationSection);
 
@@ -786,13 +811,13 @@ public class AtlasifyResource {
         return Response.ok(new JSONObject(resultMap).toString()).build();
     }
     // A logging method called by the god mode of Atlasify to check the status of the system
-    @POST
+   /* @POST
     @Path("/status")
     @Produces("application/json")
 
     public Response getLog () throws DaoException{
         ByteArrayOutputStream output = AtlasifyServer.logger;
-        String s = output.toString();
+        String s = output.toString();*/
 
         /* In order to support multiple god modes running the console
          * output cannot be cleared. This functionality could change
@@ -800,10 +825,10 @@ public class AtlasifyResource {
          */
         // output.reset();
 
-        Map<String, String> result = new HashMap<String, String>();
+        /*Map<String, String> result = new HashMap<String, String>();
         result.put("log", s);
 
         return Response.ok(new JSONObject(result).toString()).build();
     }
-
+    */
 }

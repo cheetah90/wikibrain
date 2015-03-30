@@ -359,11 +359,15 @@ public class WikidataSqlDao extends AbstractSqlDao<WikidataStatement> implements
                 .build();
         Map<String, List<LocalWikidataStatement>> local = new HashMap<String, List<LocalWikidataStatement>>();
         for (WikidataStatement st : get(filter)) {
-            LocalWikidataStatement lws = getLocalStatement(lang, st);
-            if (!local.containsKey(lws.getProperty())) {
-                local.put(lws.getProperty(), new ArrayList<LocalWikidataStatement>());
+            try {
+                LocalWikidataStatement lws = getLocalStatement(lang, st);
+                if (!local.containsKey(lws.getProperty())) {
+                    local.put(lws.getProperty(), new ArrayList<LocalWikidataStatement>());
+                }
+                local.get(lws.getProperty()).add(lws);
+            } catch (Exception e) {
+
             }
-            local.get(lws.getProperty()).add(lws);
         }
         return local;
     }

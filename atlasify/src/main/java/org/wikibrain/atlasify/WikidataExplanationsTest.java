@@ -49,9 +49,10 @@ public class WikidataExplanationsTest {
         addExplanations("University of Minnesota", "Minnesota");
 
         addExplanations("Minneapolis", "Chile");
-        addExplanations("Minneapolis", "Minnesota");
+        addExplanations("Minneapolis", "St. Paul");
         addExplanations("Minneapolis", "United States");
         addExplanations("Minneapolis", "Canada");
+        addExplanations("Minneapolis", "Minnesota");
 
         addExplanations("Benjamin Franklin", "Massachusetts");
         addExplanations("Michael Jackson", "California");
@@ -60,30 +61,42 @@ public class WikidataExplanationsTest {
         printExplanations();
     }
 
-    static private List<Explanation> explanations = new ArrayList<Explanation>();
+    static private List<String> explanations = new ArrayList<String>();
     static private WikidataMetric metric;
     static private DBpeidaMetric metric2;
 
     private static void addExplanations(String itemOne, String itemTwo) throws DaoException {
+        explanations.add("Wikidata: " + itemOne + " -> " + itemTwo);
         try {
             int page1 = lpDao.getIdByTitle(new Title(itemOne, Language.SIMPLE));
             int page2 = lpDao.getIdByTitle(new Title(itemTwo, Language.SIMPLE));
-            explanations.addAll(metric.similarity(page1, page2, true).getExplanations());
-        } catch (Exception e) {
-            explanations.addAll(metric.similarity(itemOne, itemTwo, true).getExplanations());
+            for (Explanation e : metric.similarity(page1, page2, true).getExplanations()) {
+                explanations.add(String.format(e.getFormat(), e.getInformation().toArray()));
+            }
+        } catch (Exception err) {
+            for (Explanation e : metric.similarity(itemOne, itemTwo, true).getExplanations()) {
+                explanations.add(String.format(e.getFormat(), e.getInformation().toArray()));
+            }
         }
+        explanations.add("\nDBPedia: " + itemOne + " -> " + itemTwo);
         try {
             int page1 = lpDao.getIdByTitle(new Title(itemOne, Language.SIMPLE));
             int page2 = lpDao.getIdByTitle(new Title(itemTwo, Language.SIMPLE));
-            explanations.addAll(metric2.similarity(page1, page2, true).getExplanations());
-        } catch (Exception e) {
-            explanations.addAll(metric2.similarity(itemOne, itemTwo, true).getExplanations());
+            for (Explanation e : metric2.similarity(page1, page2, true).getExplanations()) {
+                explanations.add(String.format(e.getFormat(), e.getInformation().toArray()));
+            }
+        } catch (Exception err) {
+            for (Explanation e : metric2.similarity(itemOne, itemTwo, true).getExplanations()) {
+                explanations.add(String.format(e.getFormat(), e.getInformation().toArray()));
+            }
         }
+
+        explanations.add("\n----------\n");
     }
 
     private static void printExplanations() {
-        for (Explanation e : explanations) {
-            System.out.println(String.format(e.getFormat(), e.getInformation().toArray()));
+        for (String e : explanations) {
+            System.out.println(e);
         }
     }
 }

@@ -28,6 +28,7 @@ public abstract class DataMetric extends BaseSRMetric {
     protected class Tuple<X, Y> {
         public final X x;
         public final Y y;
+        public Boolean reversed = false;
         public Tuple(X x, Y y) {
             this.x = x;
             this.y = y;
@@ -134,12 +135,46 @@ public abstract class DataMetric extends BaseSRMetric {
                         String valueString = WordUtils.capitalize(item); //convertToLocalPageTitle(page2).getTitle().getCanonicalTitle();
                         Explanation e = new Explanation(format, itemString, valueString);
 
+                        if (pair.reversed) {
+                            String temp = valueString;
+                            valueString = itemString;
+                            itemString = temp;
+                        }
+
                         // Not a very useful explanation
                         if (format.contains("unknown") || itemString.contains("unknown") || valueString.contains("unknown")) {
                             continue;
                         }
 
-                        result.addExplanation(e);
+                        // Check that the explanation is not a duplicate
+                        boolean duplicate = false;
+                        for (int i = 0; i < result.getExplanations().size(); i++) {
+                            Explanation exp = result.getExplanations().get(i);
+                            if (exp.getFormat().equals(format)) {
+                                // Make sure that it isn't an exact duplicate
+                                if (exp.getInformation().get(1).equals(valueString)) {
+                                    duplicate = true;
+                                    break;
+                                }
+
+                                // Make sure that one isn't a substring of the other
+                                // i.e. Minnesota vs Minnesota, United States
+                                // We will go with the longest one, since it should be the more informative
+                                if (((String)exp.getInformation().get(1)).contains(valueString)) {
+                                    duplicate = true;
+                                    break;
+                                }
+                                // The explanation we already added could be the less informative one
+                                if (valueString.contains((String)exp.getInformation().get(1))) {
+                                    result.getExplanations().remove(i);
+                                    i--;
+                                }
+                            }
+                        }
+
+                        if (!duplicate) {
+                            result.addExplanation(e);
+                        }
                     }
                 }
             }

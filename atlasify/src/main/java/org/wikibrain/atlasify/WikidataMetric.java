@@ -47,20 +47,23 @@ public class WikidataMetric extends DataMetric {
         for (int i = 0; i < list.getLength(); i++) {
             org.w3c.dom.Element phrase = (org.w3c.dom.Element) list.item(i);
 
-            String id = phrase.getElementsByTagName("ID").item(0).getFirstChild().getNodeValue();
+            NodeList elements = phrase.getElementsByTagName("WikiDataID");
+            for (int j = 0; j < elements.getLength(); j++) {
+                String id = elements.item(j).getFirstChild().getNodeValue();
 
-            Node mediaList;
-            if ((mediaList = phrase.getElementsByTagName("Media").item(0)) != null) {
-                String mediaType = mediaList.getFirstChild().getNodeValue();
-                Integer intID = Integer.parseInt(id);
-                media.put(intID, mediaType);
-            } else {
-                String text = phrase.getElementsByTagName("Text").item(0).getFirstChild().getNodeValue();
-                if (id.equals("default")) {
-                    defaultExplanation = text;
-                } else {
+                Node mediaList;
+                if ((mediaList = phrase.getElementsByTagName("Media").item(0)) != null) {
+                    String mediaType = mediaList.getFirstChild().getNodeValue();
                     Integer intID = Integer.parseInt(id);
-                    explanations.put(intID, text);
+                    media.put(intID, mediaType);
+                } else {
+                    String text = phrase.getElementsByTagName("Text").item(0).getFirstChild().getNodeValue();
+                    if (id.equals("default")) {
+                        defaultExplanation = text;
+                    } else {
+                        Integer intID = Integer.parseInt(id);
+                        explanations.put(intID, text);
+                    }
                 }
             }
         }

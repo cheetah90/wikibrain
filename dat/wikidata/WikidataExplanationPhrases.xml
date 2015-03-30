@@ -1,451 +1,768 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Phrases>
-	<Phrase>
-		<ID>default</ID>
-		<Text>%1$s has a %3$s relationship with %2$s</Text>
-	</Phrase>
     <Phrase>
-        <ID>10</ID>
+        <DBPediaID>largestCity</DBPediaID>
+        <DBPediaID>largestcity</DBPediaID>
+        <Text>%s is the largest city in %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>location</DBPediaID>
+        <DBPediaID>locationCity</DBPediaID>
+        <DBPediaID>country</DBPediaID>
+        <DBPediaID>locationCountry</DBPediaID>
+        <Text>%2$s is located in %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>foundationPlace</DBPediaID>
+        <DBPediaID>foundation</DBPediaID>
+        <Text>%2$s was founded in %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>residence</DBPediaID>
+        <Text>%s lives in %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>hostCity</DBPediaID>
+        <Text>%s was the host city of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>routeEnd</DBPediaID>
+        <Text>%2$s ends in %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>routeJunction</DBPediaID>
+        <Text>%2$s has a junction in %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>routeStart</DBPediaID>
+        <Text>%2$s begins in %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>regionServed</DBPediaID>
+        <Text>%s is in the region servicied by %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>curlingClub</DBPediaID>
+        <Text>%s participated in %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>headquarter</DBPediaID>
+        <Text>%2$s's headquarters is located in %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>place</DBPediaID>
+        <DBPediaID>city</DBPediaID>
+        <Text>%s is the location of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>countySeat</DBPediaID>
+        <Text>%s is country seat of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>broadcastArea</DBPediaID>
+        <Text>%s is in the broadcasting area of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>populationPlace</DBPediaID>
+        <Text>%2$s has a significant population in %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>regions</DBPediaID>
+        <Text>%2$s are located in %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>twin1City</DBPediaID>
+        <Text>%s and %s are twin cities</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>east</DBPediaID>
+        <Text>%s is east of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>west</DBPediaID>
+        <Text>%s is west of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>north</DBPediaID>
+        <Text>%s is north of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>northeast</DBPediaID>
+        <Text>%s is northeast of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>northwest</DBPediaID>
+        <Text>%s is northwest of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>south</DBPediaID>
+        <Text>%s is south of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>southeast</DBPediaID>
+        <Text>%s is southeast of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>southwest</DBPediaID>
+        <Text>%s is southwest of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>7</WikiDataID>
+        <Text>%s is the brother of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>9</WikiDataID>
+        <Text>%s is the sister of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>10</WikiDataID>
         <Media>video</Media>
     </Phrase>
     <Phrase>
-        <ID>14</ID>
+        <WikiDataID>14</WikiDataID>
         <Media>highway marker</Media>
     </Phrase>
     <Phrase>
-        <ID>15</ID>
+        <WikiDataID>15</WikiDataID>
         <Media>road map</Media>
     </Phrase>
     <Phrase>
-        <ID>17</ID>
+        <WikiDataID>17</WikiDataID>
         <Text>%s is in the country of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>18</ID>
+        <WikiDataID>18</WikiDataID>
         <Media>image</Media>
     </Phrase>
     <Phrase>
-        <ID>19</ID>
+        <WikiDataID>19</WikiDataID>
+        <DBPediaID>birthPlace</DBPediaID>
+        <DBPediaID>placeOfBirth</DBPediaID>
         <Text>%s was born in %s</Text>
     </Phrase>
     <Phrase>
-        <ID>20</ID>
+        <WikiDataID>20</WikiDataID>
+        <DBPediaID>deathPlace</DBPediaID>
         <Text>%s died in %s</Text>
     </Phrase>
     <Phrase>
-        <ID>21</ID>
+        <WikiDataID>21</WikiDataID>
         <Text>%s is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>27</ID>
+        <WikiDataID>22</WikiDataID>
+        <Text>%s is the father of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>25</WikiDataID>
+        <Text>%s is the mother of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>26</WikiDataID>
+        <Text>%s is the spouse of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>27</WikiDataID>
         <Text>%s is a citizen of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>30</ID>
+        <WikiDataID>30</WikiDataID>
         <Text>%s is on the continent of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>31</ID>
-        <Text>%s is a type of %s</Text>
+        <WikiDataID>31</WikiDataID>
+        <DBPediaID>type</DBPediaID>
+        <Text>%s is a %s</Text>
     </Phrase>
     <Phrase>
-        <ID>35</ID>
+        <WikiDataID>35</WikiDataID>
         <Text>%s's head of state is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>36</ID>
+        <WikiDataID>36</WikiDataID>
         <Text>%s is the capital of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>37</ID>
-        <Text>%s's offical language is %s</Text>
+        <WikiDataID>37</WikiDataID>
+        <Text>%s's official language is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>39</ID>
+        <WikiDataID>39</WikiDataID>
         <Text>%s was a %s</Text>
     </Phrase>
     <Phrase>
-        <ID>41</ID>
+        <WikiDataID>40</WikiDataID>
+        <Text>%2$s is the child of %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>41</WikiDataID>
+        <DBPediaID>imageFlag</DBPediaID>
         <Media>flag image</Media>
     </Phrase>
     <Phrase>
-        <ID>47</ID>
+        <WikiDataID>43</WikiDataID>
+        <Text>%s is the stepfather of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>44</WikiDataID>
+        <Text>%s is the stepmother of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>47</WikiDataID>
         <Text>%s shares a border with %s</Text>
     </Phrase>
     <Phrase>
-        <ID>51</ID>
+        <WikiDataID>51</WikiDataID>
         <Media>audio</Media>
     </Phrase>
     <Phrase>
-        <ID>54</ID>
+        <WikiDataID>54</WikiDataID>
         <Text>%s is a member of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>61</ID>
+        <WikiDataID>61</WikiDataID>
         <Text>%s was discovered by %s</Text>
     </Phrase>
     <Phrase>
-        <ID>66</ID>
+        <WikiDataID>66</WikiDataID>
         <Text>%s's ancestral home is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>69</ID>
+        <WikiDataID>69</WikiDataID>
         <Text>%s was educated at %s</Text>
     </Phrase>
     <Phrase>
-        <ID>91</ID>
+        <WikiDataID>91</WikiDataID>
         <Text>%s is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>94</ID>
+        <WikiDataID>94</WikiDataID>
         <Media>coat of arms</Media>
     </Phrase>
     <Phrase>
-        <ID>101</ID>
+        <WikiDataID>101</WikiDataID>
         <Text>%s's field of work is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>102</ID>
+        <WikiDataID>102</WikiDataID>
         <Text>%s was a member of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>103</ID>
+        <WikiDataID>103</WikiDataID>
         <Text>%s's native language is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>106</ID>
+        <WikiDataID>106</WikiDataID>
         <Text>%s's occupation is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>108</ID>
+        <WikiDataID>108</WikiDataID>
         <Text>%s is employed by %s</Text>
     </Phrase>
     <Phrase>
-        <ID>109</ID>
+        <WikiDataID>109</WikiDataID>
         <Media>signature</Media>
     </Phrase>
     <Phrase>
-        <ID>117</ID>
+        <WikiDataID>112</WikiDataID>
+        <Text>%s was founded by %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>117</WikiDataID>
         <Media>chemical structure</Media>
     </Phrase>
     <Phrase>
-        <ID>119</ID>
+        <WikiDataID>119</WikiDataID>
+        <DBPediaID>restingPlace</DBPediaID>
         <Text>%s is buried in %s</Text>
     </Phrase>
     <Phrase>
-        <ID>122</ID>
-        <Text>%s's goverment is a %s</Text>
+        <WikiDataID>122</WikiDataID>
+        <Text>%s's government is a %s</Text>
     </Phrase>
     <Phrase>
-        <ID>127</ID>
+        <WikiDataID>127</WikiDataID>
         <Text>%s is owned by %s</Text>
     </Phrase>
 	<Phrase>
-		<ID>131</ID>
+		<WikiDataID>131</WikiDataID>
 		<Text>%s is located in %s</Text>
 	</Phrase>
     <Phrase>
-        <ID>138</ID>
+        <WikiDataID>138</WikiDataID>
         <Text>%s is named after %s</Text>
     </Phrase>
     <Phrase>
-        <ID>140</ID>
+        <DBPediaID>namedFor</DBPediaID>
+        <Text>%2$s is named after %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>140</WikiDataID>
         <Text>%s practices %s</Text>
     </Phrase>
     <Phrase>
-        <ID>150</ID>
+        <WikiDataID>150</WikiDataID>
         <Text>%s contains %s</Text>
     </Phrase>
     <Phrase>
-        <ID>154</ID>
+        <WikiDataID>154</WikiDataID>
         <Media>logo image</Media>
     </Phrase>
     <Phrase>
-        <ID>155</ID>
+        <WikiDataID>155</WikiDataID>
         <Text>%s follows %s</Text>
     </Phrase>
     <Phrase>
-        <ID>156</ID>
+        <WikiDataID>156</WikiDataID>
         <Text>%s is followed by $s</Text>
     </Phrase>
     <Phrase>
-        <ID>158</ID>
-        <Media>seal image</Media>
-    </Phrase>
-    <Phrase>
-        <ID>157</ID>
+        <WikiDataID>157</WikiDataID>
         <Text>%s was killed by %s</Text>
     </Phrase>
     <Phrase>
-        <ID>166</ID>
-        <Text>%s recieved %s</Text>
+        <WikiDataID>158</WikiDataID>
+        <Media>seal image</Media>
     </Phrase>
     <Phrase>
-        <ID>172</ID>
+        <WikiDataID>159</WikiDataID>
+        <Text>%s's headquarters is located in %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>166</WikiDataID>
+        <Text>%s received %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>172</WikiDataID>
         <Text>%s is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>181</ID>
+        <WikiDataID>181</WikiDataID>
         <Media>range map image</Media>
     </Phrase>
     <Phrase>
-        <ID>184</ID>
+        <WikiDataID>184</WikiDataID>
         <Text>%2$s was the doctoral advisor of %1$s</Text>
     </Phrase>
     <Phrase>
-        <ID>185</ID>
+        <WikiDataID>185</WikiDataID>
         <Text>%2$s was the doctoral student of %1$s</Text>
     </Phrase>
     <Phrase>
-        <ID>186</ID>
+        <WikiDataID>186</WikiDataID>
         <Text>%s is made from %s</Text>
     </Phrase>
     <Phrase>
-        <ID>190</ID>
+        <WikiDataID>190</WikiDataID>
         <Text>%s is a sister city of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>194</ID>
+        <WikiDataID>194</WikiDataID>
         <Text>%s's legislative body is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>207</ID>
+        <WikiDataID>207</WikiDataID>
         <Media>bathymetry image</Media>
     </Phrase>
     <Phrase>
-        <ID>237</ID>
+        <WikiDataID>237</WikiDataID>
         <Text>%s's coat of arms in %s</Text>
     </Phrase>
     <Phrase>
-        <ID>241</ID>
+        <WikiDataID>241</WikiDataID>
         <Text>%s was a part of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>242</ID>
+        <WikiDataID>242</WikiDataID>
+        <DBPediaID>imageMap</DBPediaID>
         <Media>locator map image</Media>
     </Phrase>
     <Phrase>
-        <ID>263</ID>
+        <WikiDataID>263</WikiDataID>
         <Text>%s resides in %s</Text>
     </Phrase>
 	<Phrase>
-		<ID>279</ID>
+		<WikiDataID>279</WikiDataID>
 		<Text>%s is a type of %s</Text>
 	</Phrase>
     <Phrase>
-        <ID>301</ID>
+        <WikiDataID>301</WikiDataID>
         <Text>%2$s is the main topic of %1$s</Text>
     </Phrase>
     <Phrase>
-        <ID>360</ID>
+        <WikiDataID>360</WikiDataID>
         <Text>%s is a list of $s</Text>
     </Phrase>
     <Phrase>
-        <ID>361</ID>
+        <WikiDataID>361</WikiDataID>
         <Text>%s is a part of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>366</ID>
+        <DBPediaID>isPartOf</DBPediaID>
+        <Text>%2$s is a part of %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>366</WikiDataID>
         <Text>%s's uses include %s</Text>
     </Phrase>
     <Phrase>
-        <ID>367</ID>
+        <WikiDataID>367</WikiDataID>
         <Media>astronomic symbol image</Media>
     </Phrase>
     <Phrase>
-        <ID>368</ID>
+        <WikiDataID>368</WikiDataID>
         <Media>Sandbox-CommonsMediaFile</Media>
     </Phrase>
     <Phrase>
-        <ID>410</ID>
+        <WikiDataID>373</WikiDataID>
+        <Media>Commons category</Media>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>410</WikiDataID>
         <Text>%s was %s</Text>
     </Phrase>
     <Phrase>
-        <ID>411</ID>
+        <WikiDataID>411</WikiDataID>
         <Text>%s is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>412</ID>
+        <WikiDataID>412</WikiDataID>
         <Text>%s is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>413</ID>
+        <WikiDataID>413</WikiDataID>
         <Text>%s played %s</Text>
     </Phrase>
     <Phrase>
-        <ID>416</ID>
+        <WikiDataID>416</WikiDataID>
         <Text>%2$s is the symbol for %1$s</Text>
     </Phrase>
     <Phrase>
-        <ID>421</ID>
+        <WikiDataID>421</WikiDataID>
         <Text>%s is located in time zone %s</Text>
     </Phrase>
     <Phrase>
-        <ID>423</ID>
+        <WikiDataID>423</WikiDataID>
         <Text>%s shoots %s</Text>
     </Phrase>
     <Phrase>
-        <ID>443</ID>
+        <WikiDataID>443</WikiDataID>
         <Media>pronunciation</Media>
     </Phrase>
     <Phrase>
-        <ID>450</ID>
+        <WikiDataID>450</WikiDataID>
         <Text>%s was a member of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>460</ID>
+        <WikiDataID>451</WikiDataID>
+        <Text>%s lives with %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>452</WikiDataID>
+        <Text>%s is a part of the %s industry</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>457</WikiDataID>
+        <Text>%s's foundational text is %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>460</WikiDataID>
         <Text>%s is the same as %s</Text>
     </Phrase>
     <Phrase>
-        <ID>461</ID>
+        <WikiDataID>461</WikiDataID>
         <Text>$s is the opposite of $s</Text>
     </Phrase>
     <Phrase>
-        <ID>462</ID>
+        <WikiDataID>462</WikiDataID>
         <Text>%s is $s</Text>
     </Phrase>
     <Phrase>
-        <ID>463</ID>
+        <WikiDataID>463</WikiDataID>
         <Text>%s is a member of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>465</ID>
+        <WikiDataID>465</WikiDataID>
         <Text>%s's color in hex is 0x$s</Text>
     </Phrase>
     <Phrase>
-        <ID>485</ID>
+        <WikiDataID>485</WikiDataID>
         <Text>%s is archived at %s</Text>
     </Phrase>
     <Phrase>
-        <ID>487</ID>
+        <WikiDataID>487</WikiDataID>
         <Text>%s's Unicode character is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>491</ID>
+        <WikiDataID>491</WikiDataID>
         <Media>orbit diagram</Media>
     </Phrase>
     <Phrase>
-        <ID>509</ID>
+        <WikiDataID>509</WikiDataID>
         <Text>%s died because of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>518</ID>
+        <WikiDataID>512</WikiDataID>
+        <Text>%s has a %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>518</WikiDataID>
         <Text>%s applies to %s</Text>
     </Phrase>
     <Phrase>
-        <ID>527</ID>
+        <WikiDataID>527</WikiDataID>
         <Text>%s contains %s</Text>
     </Phrase>
     <Phrase>
-        <ID>569</ID>
+        <WikiDataID>553</WikiDataID>
+        <Text>%s has an account on %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>569</WikiDataID>
         <Text>%s was born on %s</Text>
     </Phrase>
     <Phrase>
-        <ID>570</ID>
+        <WikiDataID>570</WikiDataID>
         <Text>%s died on %s</Text>
     </Phrase>
     <Phrase>
-        <ID>575</ID>
+        <WikiDataID>575</WikiDataID>
         <Text>%s was discovered %s</Text>
     </Phrase>
     <Phrase>
-        <ID>580</ID>
+        <WikiDataID>580</WikiDataID>
         <Text>%s began %s</Text>
     </Phrase>
     <Phrase>
-        <ID>582</ID>
+        <WikiDataID>582</WikiDataID>
         <Text>%s ended %s</Text>
     </Phrase>
     <Phrase>
-        <ID>585</ID>
+        <WikiDataID>598</WikiDataID>
+        <Text>%s is the commander of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>585</WikiDataID>
         <Text>%s was %s</Text>
     </Phrase>
     <Phrase>
-        <ID>625</ID>
+        <WikiDataID>607</WikiDataID>
+        <Text>%s engaged in %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>625</WikiDataID>
         <Text>%s is located at %s</Text>
     </Phrase>
     <Phrase>
-        <ID>692</ID>
+        <WikiDataID>692</WikiDataID>
         <Media>Gene Atlas Image</Media>
     </Phrase>
     <Phrase>
-        <ID>790</ID>
+        <WikiDataID>734</WikiDataID>
+        <Text>%s's surname is %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>735</WikiDataID>
+        <Text>%s's given name is %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>740</WikiDataID>
+        <Text>%s was formed in %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>742</WikiDataID>
+        <Text>%s uses the pseudonym %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>790</WikiDataID>
         <Text>%s is approved by %s</Text>
     </Phrase>
     <Phrase>
-        <ID>800</ID>
+        <WikiDataID>800</WikiDataID>
         <Text>%s's notable works include %s</Text>
     </Phrase>
     <Phrase>
-        <ID>802</ID>
+        <WikiDataID>802</WikiDataID>
         <Text>%s's students include %s</Text>
     </Phrase>
     <Phrase>
-        <ID>910</ID>
-        <Text>%s belongs to the %s catrgory</Text>
+        <WikiDataID>807</WikiDataID>
+        <Text>%s separated from %s</Text>
     </Phrase>
     <Phrase>
-        <ID>948</ID>
+        <WikiDataID>910</WikiDataID>
+        <Text>%s belongs to the %s category</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>948</WikiDataID>
         <Media>Wikivoyage banner</Media>
     </Phrase>
     <Phrase>
-        <ID>989</ID>
+        <WikiDataID>989</WikiDataID>
         <Media>spoken text audio</Media>
     </Phrase>
     <Phrase>
-        <ID>990</ID>
+        <WikiDataID>990</WikiDataID>
         <Media>recording of the subject's voice'</Media>
     </Phrase>
     <Phrase>
-        <ID>996</ID>
+        <WikiDataID>996</WikiDataID>
         <Media>scan file</Media>
     </Phrase>
     <Phrase>
-        <ID>1066</ID>
+        <WikiDataID>1037</WikiDataID>
+        <Text>%s is managed by %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1038</WikiDataID>
+        <Text>%s is relative of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1056</WikiDataID>
+        <Text>%s produces %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1066</WikiDataID>
         <Text>%s was a student of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>1196</ID>
+        <WikiDataID>1196</WikiDataID>
         <Text>%s died of %s</Text>
     </Phrase>
     <Phrase>
-        <ID>1246</ID>
+        <WikiDataID>1246</WikiDataID>
         <Text>%s's patent number is %s</Text>
     </Phrase>
     <Phrase>
-        <ID>1269</ID>
+        <WikiDataID>1269</WikiDataID>
         <Text>%2$s is a facet of %1$s</Text>
     </Phrase>
     <Phrase>
-        <ID>1318</ID>
+        <WikiDataID>1283</WikiDataID>
+        <Text>%s has worked on the film %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1290</WikiDataID>
+        <Text>%s is a godparent of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1303</WikiDataID>
+        <Text>%s plays the %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1310</WikiDataID>
+        <Text>%s is disputed by %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1318</WikiDataID>
         <Text>%s was proved by %s</Text>
     </Phrase>
     <Phrase>
-        <ID>1343</ID>
+        <WikiDataID>1343</WikiDataID>
         <Text>%s is described in %s</Text>
     </Phrase>
     <Phrase>
-        <ID>1383</ID>
+        <WikiDataID>1344</WikiDataID>
+        <Text>%s is a participant of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1383</WikiDataID>
         <Text>%s contains %s</Text>
     </Phrase>
     <Phrase>
-        <ID>1419</ID>
+        <WikiDataID>1399</WikiDataID>
+        <Text>%s was convicted of %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1412</WikiDataID>
+        <Text>%s speaks %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1416</WikiDataID>
+        <Text>%s is affiliated with %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1419</WikiDataID>
         <Text>%s is shaped like a %s</Text>
     </Phrase>
     <Phrase>
-        <ID>1442</ID>
+        <WikiDataID>1429</WikiDataID>
+        <Text>%s owns %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1442</WikiDataID>
         <Media>grave picture</Media>
     </Phrase>
     <Phrase>
-        <ID>1464</ID>
-        <Text>%2$s was born in %1$s</Text>
-    </Phrase>
-    <Phrase>
-        <ID>1465</ID>
+        <WikiDataID>1465</WikiDataID>
         <Text>%2$s died in %1$s</Text>
     </Phrase>
     <Phrase>
-        <ID>1537</ID>
+        <WikiDataID>1532</WikiDataID>
+        <Text>%s plays for %s</Text>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>1537</WikiDataID>
         <Text>%s is a contributing factor of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>abstract</DBPediaID>
+        <Media>abstract</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>comment</DBPediaID>
+        <Media>comment</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>wikiPageRedirects</DBPediaID>
+        <Media>wikipedia page redirects</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>subject</DBPediaID>
+        <Media>category</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>subdivisionName</DBPediaID>
+        <Media>subdivision name</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>stadium</DBPediaID>
+        <Media>stadium</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>sealLink</DBPediaID>
+        <Media>seal link</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>wikiPageExternalLink</DBPediaID>
+        <Media>wikipedia page external link</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>primaryTopic</DBPediaID>
+        <Media>primary topic</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>wasDerivedFrom</DBPediaID>
+        <Media>was derived from</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>isPrimaryTopicOf</DBPediaID>
+        <Media>is primary topic of</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>label</DBPediaID>
+        <Media>label</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>pushpinMap</DBPediaID>
+        <Media>pushpin map</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>mapCaption</DBPediaID>
+        <Media>map caption</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>pushpinMapCaption</DBPediaID>
+        <Media>pushpin map caption</Media>
     </Phrase>
 </Phrases>

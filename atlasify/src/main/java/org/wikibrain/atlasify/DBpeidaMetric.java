@@ -2,6 +2,10 @@ package org.wikibrain.atlasify;
 
 import org.apache.commons.lang.WordUtils;
 import org.jooq.util.derby.sys.Sys;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.core.dao.LocalPageDao;
 import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.model.LocalPage;
@@ -9,24 +13,69 @@ import org.wikibrain.sr.BaseSRMetric;
 import org.wikibrain.sr.disambig.Disambiguator;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.json.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Created by Josh on 3/2/15.
  */
 public class DBpeidaMetric extends DataMetric {
-    public DBpeidaMetric(String name, Language language, LocalPageDao pageHelper, Disambiguator disambiguator) {
+    private Map<String, String> explanations;
+    private Map<String, String> media;
+    public DBpeidaMetric(String name, Language language, LocalPageDao pageHelper, Disambiguator disambiguator)throws ConfigurationException, ParserConfigurationException, SAXException, IOException {
         super(name, language, pageHelper, disambiguator);
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder document = factory.newDocumentBuilder();
+        Document dom = document.parse("dat/wikidata/WikidataExplanationPhrases.xml");
+        org.w3c.dom.Element xml = dom.getDocumentElement();
+
+        explanations = new HashMap<String, String>();
+        media = new HashMap<String, String>();
+
+        NodeList list = xml.getElementsByTagName("Phrase");
+        for (int i = 0; i < list.getLength(); i++) {
+            org.w3c.dom.Element phrase = (org.w3c.dom.Element) list.item(i);
+
+            NodeList elements = phrase.getElementsByTagName("DBPediaID");
+            for (int j = 0; j < elements.getLength(); j++) {
+                String id = elements.item(j).getFirstChild().getNodeValue();
+
+                Node mediaList;
+                if ((mediaList = phrase.getElementsByTagName("Media").item(0)) != null) {
+                    String mediaType = mediaList.getFirstChild().getNodeValue();
+                    media.put(id, mediaType);
+                } else {
+                    String text = phrase.getElementsByTagName("Text").item(0).getFirstChild().getNodeValue();
+                    explanations.put(id, text);
+                }
+            }
+        }
+    }
+
+    @Override
+    public String formatStringForProperty(String s) {
+        if (explanations.containsKey(s)) {
+            return explanations.get(s);
+        } else {
+            return super.formatStringForProperty(s);
+        }
     }
 
     @Override
@@ -125,8 +174,10 @@ public class DBpeidaMetric extends DataMetric {
                 JSONObject result = results.getJSONObject(i);
                 JSONObject property = result.getJSONObject("property");
                 JSONObject value;
+                boolean isValueOf = false;
                 if (result.has("isValueOf")) {
                     value = result.getJSONObject("isValueOf");
+                    isValueOf = true;
                 } else if (result.has("hasValue")) {
                     value = result.getJSONObject("hasValue");
                 } else {
@@ -141,9 +192,68 @@ public class DBpeidaMetric extends DataMetric {
                 String valueString = value.getString("value");
                 valueString = valueString.substring(valueString.lastIndexOf('/') + 1).replace('_', ' ');
 
+                // Media doesn't make useful explanations i.e. abstracts
+                if (media.containsKey(propertyString)) {
+                    continue;
+                }
+
+                // Will fix this later
+                // TODO: Extract political candidate name
+                if (valueString.contains("election") || valueString.contains("Court")) {
+                    continue;
+                }
+
+                // Seperate value into words if it SomethingLikeThis
+                if (!valueString.contains(" ")) {
+                    for (int j = 1; j < valueString.length() - 1; j++) {
+                        char previousChar = valueString.charAt(j - 1);
+                        char c = valueString.charAt(j);
+                        char nextChar = valueString.charAt(j + 1);
+                        boolean isBeginingOfWord = Character.isUpperCase(c) && Character.isLowerCase(nextChar);
+                        boolean isNotAlreadyWord = !Character.isWhitespace(previousChar) && !Character.isUpperCase(previousChar);
+                        if (isBeginingOfWord && isNotAlreadyWord) {
+                            valueString = valueString.substring(0, j) + " " + valueString.substring(j, valueString.length());
+                            j++;
+                        }
+                    }
+                }
+
+
+
+                /*boolean duplicate = false;
+                if (valueString.contains(",")) {
+                    String postfix = valueString.substring(valueString.indexOf(','));
+                    for (Tuple<String, List<String>> otherExp : statements) {
+                        String otherValueString = otherExp.y.get(0);
+                        if (otherValueString.contains(",") && otherExp.x.equals(propertyString)) {
+                            if (postfix.equals(otherValueString.substring(otherValueString.indexOf(',')))) {
+                                duplicate = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (duplicate) {
+                    // continue;
+                }*/
+
+                // Remove any parenthesized information from
+                // i.e. Minneapolis (Minnesota) -> Minneapolis
+                /*if (valueString.matches(".*\\(.*\\)")) {
+                    String simplifiedString = valueString.substring(0, valueString.indexOf('(')).trim();
+                    if (simplifiedString.length() > 0) {
+                        valueString = simplifiedString;
+                    }
+                }*/
+
                 List<String> values = new ArrayList<String>();
                 values.add(valueString);
-                statements.add(new Tuple<String, List<String>>(propertyString, values));
+                Tuple<String, List<String>> tuple = new Tuple<String, List<String>>(propertyString, values);
+                if (isValueOf) {
+                    tuple.reversed = true;
+                }
+                statements.add(tuple);
             } catch (Exception err) {
                 // System.out.println(err.getMessage());
             }
@@ -151,6 +261,8 @@ public class DBpeidaMetric extends DataMetric {
 
         return statements;
     }
+
+
 
     @Override
     public SRConfig getConfig() {
