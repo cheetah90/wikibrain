@@ -1,13 +1,26 @@
 package org.wikibrain.atlasify;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.Response;
 
 import com.vividsolutions.jts.geom.Geometry;
+
 import org.apache.commons.collections15.map.LRUMap;
+import com.vividsolutions.jts.geom.Point;
+import org.geotools.data.DataUtilities;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.SchemaException;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.geojson.geom.GeometryJSON;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.wikibrain.conf.Configurator;
+import org.wikibrain.core.WikiBrainException;
 import org.wikibrain.core.cmd.Env;
 import org.wikibrain.core.cmd.EnvBuilder;
 import org.wikibrain.core.dao.DaoException;
@@ -39,6 +52,14 @@ import java.util.*;
 import java.net.URL;
 
 import org.apache.commons.codec.binary.Base64;
+
+
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+
+import java.net.URL;
 
 // The Java class will be hosted at the URI path "/helloworld"
 @Path("/wikibrain")
@@ -81,17 +102,17 @@ public class AtlasifyResource {
 
     private static SRMetric sr = null;
     private static PhraseAnalyzer pa = null;
-    private static LocalPageDao lpDao = null;
-    private static Language lang = Language.getByLangCode("simple");
+    public static LocalPageDao lpDao = null;
+    public static Language lang = Language.getByLangCode("en");
     private static LocalPageAutocompleteSqlDao lpaDao = null;
-    private static LocalLinkDao llDao = null;
+    public static LocalLinkDao llDao = null;
     private static WikidataMetric wdMetric = null;
     private static DBpeidaMetric dbMetric = null;
     private static WikidataDao wdDao = null;
-    private static SpatialDataDao sdDao = null;
-    private static UniversalPageDao upDao = null;
-    private static Map<Integer, Geometry> geometryMap = null;
+    public static UniversalPageDao upDao = null;
+    private static POIGenerator poiGenerator = null;
     private static AtlasifyLogger atlasifyLogger;
+    private static boolean wikibrainLoadingInProcess = false;
 
     // A cache which will keep the last 1000 autocomplete requests
     private static LRUMap<String, Map<String, String>> autocompleteCache;
@@ -99,6 +120,7 @@ public class AtlasifyResource {
     private static void wikibrainSRinit(){
 
         try {
+            wikibrainLoadingInProcess = true;
             System.out.println("START LOADING WIKIBRAIN");
             Env env = new EnvBuilder().build();
             Configurator conf = env.getConfigurator();
@@ -128,13 +150,14 @@ public class AtlasifyResource {
             pa = conf.get(PhraseAnalyzer.class, "anchortext");
             System.out.println("FINISHED LOADING PHRASE ANALYZER");
 
-            sdDao = conf.get(SpatialDataDao.class);
-            System.out.println("FINISHED LOADING SPATIALDATA DAO");
+
             upDao = conf.get(UniversalPageDao.class);
             System.out.println("FINISHED LOADING UNIVERSALPAGE DAO");
-            geometryMap = sdDao.getAllGeometriesInLayer("wikidata");
-            System.out.println("FINISHED LOADING GEOMETRYMAP");
+            System.out.println("STARTED LOADING POI GENERATOR");
+            poiGenerator = new POIGenerator(conf);
+            System.out.println("FINISHED LOADING POI GENERATOR");
             System.out.println("FINISHED LOADING WIKIBRAIN");
+            wikibrainLoadingInProcess = false;
 
 
             //sr = conf.get(
@@ -144,12 +167,13 @@ public class AtlasifyResource {
 
         } catch (Exception e) {
             System.out.println("Exception when initializing WikiBrain: "+e.getMessage());
+            wikibrainLoadingInProcess = false;
         }
 
     }
 
-    private static LocalId wikibrainPhaseResolution(String title) throws Exception {
-        Language language = lang;
+    public static LocalId wikibrainPhaseResolution(String title) throws Exception {
+        /*Language language = lang;
         LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, title, 1);
         for (LocalId p : resolution.keySet()) {
             return p;
@@ -157,10 +181,18 @@ public class AtlasifyResource {
 
         throw new Exception("failed to resolve");
 
-        // return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
+        // return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());*/
+        /*Language language = lang;
+        LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, title, 1);
+        for (LocalId p : resolution.keySet()) {
+            return p;
+        }
+        throw new Exception("failed to resolve"); */
+
+        return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
     }
 
-    private static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN) throws Exception {
+    public static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN) throws Exception {
         Language language = lang;
         String url = "";
         if(topN == -1){
@@ -218,7 +250,11 @@ public class AtlasifyResource {
     @Consumes("text/plain")
     @Produces("text/plain")
     public Response getClichedMessage(@PathParam("keyword") String keyword, @PathParam("input") String data) throws  DaoException{
-        if(pa == null){
+        if(wikibrainLoadingInProcess == true){
+            System.out.println("Waiting for Wikibrain Loading");
+            return Response.serverError().entity("Wikibrain not ready").build();
+        }
+        if(lpDao == null){
             wikibrainSRinit();
         }
         String[] features = data.split(",");
@@ -247,7 +283,11 @@ public class AtlasifyResource {
     @Produces("text/plain")
 
     public Response consumeJSON (AtlasifyQuery query) {
-        if(pa == null){
+        if(wikibrainLoadingInProcess == true){
+            System.out.println("Waiting for Wikibrain Loading");
+            return Response.serverError().entity("Wikibrain not ready").build();
+        }
+        if(lpDao == null ){
             wikibrainSRinit();
         }
         String[] featureIdList = query.getFeatureIdList();
@@ -358,6 +398,7 @@ public class AtlasifyResource {
     @POST
     @Path("logLogin")
     @Consumes("application/json")
+    @Produces("text/plain")
     public Response processLogLogin(AtlasifyLogger.logLogin query) throws Exception{
 
         atlasifyLogger.LoginLogger(query, "");
@@ -369,6 +410,7 @@ public class AtlasifyResource {
     @POST
     @Path("logQuery")
     @Consumes("application/json")
+    @Produces("text/plain")
     public Response processLogQuery(AtlasifyLogger.logQuery query) throws Exception{
 
         atlasifyLogger.QueryLogger(query, "");
@@ -382,7 +424,11 @@ public class AtlasifyResource {
     @Produces("text/plain")
 
     public Response autocompleteSearch(AtlasifyQuery query) throws Exception {
-        if (pa == null) {
+        if(wikibrainLoadingInProcess == true){
+            System.out.println("Waiting for Wikibrain Loading");
+            return Response.serverError().entity("Wikibrain not ready").build();
+        }
+        if (lpDao == null) {
             wikibrainSRinit();
         }
 
@@ -475,7 +521,7 @@ public class AtlasifyResource {
     @Consumes("text/plain")
     @Produces("text/plain")
     public Response handleExplanation(@PathParam("keyword") String keyword, @PathParam("feature") String feature) throws  DaoException, MalformedURLException, IOException, Exception{
-        if (lpDao == null) {
+        if (lpDao == null && wikibrainLoadingInProcess == false) {
             wikibrainSRinit();
         }
 
@@ -569,7 +615,7 @@ public class AtlasifyResource {
             while ((currentChar = bufferedReader.read()) != -1) {
                 stringBuilder.append((char) currentChar);
             }
-            System.out.println("GOT REPLY\n" + stringBuilder.toString());
+            //System.out.println("GOT REPLY\n" + stringBuilder.toString());
 
             // Process the northwestern json
             JSONArray northwesternJSONArray = new JSONArray(stringBuilder.toString());
@@ -647,7 +693,7 @@ public class AtlasifyResource {
 
         System.out.println("REQUESTED explanation between " + keyword + " and " + feature + "\n\n" + explanations.toString());
 
-        return Response.ok(result.toString()).header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok(result.toString()).build();
     }
 
     private Random randomSeedGenerator = new Random();
@@ -686,8 +732,10 @@ public class AtlasifyResource {
     @POST
     @Path("/explanationsData")
     @Consumes("application/json")
+    @Produces("text/plain")
 
-    public void processesExplanations(String json) throws DaoException {
+
+    public Response processesExplanations(String json) throws DaoException {
         JSONObject explanationsData = new JSONObject(json);
         int id = explanationsData.getInt("id");
         int sessionID = explanationsData.getInt("sessionID");
@@ -728,6 +776,7 @@ public class AtlasifyResource {
 
             }
         }
+        return Response.ok("").header("Access-Control-Allow-Origin", "*").build();
     }
 
     @POST
@@ -764,51 +813,15 @@ public class AtlasifyResource {
     @Consumes("text/plain")
     @Produces("text/plain")
 
-    public Response getPOIs (@PathParam("keyword") String keyword){
-        if(pa==null){
+    public Response getPOIs (@PathParam("keyword") String keyword) throws SchemaException, IOException, WikiBrainException, DaoException{
+        if(lpDao==null){
             wikibrainSRinit();
         }
         System.out.println("REQUESTED POI "+keyword);
-
-
-        Map<String, String>srMap=new HashMap<String, String>();
-        LocalId queryID=new LocalId(lang,0);
-        try{
-            queryID=wikibrainPhaseResolution(keyword);
-        }
-        catch(Exception e){
-            System.out.println("Failed to resolve keyword "+keyword);
-            return Response.ok(new JSONObject(srMap).toString()).build();
-        }
-        // LocalId queryID = new LocalId(Language.EN, 19908980);
-        Map<String, Geometry>resultMap=new HashMap<String, Geometry>();
-        try{
-            Map<LocalId, Double>srValues=accessNorthwesternAPI(queryID,100);
-            for(Map.Entry<LocalId, Double>e:srValues.entrySet()){
-                try{
-                    LocalPage localPage=lpDao.getById(e.getKey());
-                    int univId=upDao.getByLocalPage(localPage).getUnivId();
-                    if(geometryMap.containsKey(univId)){
-                        resultMap.put(localPage.getTitle().getCanonicalTitle(),geometryMap.get(univId));
-                    }
-                }
-                catch(Exception e1){
-                    continue;
-                }
-
-
-            }
-
-        }
-        catch(Exception e){
-            System.out.println("Error when connecting to Northwestern Server ");
-            e.printStackTrace();
-            // do nothing
-
-        }
-
-        System.out.println("GOT POI "+resultMap.toString());
-        return Response.ok(new JSONObject(resultMap).toString()).build();
+        //System.out.println("GOT JSON RESULT " + jsonResult);
+        String result = poiGenerator.getTopNPOI(keyword, this);
+        System.out.println("FINISHED GETTING POI FOR "+keyword);
+        return Response.ok(result).build();
     }
     // A logging method called by the god mode of Atlasify to check the status of the system
    /* @POST
@@ -828,7 +841,7 @@ public class AtlasifyResource {
         /*Map<String, String> result = new HashMap<String, String>();
         result.put("log", s);
 
-        return Response.ok(new JSONObject(result).toString()).build();
+        return Response.ok(new JSONObject(result).toString()).header("Access-Control-Allow-Origin", "*").build();
     }
     */
 }
