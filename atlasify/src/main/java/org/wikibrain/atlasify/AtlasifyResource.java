@@ -301,7 +301,7 @@ public class AtlasifyResource {
 
 
     static private boolean useNorthWesternAPI  = true;
-    static private int     NorthwesternTimeout = 5000; // in milliseconds
+    static private int     NorthwesternTimeout = 60000; // in milliseconds
 
     /**
      * return a <name, color> map to the client

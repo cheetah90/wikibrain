@@ -97,6 +97,13 @@ public abstract class DataMetric extends BaseSRMetric {
         LocalPage page1 = getLocalPageDao().getById(new LocalId(getLanguage(), pageId1));
         LocalPage page2 = getLocalPageDao().getById(new LocalId(getLanguage(), pageId2));
 
+        if(page1 == null || page2 == null){
+            if(page1 == null)
+                System.out.println("WARNING: null page id " + pageId1);
+            else
+                System.out.println("WARNING: null page id " + pageId2);
+            return new SRResult(0);
+        }
         String title1 = convertFromLocalPageTitle(page1);
         String title2 = convertFromLocalPageTitle(page2);
 
