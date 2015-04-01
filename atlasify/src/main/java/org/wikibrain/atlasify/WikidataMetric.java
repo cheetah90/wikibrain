@@ -80,7 +80,11 @@ public class WikidataMetric extends DataMetric {
 
     @Override
     public String convertFromLocalPageTitle(LocalPage l) {
-        return l.getTitle().getCanonicalTitle();
+        try {
+            return l.getTitle().getCanonicalTitle();
+        } catch (NullPointerException e) {
+            return "";
+        }
     }
 
     @Override
