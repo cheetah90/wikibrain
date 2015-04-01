@@ -113,10 +113,12 @@ public class AtlasifyResource {
     private static POIGenerator poiGenerator = null;
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
+    private static boolean loadWikibrainSR = false;
 
     // A cache which will keep the last 1000 autocomplete requests
     private static LRUMap<String, Map<String, String>> autocompleteCache;
 
+    //intialize all the DAOs we'll need to use
     private static void wikibrainSRinit(){
 
         try {
@@ -132,8 +134,13 @@ public class AtlasifyResource {
 
             autocompleteCache = new LRUMap<String, Map<String, String>>(1000);
             System.out.println("FINISHED LOADING CACHES");
-            sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
-            System.out.println("FINISHED LOADING SR");
+            if(loadWikibrainSR){
+                sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
+                System.out.println("FINISHED LOADING SR");
+            }
+            if(loadWikibrainSR == false && useNorthWesternAPI == false){
+                throw new Exception("Need to load Wikibrain SR if not using NU API!");
+            }
 
             wdDao = conf.get(WikidataDao.class);
             System.out.println("FINISHED LOADING WIKIDATA DAO");
@@ -172,6 +179,12 @@ public class AtlasifyResource {
 
     }
 
+    /**
+     *
+     * @param title the title of wikipedia page to resolve
+     * @return the localID of the result article
+     * @throws Exception
+     */
     public static LocalId wikibrainPhaseResolution(String title) throws Exception {
         /*Language language = lang;
         LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, title, 1);
@@ -192,6 +205,13 @@ public class AtlasifyResource {
         return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
     }
 
+    /**
+     *
+     * @param id the local id of the article to query
+     * @param topN the number of top results needed (-1 for returning all the results)
+     * @return a map contains <localID, SRValue>, each entry represents the sr value for a pair of articles
+     * @throws Exception
+     */
     public static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN) throws Exception {
         Language language = lang;
         String url = "";
@@ -235,6 +255,12 @@ public class AtlasifyResource {
 
         return result;
     }
+
+    /**
+     * "Hello World" function used to test internet connection
+     * @return a http response contains "hello world"
+     * @throws Exception
+     */
     @GET
     @Path("/helloworld")
     @Produces("text/plain")
@@ -273,10 +299,14 @@ public class AtlasifyResource {
         }
     */
 
-    static private boolean useNorthWesternAPI  = false;
+    static private boolean useNorthWesternAPI  = true;
     static private int     NorthwesternTimeout = 5000; // in milliseconds
 
-
+    /**
+     * return a <name, color> map to the client
+     * @param query AtlasifyQuery sent from the client
+     * @return
+     */
     @POST
     @Path("/send")
     @Consumes("application/json")
@@ -343,9 +373,11 @@ public class AtlasifyResource {
                 System.out.println("Error when connecting to Northwestern Server ");
                 e.printStackTrace();
 
-                // Switch to wikibrain based SR
-                System.out.println("Defaulting to Wikibrain SR");
-                srMap = wikibrainSR(query, featureNameList);
+                // Switch to wikibrain based SR when NU API fails
+                if(loadWikibrainSR){
+                    System.out.println("Defaulting to Wikibrain SR");
+                    srMap = wikibrainSR(query, featureNameList);
+                }
             }
         } else {
             srMap = wikibrainSR(query, featureNameList);
@@ -354,6 +386,12 @@ public class AtlasifyResource {
         return Response.ok(new JSONObject(srMap).toString()).build();
     }
 
+    /**
+     * return a <name, color> map to the client with WikiBrain SR
+     * @param query
+     * @param featureNameList
+     * @return
+     */
     private Map<String, String> wikibrainSR(AtlasifyQuery query, String[] featureNameList) {
         Map<String, String> srMap = new HashMap<String, String>();
         for (int i = 0; i < featureNameList.length; i++) {
@@ -371,6 +409,11 @@ public class AtlasifyResource {
         return srMap;
     }
 
+    /**
+     *  Get the corresponding color code for a given SR value
+     * @param SR
+     * @return
+     */
     private String getColorStringFromSR(double SR){
         if(SR < 0.2873)
             return "#ffffff";
@@ -514,6 +557,16 @@ public class AtlasifyResource {
         return Response.ok(new JSONObject(autocompleteMap).toString()).build();
     }
 
+    /**
+     *
+     * @param keyword
+     * @param feature
+     * @return a response contains explanation for the given pair of keyword & feature
+     * @throws DaoException
+     * @throws MalformedURLException
+     * @throws IOException
+     * @throws Exception
+     */
     @GET
     // The Java method will produce content identified by the MIME Media
     // type "text/plain"
@@ -532,153 +585,188 @@ public class AtlasifyResource {
         String keywordTitle;
         String featureTitle;
         try{
-            keywordTitle = lpDao.getById(wikibrainPhaseResolution(keyword)).getTitle().getCanonicalTitle().replace(" ", "_");
-            featureTitle = lpDao.getById(wikibrainPhaseResolution(feature)).getTitle().getCanonicalTitle().replace(" ", "_");
 
+            try{
+                keywordTitle = lpDao.getById(wikibrainPhaseResolution(keyword)).getTitle().getCanonicalTitle().replace(" ", "_");
+                featureTitle = lpDao.getById(wikibrainPhaseResolution(feature)).getTitle().getCanonicalTitle().replace(" ", "_");
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                throw  new Exception("failed to resolve titles for " + keyword + " and " + feature);
+            }
             // Get Wikidata Explanations using the disambiguator
-            for (Explanation exp : wdMetric.similarity(keyword, feature, true).getExplanations()) {
-                String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-                if (containsExplanation(explanationSection, explanationString)) {
-                    continue;
-                }
-
-                JSONObject jsonExplanation = new JSONObject();
-                jsonExplanation.put("explanation", explanationString);
-
-                JSONObject data = new JSONObject();
-                data.put("algorithm", "wikidata");
-                data.put("page-finder", "disambiguator");
-                data.put("keyword", keyword);
-                data.put("feature", feature);
-                jsonExplanation.put("data", data);
-
-                explanationSection.put(explanationSection.length(), jsonExplanation);
-            }
-
-            // Get Wikidata Explanations using the LocalPageDao
-            int keywordID = lpDao.getIdByTitle(new Title(keyword, Language.SIMPLE));
-            int featureID = lpDao.getIdByTitle(new Title(feature, Language.SIMPLE));
-            for (Explanation exp : wdMetric.similarity(keywordID, featureID, true).getExplanations()) {
-                String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-                if (containsExplanation(explanationSection, explanationString)) {
-                    continue;
-                }
-
-                JSONObject jsonExplanation = new JSONObject();
-                jsonExplanation.put("explanation", explanationString);
-
-                JSONObject data = new JSONObject();
-                data.put("algorithm", "wikidata");
-                data.put("page-finder", "local-page-dao");
-                data.put("keyword", keyword);
-                data.put("feature", feature);
-                jsonExplanation.put("data", data);
-
-                explanationSection.put(explanationSection.length(), jsonExplanation);
-            }
-
-            // Get DBPedia Explanations using the disambiguator
-            for (Explanation exp : dbMetric.similarity(keyword, feature, true).getExplanations()) {
-                String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-                if (containsExplanation(explanationSection, explanationString)) {
-                    continue;
-                }
-
-                JSONObject jsonExplanation = new JSONObject();
-                jsonExplanation.put("explanation", explanationString);
-
-                JSONObject data = new JSONObject();
-                data.put("algorithm", "dbpedia");
-                data.put("page-finder", "disambiguator");
-                data.put("keyword", keyword);
-                data.put("feature", feature);
-                jsonExplanation.put("data", data);
-
-                explanationSection.put(explanationSection.length(), jsonExplanation);
-            }
-
-            shuffleJSONArray(explanationSection);
-            addElementesToArray(explanations, explanationSection);
-
-            String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
-
-
-            URLConnection urlConnection = new URL(url).openConnection();
-            urlConnection.setConnectTimeout(NorthwesternTimeout);
-            urlConnection.setReadTimeout(NorthwesternTimeout);
-
-            InputStream inputStream = urlConnection.getInputStream();
-
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder stringBuilder = new StringBuilder();
-            int currentChar;
-            while ((currentChar = bufferedReader.read()) != -1) {
-                stringBuilder.append((char) currentChar);
-            }
-            //System.out.println("GOT REPLY\n" + stringBuilder.toString());
-
-            // Process the northwestern json
-            JSONArray northwesternJSONArray = new JSONArray(stringBuilder.toString());
-            for (int i = 0; i < northwesternJSONArray.length(); i++) {
-                JSONObject northwesternJSON = northwesternJSONArray.getJSONObject(i);
-                JSONArray northwesternExplanations = northwesternJSON.getJSONArray("explanations");
-                double srval = northwesternJSON.getDouble("srval");
-                String title = northwesternJSON.getString("title");
-
-                for (int j = 0; j < northwesternExplanations.length(); j++) {
-                    JSONObject northwesternExplanation = (JSONObject) northwesternExplanations.get(j);
-
-                    String explanationString = northwesternExplanation.getString("content");
-                    // Load the complete content if content is unavailable
-                    if (explanationString.equals("")) {
-                        explanationString = northwesternExplanation.getString("completeContent");
-                    }
-                    // Make sure the string is still valid
-                    if (explanationString.equals("") || explanationString.contains("Category:") || containsExplanation(explanationSection, explanationString)) {
+            try{
+                for (Explanation exp : wdMetric.similarity(keyword, feature, true).getExplanations()) {
+                    String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                    if (containsExplanation(explanationSection, explanationString)) {
                         continue;
-                    }
-
-                    JSONArray keywordArray = new JSONArray();
-                    JSONArray featureArray = new JSONArray();
-                    try {
-                        keywordArray = northwesternExplanation.getJSONArray(keywordTitle.replace("_", " "));
-                    } catch (Exception e) {
-                        try {
-                            keywordArray = northwesternExplanation.getJSONArray(keywordTitle);
-                        } catch (Exception err) {
-
-                        }
-                    }
-                    try {
-                        featureArray = northwesternExplanation.getJSONArray(featureTitle.replace("_", " "));
-                    } catch (Exception e) {
-                        try {
-                            featureArray = northwesternExplanation.getJSONArray(featureTitle);
-                        } catch (Exception err) {
-
-                        }
                     }
 
                     JSONObject jsonExplanation = new JSONObject();
                     jsonExplanation.put("explanation", explanationString);
 
                     JSONObject data = new JSONObject();
-                    data.put("algorithm", "northwestern");
+                    data.put("algorithm", "wikidata");
+                    data.put("page-finder", "disambiguator");
                     data.put("keyword", keyword);
-                    data.put("keyword-data", keywordArray);
-                    data.put("feature-data", featureArray);
                     data.put("feature", feature);
-                    data.put("srval", srval);
-                    data.put("title", title);
-                    data.put("header-title", title);
                     jsonExplanation.put("data", data);
 
                     explanationSection.put(explanationSection.length(), jsonExplanation);
                 }
             }
+            catch (Exception e){
+                System.out.println("ERROR: failed to get Wikidata Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
+                e.printStackTrace();
+            }
+
+            // Get Wikidata Explanations using the LocalPageDao
+            try{
+                int keywordID = lpDao.getIdByTitle(new Title(keyword, Language.SIMPLE));
+                int featureID = lpDao.getIdByTitle(new Title(feature, Language.SIMPLE));
+                for (Explanation exp : wdMetric.similarity(keywordID, featureID, true).getExplanations()) {
+                    String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                    if (containsExplanation(explanationSection, explanationString)) {
+                        continue;
+                    }
+
+                    JSONObject jsonExplanation = new JSONObject();
+                    jsonExplanation.put("explanation", explanationString);
+
+                    JSONObject data = new JSONObject();
+                    data.put("algorithm", "wikidata");
+                    data.put("page-finder", "local-page-dao");
+                    data.put("keyword", keyword);
+                    data.put("feature", feature);
+                    jsonExplanation.put("data", data);
+
+                    explanationSection.put(explanationSection.length(), jsonExplanation);
+                }
+            }
+            catch (Exception e){
+                System.out.println("ERROR: failed to get Wikidata Explanations using the localPageDao for "+ keyword + " and " + feature + "\n");
+                e.printStackTrace();
+            }
+
+            // Get DBPedia Explanations using the disambiguator
+            try{
+                for (Explanation exp : dbMetric.similarity(keyword, feature, true).getExplanations()) {
+                    String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                    if (containsExplanation(explanationSection, explanationString)) {
+                        continue;
+                    }
+
+                    JSONObject jsonExplanation = new JSONObject();
+                    jsonExplanation.put("explanation", explanationString);
+
+                    JSONObject data = new JSONObject();
+                    data.put("algorithm", "dbpedia");
+                    data.put("page-finder", "disambiguator");
+                    data.put("keyword", keyword);
+                    data.put("feature", feature);
+                    jsonExplanation.put("data", data);
+
+                    explanationSection.put(explanationSection.length(), jsonExplanation);
+                }
+
+                shuffleJSONArray(explanationSection);
+                addElementesToArray(explanations, explanationSection);
+            }
+            catch (Exception e){
+                System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
+                e.printStackTrace();
+            }
+
+            String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
+            StringBuilder stringBuilder = new StringBuilder();
+            try{
+                URLConnection urlConnection = new URL(url).openConnection();
+                urlConnection.setConnectTimeout(NorthwesternTimeout);
+                urlConnection.setReadTimeout(NorthwesternTimeout);
+
+                InputStream inputStream = urlConnection.getInputStream();
+
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+                int currentChar;
+                while ((currentChar = bufferedReader.read()) != -1) {
+                    stringBuilder.append((char) currentChar);
+                }
+                    //System.out.println("GOT REPLY\n" + stringBuilder.toString());
+            }
+            catch (Exception e){
+                System.out.println("ERROR: failed to get NU Explanation for "+ keyword + " and " + feature + "\n");
+                e.printStackTrace();
+            }
+
+            // Process the northwestern json
+            try{
+                JSONArray northwesternJSONArray = new JSONArray(stringBuilder.toString());
+                for (int i = 0; i < northwesternJSONArray.length(); i++) {
+                    JSONObject northwesternJSON = northwesternJSONArray.getJSONObject(i);
+                    JSONArray northwesternExplanations = northwesternJSON.getJSONArray("explanations");
+                    double srval = northwesternJSON.getDouble("srval");
+                    String title = northwesternJSON.getString("title");
+
+                    for (int j = 0; j < northwesternExplanations.length(); j++) {
+                        JSONObject northwesternExplanation = (JSONObject) northwesternExplanations.get(j);
+
+                        String explanationString = northwesternExplanation.getString("content");
+                        // Load the complete content if content is unavailable
+                        if (explanationString.equals("")) {
+                            explanationString = northwesternExplanation.getString("completeContent");
+                        }
+                        // Make sure the string is still valid
+                        if (explanationString.equals("") || explanationString.contains("Category:") || containsExplanation(explanationSection, explanationString)) {
+                            continue;
+                        }
+
+                        JSONArray keywordArray = new JSONArray();
+                        JSONArray featureArray = new JSONArray();
+                        try {
+                            keywordArray = northwesternExplanation.getJSONArray(keywordTitle.replace("_", " "));
+                        } catch (Exception e) {
+                            try {
+                                keywordArray = northwesternExplanation.getJSONArray(keywordTitle);
+                            } catch (Exception err) {
+
+                            }
+                        }
+                        try {
+                            featureArray = northwesternExplanation.getJSONArray(featureTitle.replace("_", " "));
+                        } catch (Exception e) {
+                            try {
+                                featureArray = northwesternExplanation.getJSONArray(featureTitle);
+                            } catch (Exception err) {
+
+                            }
+                        }
+
+                        JSONObject jsonExplanation = new JSONObject();
+                        jsonExplanation.put("explanation", explanationString);
+
+                        JSONObject data = new JSONObject();
+                        data.put("algorithm", "northwestern");
+                        data.put("keyword", keyword);
+                        data.put("keyword-data", keywordArray);
+                        data.put("feature-data", featureArray);
+                        data.put("feature", feature);
+                        data.put("srval", srval);
+                        data.put("title", title);
+                        data.put("header-title", title);
+                        jsonExplanation.put("data", data);
+
+                        explanationSection.put(explanationSection.length(), jsonExplanation);
+                    }
+                }
+            }
+            catch (Exception e){
+                System.out.println("ERROR: failed to process NU Explanation for "+ keyword + " and " + feature + "\n");
+                e.printStackTrace();
+            }
         }
         catch (Exception e){
-            System.out.println("Failed to resolve " + keyword + " and " + feature);
+            System.out.println("Failed to get explanation for " + keyword + " and " + feature);
             // return Response.ok("").header("Access-Control-Allow-Origin", "*").build();
         }
 
