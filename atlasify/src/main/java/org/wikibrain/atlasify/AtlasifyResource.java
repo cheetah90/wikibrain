@@ -299,6 +299,7 @@ public class AtlasifyResource {
         }
     */
 
+
     static private boolean useNorthWesternAPI  = true;
     static private int     NorthwesternTimeout = 5000; // in milliseconds
 
