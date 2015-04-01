@@ -78,8 +78,8 @@ public class WikidataParser {
         }
 
         // Claims (only for Item entities)
-        if (mwDoc instanceof JacksonItemDocument) {
-            for (List<JacksonStatement> statements : ((JacksonItemDocument)mwDoc).getJsonClaims().values()) {
+        if (mwDoc instanceof JacksonTermedStatementDocument) {
+            for (List<JacksonStatement> statements : ((JacksonTermedStatementDocument)mwDoc).getJsonClaims().values()) {
                 for (JacksonStatement s : statements) {
                     record.getStatements().add(parseOneClaim(record, s));
                 }
