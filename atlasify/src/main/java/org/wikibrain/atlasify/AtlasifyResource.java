@@ -669,14 +669,15 @@ public class AtlasifyResource {
 
                     explanationSection.put(explanationSection.length(), jsonExplanation);
                 }
-
-                shuffleJSONArray(explanationSection);
-                addElementesToArray(explanations, explanationSection);
             }
             catch (Exception e){
                 System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
                 e.printStackTrace();
             }
+
+            shuffleJSONArray(explanationSection);
+            addElementesToArray(explanations, explanationSection);
+            explanationSection = new JSONArray();
 
             String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
             StringBuilder stringBuilder = new StringBuilder();
@@ -765,16 +766,15 @@ public class AtlasifyResource {
                 System.out.println("ERROR: failed to process NU Explanation for "+ keyword + " and " + feature + "\n");
                 e.printStackTrace();
             }
+
+            shuffleJSONArray(explanationSection);
+            addElementesToArray(explanations, explanationSection);
         }
         catch (Exception e){
             System.out.println("Failed to get explanation for " + keyword + " and " + feature);
             // return Response.ok("").header("Access-Control-Allow-Origin", "*").build();
         }
 
-        shuffleJSONArray(explanationSection);
-        addElementesToArray(explanations, explanationSection);
-
-        shuffleJSONArray(explanations);
         JSONObject result = new JSONObject();
         result.put("explanations", explanations);
         result.put("keyword", keyword);

@@ -107,6 +107,10 @@ public abstract class DataMetric extends BaseSRMetric {
         String title1 = convertFromLocalPageTitle(page1);
         String title2 = convertFromLocalPageTitle(page2);
 
+        if (title1.equals("") || title2.equals("")) {
+            return new SRResult(0);
+        }
+
         result = combineResults(result, recursiveSimilarity(title1, title2, explanations, 1, searchDepth));
         if (bidirectional) {
             result = combineResults(result, recursiveSimilarity(title2, title1, explanations, 1, searchDepth));

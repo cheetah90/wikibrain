@@ -107,6 +107,14 @@
         <Text>%s is southwest of %s</Text>
     </Phrase>
     <Phrase>
+        <DBPediaID>commander</DBPediaID>
+        <Text>%s is the commander of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>nominator</DBPediaID>
+        <Text>%s nominated %s</Text>
+    </Phrase>
+    <Phrase>
         <WikiDataID>7</WikiDataID>
         <Text>%s is the brother of %s</Text>
     </Phrase>
