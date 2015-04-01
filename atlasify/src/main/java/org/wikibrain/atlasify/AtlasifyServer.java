@@ -20,7 +20,6 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -55,7 +54,6 @@ public class AtlasifyServer {
     protected static HttpServer startServer() throws IOException{
         final ResourceConfig rc = new ResourceConfig().packages("org.wikibrain.atlasify");
         rc.register(org.wikibrain.atlasify.CORSFilter.class);
-        rc.register(JacksonFeature.class);
 
         System.out.println("Staring grizzly...");
 
