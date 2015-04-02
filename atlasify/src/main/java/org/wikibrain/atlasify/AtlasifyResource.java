@@ -598,22 +598,27 @@ public class AtlasifyResource {
             // Get Wikidata Explanations using the disambiguator
             try{
                 for (Explanation exp : wdMetric.similarity(keyword, feature, true).getExplanations()) {
-                    String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-                    if (containsExplanation(explanationSection, explanationString)) {
-                        continue;
+                    try {
+                        String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                        if (containsExplanation(explanationSection, explanationString)) {
+                            continue;
+                        }
+
+                        JSONObject jsonExplanation = new JSONObject();
+                        jsonExplanation.put("explanation", explanationString);
+
+                        JSONObject data = new JSONObject();
+                        data.put("algorithm", "wikidata");
+                        data.put("page-finder", "disambiguator");
+                        data.put("keyword", keyword);
+                        data.put("feature", feature);
+                        jsonExplanation.put("data", data);
+
+                        explanationSection.put(explanationSection.length(), jsonExplanation);
+                    } catch (Exception e) {
+                        System.out.println("ERROR: failed to get Wikidata Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
+                        e.printStackTrace();
                     }
-
-                    JSONObject jsonExplanation = new JSONObject();
-                    jsonExplanation.put("explanation", explanationString);
-
-                    JSONObject data = new JSONObject();
-                    data.put("algorithm", "wikidata");
-                    data.put("page-finder", "disambiguator");
-                    data.put("keyword", keyword);
-                    data.put("feature", feature);
-                    jsonExplanation.put("data", data);
-
-                    explanationSection.put(explanationSection.length(), jsonExplanation);
                 }
             }
             catch (Exception e){
@@ -626,22 +631,27 @@ public class AtlasifyResource {
                 int keywordID = lpDao.getIdByTitle(new Title(keyword, Language.SIMPLE));
                 int featureID = lpDao.getIdByTitle(new Title(feature, Language.SIMPLE));
                 for (Explanation exp : wdMetric.similarity(keywordID, featureID, true).getExplanations()) {
-                    String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-                    if (containsExplanation(explanationSection, explanationString)) {
-                        continue;
+                    try {
+                        String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                        if (containsExplanation(explanationSection, explanationString)) {
+                            continue;
+                        }
+
+                        JSONObject jsonExplanation = new JSONObject();
+                        jsonExplanation.put("explanation", explanationString);
+
+                        JSONObject data = new JSONObject();
+                        data.put("algorithm", "wikidata");
+                        data.put("page-finder", "local-page-dao");
+                        data.put("keyword", keyword);
+                        data.put("feature", feature);
+                        jsonExplanation.put("data", data);
+
+                        explanationSection.put(explanationSection.length(), jsonExplanation);
+                    } catch (Exception e) {
+                        System.out.println("ERROR: failed to get Wikidata Explanations using the localPageDao for "+ keyword + " and " + feature + "\n");
+                        e.printStackTrace();
                     }
-
-                    JSONObject jsonExplanation = new JSONObject();
-                    jsonExplanation.put("explanation", explanationString);
-
-                    JSONObject data = new JSONObject();
-                    data.put("algorithm", "wikidata");
-                    data.put("page-finder", "local-page-dao");
-                    data.put("keyword", keyword);
-                    data.put("feature", feature);
-                    jsonExplanation.put("data", data);
-
-                    explanationSection.put(explanationSection.length(), jsonExplanation);
                 }
             }
             catch (Exception e){
@@ -652,22 +662,27 @@ public class AtlasifyResource {
             // Get DBPedia Explanations using the disambiguator
             try{
                 for (Explanation exp : dbMetric.similarity(keyword, feature, true).getExplanations()) {
-                    String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-                    if (containsExplanation(explanationSection, explanationString)) {
-                        continue;
+                    try {
+                        String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                        if (containsExplanation(explanationSection, explanationString)) {
+                            continue;
+                        }
+
+                        JSONObject jsonExplanation = new JSONObject();
+                        jsonExplanation.put("explanation", explanationString);
+
+                        JSONObject data = new JSONObject();
+                        data.put("algorithm", "dbpedia");
+                        data.put("page-finder", "disambiguator");
+                        data.put("keyword", keyword);
+                        data.put("feature", feature);
+                        jsonExplanation.put("data", data);
+
+                        explanationSection.put(explanationSection.length(), jsonExplanation);
+                    } catch (Exception e) {
+                        System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
+                        e.printStackTrace();
                     }
-
-                    JSONObject jsonExplanation = new JSONObject();
-                    jsonExplanation.put("explanation", explanationString);
-
-                    JSONObject data = new JSONObject();
-                    data.put("algorithm", "dbpedia");
-                    data.put("page-finder", "disambiguator");
-                    data.put("keyword", keyword);
-                    data.put("feature", feature);
-                    jsonExplanation.put("data", data);
-
-                    explanationSection.put(explanationSection.length(), jsonExplanation);
                 }
             }
             catch (Exception e){
