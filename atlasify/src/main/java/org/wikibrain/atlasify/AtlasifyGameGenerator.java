@@ -87,20 +87,29 @@ public class AtlasifyGameGenerator {
         for (LocalPage p : topPages) {
             String[] line = new String[1];
             line[0] = p.getTitle().toString();
-            writer.writeNext(line);
 
             System.out.println("\t" + p.getTitle().getCanonicalTitle() + " sr");
 
             // Compute SR
-            double[] srValues = new double[countries.size()];
-            for (int i = 0; i < countries.size(); i++) {
-                srValues[i] = sr.similarity(p.getTitle().getCanonicalTitle(), countries.get(i), false).getScore();
+            double[] srValues = new double[0];
+            int i = 0;
+            try {
+                srValues = new double[countries.size()];
+                for (i = 0; i < countries.size(); i++) {
+                    srValues[i] = sr.similarity(p.getTitle().getCanonicalTitle(), countries.get(i), false).getScore();
+                }
+            } catch (Exception e) {
+                System.out.println("ERROR: calculating sr between " + p.getTitle().getCanonicalTitle() + " and " + countries.get(i));
+                e.printStackTrace();
+                continue;
             }
+
+            writer.writeNext(line);
             srValue.add(srValues);
         }
 
         writer.close();
-
+        System.out.println("Finished calculating sr ( " + srValue.size() + " / " + topPages.size() + " )");
         System.out.println("Calculating correlation");
 
         // Create correlation matrix
