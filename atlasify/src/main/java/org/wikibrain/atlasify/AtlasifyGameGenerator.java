@@ -6,6 +6,7 @@ import org.apache.commons.math3.analysis.function.Min;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.joda.time.DateTime;
+import org.jooq.util.derby.sys.Sys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wikibrain.conf.ConfigurationException;
@@ -79,12 +80,16 @@ public class AtlasifyGameGenerator {
         String pageTitle = "game_page_titles.csv";
         CSVWriter writer = new CSVWriter(new FileWriter(new File(pageTitle), false), ',');
 
+        System.out.println("Calculating SR");
+
         // Load all the SR Data while writing value to file
         ArrayList<double[]> srValue = new ArrayList<double[]>();
         for (LocalPage p : topPages) {
             String[] line = new String[1];
             line[0] = p.getTitle().toString();
             writer.writeNext(line);
+
+            System.out.println("\t" + p.getTitle().getCanonicalTitle() + " sr");
 
             // Compute SR
             double[] srValues = new double[countries.size()];
@@ -96,14 +101,19 @@ public class AtlasifyGameGenerator {
 
         writer.close();
 
+        System.out.println("Calculating correlation");
+
         // Create correlation matrix
         PearsonsCorrelation corr = new PearsonsCorrelation();
         RealMatrix correlation = new BlockRealMatrix(srValue.size(), srValue.size());
         for (int i = 0; i < srValue.size(); i++) {
+            System.out.println("\tRow " + i);
             for (int j = 0; j < srValue.size(); j++) {
                 correlation.setEntry(i, j, corr.correlation(srValue.get(i), srValue.get(j)));
             }
         }
+
+        System.out.println("Saving Table to Disk");
 
         // Write it to disk
         String corrTable = "game_corr_table.csv";
