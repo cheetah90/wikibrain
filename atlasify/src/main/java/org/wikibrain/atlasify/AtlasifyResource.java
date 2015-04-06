@@ -117,12 +117,9 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     private static boolean loadWikibrainSR = false;
-<<<<<<< HEAD
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
-=======
     private static RealMatrix gameCorrelationMatrix;
     private static List<String> gameTitles;
->>>>>>> a7115340eda8c9970ce6391258235ac9e2278df5
 
     // A cache which will keep the last 1000 autocomplete requests
     private static LRUMap<String, Map<String, String>> autocompleteCache;

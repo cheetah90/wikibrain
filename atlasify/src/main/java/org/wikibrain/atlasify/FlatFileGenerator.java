@@ -22,6 +22,7 @@ public class FlatFileGenerator {
     //set parameters
     private static boolean printTitle = true;
     private static Language language = Language.EN;
+    private static String algorithm = "milnewitten";
 
     private static final Logger LOG = Logger.getLogger(FlatFileGenerator.class.getName());
 
@@ -55,7 +56,7 @@ public class FlatFileGenerator {
 
         //calculating sr
         SRMetric sr = conf.get(
-                SRMetric.class, "milnewitten",
+                SRMetric.class, algorithm,
                 "language", language.getLangCode());
         double[][] srResult = sr.cosimilarity(startingPageIdArray, localPageIdArray);
 
@@ -67,13 +68,16 @@ public class FlatFileGenerator {
             LOG.info("finished " + x_count + " out of " + startingPageIdArray.length + " counties");
             x_count++;
             i = 0;
-            writer = new CSVWriter(new FileWriter("SRFlatFile/simple/milnewitten/" + startingPageIdArray[x] + ".csv"), ',');
+            writer = new CSVWriter(new FileWriter("SRFlatFile/simple/" + algorithm + "/" + startingPageIdArray[x] + ".csv"), ',');
             for(int y = 0; y < localPageSet.size(); y ++){
                 i ++;
                 if(i % 10000 == 0){
                     LOG.info("Finished " + i + " out of " + localPageSet.size());
                 }
                 try{
+                    //don't record the "white-colored" result
+                    if(srResult[x][y] < 0.2873)
+                        continue;
                     row[0] = String.valueOf(startingPageIdArray[x]);
                     if(printTitle)
                         row[1] = lpDao.getById(Language.SIMPLE, startingPageIdArray[x]).getTitle().getCanonicalTitle();
