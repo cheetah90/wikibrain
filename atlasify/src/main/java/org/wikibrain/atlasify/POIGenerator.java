@@ -69,6 +69,8 @@ public class POIGenerator {
                 int localId = link.getDestId();
                 try{
                     int univId = atlasifyResource.upDao.getUnivPageId(Language.EN, localId);
+                    if(atlasifyResource.GADM01Concepts.contains(univId))
+                        continue;
                     if(geometryMap.containsKey(univId)){
                         String title = atlasifyResource.upDao.getById(univId).getBestEnglishTitle(atlasifyResource.lpDao, true).getCanonicalTitle();
                         idGeomMap.put(univId, (Point)geometryMap.get(univId));
@@ -89,6 +91,8 @@ public class POIGenerator {
                 int localId = link.getSourceId();
                 try{
                     int univId = atlasifyResource.upDao.getUnivPageId(Language.EN, localId);
+                    if(atlasifyResource.GADM01Concepts.contains(univId))
+                        continue;
                     if(geometryMap.containsKey(univId)){
                         String title = atlasifyResource.upDao.getById(univId).getBestEnglishTitle(atlasifyResource.lpDao, true).getCanonicalTitle();
                         idGeomMap.put(univId, (Point)geometryMap.get(univId));
@@ -139,6 +143,8 @@ public class POIGenerator {
                 try{
                     LocalPage localPage=atlasifyResource.lpDao.getById(e.getKey());
                     int univId=atlasifyResource.upDao.getByLocalPage(localPage).getUnivId();
+                    if(atlasifyResource.GADM01Concepts.contains(univId))
+                        continue;
                     if(geometryMap.containsKey(univId)){
                         idGeomMap.put(univId, geometryMap.get(univId).getCentroid());
                         idTitleMap.put(univId, localPage.getTitle().getCanonicalTitle());
