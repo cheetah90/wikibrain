@@ -42,9 +42,10 @@ public class GetLocalPage {
         writer.flush();
 
         int i = 0;
+        int errorCount = 0;
         for(Map.Entry<Integer, Geometry> entry : allGeomMap.entrySet()){
             if((i++) % 100 == 0)
-                System.out.println("DONE " + i + " OUT OF " + allGeomMap.entrySet().size());
+                System.out.println("DONE " + i + " OUT OF " + allGeomMap.entrySet().size() + " error " + errorCount);
             try{
                 Integer univId = entry.getKey();
                 Integer localId = upDao.getLocalId(lang, univId);
@@ -60,7 +61,7 @@ public class GetLocalPage {
                 writer.flush();
             }
             catch (Exception e){
-                e.printStackTrace();
+                errorCount ++;
                 continue;
             }
         }
