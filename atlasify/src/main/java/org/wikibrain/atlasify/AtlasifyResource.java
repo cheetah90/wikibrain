@@ -611,6 +611,8 @@ public class AtlasifyResource {
         System.out.println("Received query for explanation between " + keyword + " and " + feature);
         String keywordTitle;
         String featureTitle;
+        int keywordPageId = wikibrainPhaseResolution(keyword).getId();
+        int featurePageId = wikibrainPhaseResolution(feature).getId();
         try{
 
             try{
@@ -623,7 +625,7 @@ public class AtlasifyResource {
             }
             // Get Wikidata Explanations using the disambiguator
             try{
-                for (Explanation exp : wdMetric.similarity(keyword, feature, true).getExplanations()) {
+                for (Explanation exp : wdMetric.similarity(keywordPageId, featurePageId, true).getExplanations()) {
                     try {
                         String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
                         if (containsExplanation(explanationSection, explanationString)) {
@@ -687,7 +689,7 @@ public class AtlasifyResource {
 
             // Get DBPedia Explanations using the disambiguator
             try{
-                for (Explanation exp : dbMetric.similarity(keyword, feature, true).getExplanations()) {
+                for (Explanation exp : dbMetric.similarity(keywordPageId, featurePageId, true).getExplanations()) {
                     try {
                         String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
                         if (containsExplanation(explanationSection, explanationString)) {
