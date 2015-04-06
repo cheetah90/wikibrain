@@ -4,10 +4,13 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.Response;
 
+import au.com.bytecode.opencsv.CSVReader;
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.commons.collections15.map.LRUMap;
 import com.vividsolutions.jts.geom.Point;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
@@ -114,6 +117,8 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     private static boolean loadWikibrainSR = false;
+    private static RealMatrix gameCorrelationMatrix;
+    private static List<String> gameTitles;
 
     // A cache which will keep the last 1000 autocomplete requests
     private static LRUMap<String, Map<String, String>> autocompleteCache;
@@ -157,6 +162,27 @@ public class AtlasifyResource {
             pa = conf.get(PhraseAnalyzer.class, "anchortext");
             System.out.println("FINISHED LOADING PHRASE ANALYZER");
 
+            String gameTitlesFile = "game_page_titles.csv";
+            CSVReader fileReader = new CSVReader(new FileReader(new File(gameTitlesFile)), ',');
+            gameTitles = new ArrayList<String>();
+            for (String[] array : fileReader.readAll()) {
+                String s = array[0];
+                gameTitles.add(s);
+            }
+            fileReader.close();
+            String gameCorrelationFile = "game_corr_table.csv";
+            fileReader = new CSVReader(new FileReader(new File((gameCorrelationFile))), ',');
+            gameCorrelationMatrix = new BlockRealMatrix(gameTitles.size(), gameTitles.size());
+            int i = 0;
+            for (String[] array : fileReader.readAll()) {
+                int j = 0;
+                for (String s : array) {
+                    gameCorrelationMatrix.setEntry(i, j, Double.parseDouble(s));
+                    j++;
+                }
+                i++;
+            }
+            fileReader.close();
 
             upDao = conf.get(UniversalPageDao.class);
             System.out.println("FINISHED LOADING UNIVERSALPAGE DAO");
@@ -927,6 +953,89 @@ public class AtlasifyResource {
         System.out.println("FINISHED GETTING POI FOR "+keyword);
         return Response.ok(result).build();
     }
+
+
+    private static Random numGenerator = new Random();
+
+    // Returns two random titles which should be used for the game
+    // Inputs a string indicating the difficulty {hard, medium, easy}
+    @GET
+    @Path("/game/diff={difficulty}")
+    @Consumes("text/plain")
+    @Produces("text/plain")
+
+    public Response generateGameTitles(@PathParam("difficulty") String difficulty) {
+        if (gameCorrelationMatrix == null) {
+            wikibrainSRinit();
+        }
+
+        double minCorrelation = 0.0;
+        double maxCorrelation = 1.0;
+
+        if (difficulty.equals("hard")) {
+            minCorrelation = 0.5;
+            maxCorrelation = 0.75;
+        } else if (difficulty.equals("medium")) {
+            minCorrelation = 0.25;
+            maxCorrelation = 0.5;
+        } else {
+            minCorrelation = 0.0;
+            maxCorrelation = 0.25;
+        }
+
+        int index = numGenerator.nextInt(gameTitles.size());
+        String articleOne = gameTitles.get(index);
+
+        int nextIndex = -1;
+
+        // Search for a random page
+        double[] correlationRow = gameCorrelationMatrix.getRow(index);
+        ArrayList<Integer> gameTitleIndicies = new ArrayList<Integer>();
+        for (int i = 0; i < gameTitles.size(); i++) {
+            gameTitleIndicies.add(i);
+        }
+        List<Integer> shuffledList = new ArrayList<Integer>(gameTitleIndicies);
+        Collections.shuffle(shuffledList);
+        for(Integer i : shuffledList) {
+            if (i.equals(index)) {
+                continue;
+            }
+
+            if (minCorrelation <= correlationRow[i] && correlationRow[i] <= maxCorrelation) {
+                nextIndex = i;
+                break;
+            }
+        }
+
+        if (nextIndex == -1) {
+            // Just get another page, doesn't really matter what it is
+            // We hope this doesn't happen
+            for (Integer i : shuffledList) {
+                if (i.equals(index)) {
+                    continue;
+                }
+
+                nextIndex = i;
+                break;
+            }
+        }
+
+        String articleTwo = gameTitles.get(nextIndex);
+
+        // Randomly shuffle articles
+        if (numGenerator.nextInt(2) == 1) {
+            String temp = articleTwo;
+            articleOne = articleOne;
+            articleTwo = temp;
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("one", articleOne);
+        result.put("two", articleTwo);
+
+        return Response.ok(result.toString()).build();
+    }
+
     // A logging method called by the god mode of Atlasify to check the status of the system
    /* @POST
     @Path("/status")

@@ -33,10 +33,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.MonthDay;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * Created by Josh on 4/2/15.
@@ -44,7 +48,7 @@ import java.util.Map;
 public class AtlasifyGameGenerator {
     public static void main(String args[]) throws ConfigurationException, DaoException, IOException {
         // Get the pageview dao
-        Language lang = Language.EN;
+        Language lang = Language.SIMPLE;
         Env env = EnvBuilder.envFromArgs(args);
         Configurator conf = env.getConfigurator();
         PageViewDao viewDao = env.getConfigurator().get(PageViewDao.class);
@@ -52,24 +56,12 @@ public class AtlasifyGameGenerator {
         SRMetric sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
 
         // Download and import pageview stats if necessary
-        DateTime start = new DateTime(2015, 4, 1, 0, 0, 0);
-        DateTime end   = new DateTime(2015, 4, 1, 23, 0, 0);
+        DateTime start = new DateTime(2015, 3, 30, 0, 0, 0);
+        DateTime end   = new DateTime(2015, 4, 3, 23, 0, 0);
         viewDao.ensureLoaded(start, end, env.getLanguages());
 
-        // Retrieve counts for all pageviews
-        TIntIntMap allViews = viewDao.getAllViews(lang, start, end);
-        int pageIds[] = WpCollectionUtils.sortMapKeys(allViews, true);
-        ArrayList<LocalPage> topPages = new ArrayList<LocalPage>();
-        System.out.println("Top articles");
-        for (int i = 0; i < Math.min(1000, allViews.size()); i++) {
-            LocalPage page = pageDao.getById(lang, pageIds[i]);
-            int n = allViews.get(pageIds[i]);
-            topPages.add(page);
-
-            System.out.format("%d. %s (nviews=%d)\n", (i + 1), page.getTitle(), n);
-        }
-
-        ArrayList<String> countries = new ArrayList<String>();
+        // Load the countries data
+        Set<String> countries = new HashSet<String>();
         byte[] encoded = Files.readAllBytes(Paths.get("country.json"));
         JSONObject geoJSON = new JSONObject(new String(encoded, StandardCharsets.UTF_8));
         JSONArray objects = geoJSON.getJSONArray("features");
@@ -77,31 +69,117 @@ public class AtlasifyGameGenerator {
             countries.add(objects.getJSONObject(i).getJSONObject("properties").getString("NAME"));
         }
 
+        // Retrieve counts for all pageviews
+        TIntIntMap allViews = viewDao.getAllViews(lang, start, end);
+        int pageIds[] = WpCollectionUtils.sortMapKeys(allViews, true);
+        ArrayList<LocalPage> topPages = new ArrayList<LocalPage>();
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MMMM d");
+        DateTimeFormatter yearFormat = DateTimeFormatter.ofPattern("yyyy");
+        System.out.println("Top articles");
+        for (int i = 0; i < Math.min(5000, allViews.size()); i++) {
+            LocalPage page = pageDao.getById(lang, pageIds[i]);
+            int n = allViews.get(pageIds[i]);
+
+            String title = page.getTitle().getCanonicalTitle();
+
+            // Make sure page isn't a main page or list page
+            if (title.contains("Main Page") || title.contains("List of")) {
+                System.out.println("SKIP PAGE: " + title);
+                continue;
+            }
+            // Make sure it isn't a date
+            try {
+                MonthDay.parse(title, dateFormat);
+                // Must be a date
+                System.out.println("SKIP DATE: " + title);
+                continue;
+            } catch (Exception e) {
+                // Not a date, do nothing
+            }
+            // Make sure it isn't a month
+            try {
+                Month.valueOf(title);
+                // Must be a month
+                System.out.println("SKIP MNTH: " + title);
+                continue;
+            } catch (Exception e) {
+                // Not a month, do nothing
+            }
+            // Make sure it isn't a year
+            try {
+                Year.parse(title, yearFormat);
+                // Must be a date
+                System.out.println("SKIP YEAR: " + title);
+                continue;
+            } catch (Exception e) {
+                // Not a date, do nothing
+            }
+            // Make sure it isn't a decade i.e. 1920s
+            try {
+                Year.parse(title.substring(0, title.lastIndexOf('s')), yearFormat);
+                // Must be a date
+                System.out.println("SKIP CNRY: " + title);
+                continue;
+            } catch (Exception e) {
+                // Not a date, do nothing
+            }
+            // Make sure it isn't a country in our list
+            if (countries.contains(title)) {
+                System.out.println("SKIP CONT: " + title);
+                continue;
+            }
+
+            // We should try to keep this clean
+            if (sr.similarity(title, "sex", false).getScore() > 0.65) {
+                System.out.println("SKIP SEX:  " + title);
+                continue;
+            }
+
+            // Valid page
+            System.out.format("%d. %s (nviews=%d)\n", (i + 1), title, n);
+            topPages.add(page);
+        }
+
         String pageTitle = "game_page_titles.csv";
         CSVWriter writer = new CSVWriter(new FileWriter(new File(pageTitle), false), ',');
 
+        System.out.println("Finished processing titles\n\tFound=" + Math.min(3000, allViews.size()) + ", Retained=" + topPages.size());
         System.out.println("Calculating SR");
 
         // Load all the SR Data while writing value to file
         ArrayList<double[]> srValue = new ArrayList<double[]>();
         for (LocalPage p : topPages) {
             String[] line = new String[1];
-            line[0] = p.getTitle().toString();
-
-            System.out.println("\t" + p.getTitle().getCanonicalTitle() + " sr");
+            line[0] = p.getTitle().getCanonicalTitle();
 
             // Compute SR
             double[] srValues = new double[0];
             int i = 0;
-            try {
-                srValues = new double[countries.size()];
-                for (i = 0; i < countries.size(); i++) {
-                    srValues[i] = sr.similarity(p.getTitle().getCanonicalTitle(), countries.get(i), false).getScore();
+            srValues = new double[countries.size()];
+            double highestSR = 0.0;
+            String highestCountry = "";
+            for (String country : countries) {
+                try {
+                    srValues[i] = sr.similarity(p.getTitle().getCanonicalTitle(), country, false).getScore();
+                } catch (Exception e) {
+                    srValues[i] = 0.0;
+                    System.out.println("ERROR: calculating sr between " + p.getTitle().getCanonicalTitle() + " and " + country +
+                                        "\n\tUse an SR Value of zero");
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                System.out.println("ERROR: calculating sr between " + p.getTitle().getCanonicalTitle() + " and " + countries.get(i));
-                e.printStackTrace();
+                if (highestSR < srValues[i]) {
+                    highestSR = srValues[i];
+                    highestCountry = country;
+                }
+                i++;
+            }
+
+            // Make sure that there is at least a high enough SR to make the game interesting
+            if (highestSR < 0.7) {
+                System.out.println(p.getTitle().getCanonicalTitle() + " : SKIP: Too low of SR (" + highestCountry + " : " + highestSR + ")");
                 continue;
+            } else {
+                System.out.println(p.getTitle().getCanonicalTitle() + " : Highest SR: " + highestCountry + " (" + highestSR + ")");
             }
 
             writer.writeNext(line);
@@ -109,16 +187,18 @@ public class AtlasifyGameGenerator {
         }
 
         writer.close();
-        System.out.println("Finished calculating sr ( " + srValue.size() + " / " + topPages.size() + " )");
+        System.out.println("Finished processing SR\n\tFound=" + topPages.size() + ", Retained=" + srValue.size());
         System.out.println("Calculating correlation");
 
         // Create correlation matrix
         PearsonsCorrelation corr = new PearsonsCorrelation();
         RealMatrix correlation = new BlockRealMatrix(srValue.size(), srValue.size());
         for (int i = 0; i < srValue.size(); i++) {
-            System.out.println("\tRow " + i);
             for (int j = 0; j < srValue.size(); j++) {
                 correlation.setEntry(i, j, corr.correlation(srValue.get(i), srValue.get(j)));
+            }
+            if (i % 200 == 0 && i > 0) {
+                System.out.println("Finished Processing Row " + i);
             }
         }
 
@@ -136,5 +216,7 @@ public class AtlasifyGameGenerator {
             writer.writeNext(strings);
         }
         writer.close();
+
+        System.out.println("Finished Creating Game Correlation");
     }
 }
