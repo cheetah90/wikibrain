@@ -3,6 +3,7 @@ package org.wikibrain.cookbook.wikidata;
 
 import au.com.bytecode.opencsv.CSVWriter;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.conf.Configurator;
@@ -26,7 +27,7 @@ import java.util.*;
  */
 public class GetAllMovies {
 
-    public static void main(String args[]) throws FileNotFoundException, IOException, ConfigurationException, DaoException{
+    public static void main(String args[]) throws FileNotFoundException, IOException, ConfigurationException, DaoException, JSONException{
         Env env = new EnvBuilder().build();
         Configurator conf = env.getConfigurator();
         File top500Movies = new File("top5000movies.csv");
