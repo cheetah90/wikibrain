@@ -117,6 +117,7 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     private static boolean loadWikibrainSR = false;
+    public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static RealMatrix gameCorrelationMatrix;
     private static List<String> gameTitles;
 
@@ -189,6 +190,18 @@ public class AtlasifyResource {
             System.out.println("STARTED LOADING POI GENERATOR");
             poiGenerator = new POIGenerator(conf);
             System.out.println("FINISHED LOADING POI GENERATOR");
+
+
+            //construct black list for GADM0/1 in POI Generation
+            CSVReader reader = new CSVReader(new FileReader("gadm_matched.csv"), ',');
+            List<String[]> gadmList = reader.readAll();
+            for(String[] gadmItem : gadmList){
+                if(Integer.parseInt(gadmItem[2]) < 2)
+                    GADM01Concepts.add(Integer.parseInt(gadmItem[0]));
+            }
+
+
+
             System.out.println("FINISHED LOADING WIKIBRAIN");
             wikibrainLoadingInProcess = false;
 
