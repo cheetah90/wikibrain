@@ -68,7 +68,7 @@ public class FlatFileGenerator {
             LOG.info("finished " + x_count + " out of " + startingPageIdArray.length + " counties");
             x_count++;
             i = 0;
-            writer = new CSVWriter(new FileWriter("SRFlatFile/simple/" + algorithm + "/" + startingPageIdArray[x] + ".csv"), ',');
+            writer = new CSVWriter(new FileWriter("SRFlatFile/" + language.getLangCode() + "/" + algorithm + "/" + startingPageIdArray[x] + ".csv"), ',');
             for(int y = 0; y < localPageSet.size(); y ++){
                 i ++;
                 if(i % 10000 == 0){
@@ -80,12 +80,12 @@ public class FlatFileGenerator {
                         continue;
                     row[0] = String.valueOf(startingPageIdArray[x]);
                     if(printTitle)
-                        row[1] = lpDao.getById(Language.SIMPLE, startingPageIdArray[x]).getTitle().getCanonicalTitle();
+                        row[1] = lpDao.getById(language, startingPageIdArray[x]).getTitle().getCanonicalTitle();
                     else
                         row[1] = "";
                     row[2] = String.valueOf(localPageIdArray[y]);
                     if(printTitle)
-                        row[3] = lpDao.getById(Language.SIMPLE, localPageIdArray[y]).getTitle().getCanonicalTitle();
+                        row[3] = lpDao.getById(language, localPageIdArray[y]).getTitle().getCanonicalTitle();
                     else
                         row[3] = "";
                     row[4] = String.valueOf(srResult[x][y]);
