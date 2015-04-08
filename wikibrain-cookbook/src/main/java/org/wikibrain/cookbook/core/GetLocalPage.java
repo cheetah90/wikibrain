@@ -36,7 +36,7 @@ public class GetLocalPage {
         Map<Integer, Geometry> allGeomMap = sdDao.getAllGeometriesInLayer("wikidata");
         Language lang = Language.EN;
         CSVReader reader = new CSVReader(new FileReader("talk_page_id.csv"), ',');
-        CSVWriter writer = new CSVWriter(new FileWriter("talk_page_id_2.csv"), ',');
+        CSVWriter writer = new CSVWriter(new FileWriter("talk_page_id_3.csv"), ',');
         String row[] = new String[5];
         row[0] = "LOCAL_ID";
         row[1] = "TITLE";
@@ -49,14 +49,14 @@ public class GetLocalPage {
 
         int i = 0;
         int errorCount = 0;
-        List<String[]> readRows = reader.readAll();
-        for(String[] readRow : readRows){
+        for(Map.Entry<Integer, Geometry> entry: allGeomMap.entrySet()){
             if((i++) % 100 == 0)
-                System.out.println("DONE " + i + " OUT OF " + readRows.size() + " error " + errorCount);
+                System.out.println("DONE " + i + " OUT OF " + allGeomMap.size() + " error " + errorCount);
             try{
-                if(!readRow[2].contentEquals("-1"))
-                    continue;
-                String talkTitle = readRow[3];
+                int univId = entry.getKey();
+                int localId = upDao.getLocalId(lang, univId);
+                String title = lpDao_sql.getById(lang, localId).getTitle().getCanonicalTitle();
+                String talkTitle = "Talk:" + title;
                 int failCount = 0;
                 boolean failed = true;
                 Integer talkId = -1;
@@ -68,15 +68,15 @@ public class GetLocalPage {
                     }
                 }
                 if(failed){
-                    System.out.println("Failed to get talk page for  " + readRow[1]);
+                    System.out.println("Failed to get talk page for  " + title);
                     //System.out.println("GOT: " + lpDao_live.getByTitle(Language.EN, NameSpace.TALK, talkTitle));
                     throw  new Exception();
                 }
-                row[0] = readRow[0];
-                row[1] = readRow[1];
+                row[0] = String.valueOf(localId);
+                row[1] = title;
                 row[2] = talkId.toString();
                 row[3] = talkTitle;
-                row[4] = readRow[4];
+                row[4] = entry.getValue().toString();
                 writer.writeNext(row);
                 writer.flush();
             }
