@@ -28,9 +28,10 @@ public class GetLocalPage {
     public static void main(String[] args) throws Exception {
         Env env = EnvBuilder.envFromArgs(args);
         Configurator conf = env.getConfigurator();
-        SpatialDataDao sdDao = conf.get(SpatialDataDao.class);
         LocalPageDao lpDao_live = conf.get(LocalPageDao.class, "live");
         LocalPageDao lpDao_sql = conf.get(LocalPageDao.class, "sql");
+        SpatialDataDao sdDao = conf.get(SpatialDataDao.class);
+
         UniversalPageDao upDao = conf.get(UniversalPageDao.class);
         Map<Integer, Geometry> allGeomMap = sdDao.getAllGeometriesInLayer("wikidata");
         Language lang = Language.EN;
@@ -68,6 +69,7 @@ public class GetLocalPage {
                 }
                 if(failed){
                     System.out.println("Failed to get talk page for  " + readRow[1]);
+                    System.out.println("GOT: " + lpDao_live.getByTitle(Language.EN, NameSpace.TALK, talkTitle));
                     throw  new Exception();
                 }
                 row[0] = readRow[0];
