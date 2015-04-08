@@ -5,8 +5,11 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.Response;
 
 import au.com.bytecode.opencsv.CSVReader;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.Weighers;
 import com.vividsolutions.jts.geom.Geometry;
 
+import jersey.repackaged.com.google.common.cache.Weigher;
 import org.apache.commons.collections15.map.LRUMap;
 import com.vividsolutions.jts.geom.Point;
 import org.apache.commons.math3.linear.BlockRealMatrix;
@@ -55,11 +58,8 @@ import java.util.*;
 import java.net.URL;
 
 import org.apache.commons.codec.binary.Base64;
+import sun.security.provider.certpath.Builder;
 
-
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import java.net.URL;
@@ -121,9 +121,16 @@ public class AtlasifyResource {
     private static RealMatrix gameCorrelationMatrix;
     private static List<String> gameTitles;
 
-    // A cache which will keep the last 1000 autocomplete requests
-    private static LRUMap<String, Map<String, String>> autocompleteCache;
-
+    // A cache which will keep the last 5000 autocomplete requests
+    private static int maximumAutocompleteCacheSize = 5000;
+    private static ConcurrentLinkedHashMap<String, Map<String, String>> autocompleteCache;
+    // An SR cache which will keep the last 50000 request string pairs
+    private static int maximumSRCacheSize = 50000;
+    private static ConcurrentLinkedHashMap<DataMetric.Tuple<String, String>, String> srCache;
+    // An explanations cache
+    private static int maximumExplanationsSize = 1000;
+    private static ConcurrentLinkedHashMap<DataMetric.Tuple<String, String>, JSONArray> northwesternExplanationsCache;
+    private static ConcurrentLinkedHashMap<DataMetric.Tuple<String, String>, List<Explanation>> dbpeidaExplanationsCache;
     //intialize all the DAOs we'll need to use
     private static void wikibrainSRinit(){
 
@@ -137,8 +144,25 @@ public class AtlasifyResource {
             lpaDao = conf.get(LocalPageAutocompleteSqlDao.class);
             llDao = conf.get(LocalLinkDao.class);
             System.out.println("FINISHED LOADING LOCALLINK DAO");
-
-            autocompleteCache = new LRUMap<String, Map<String, String>>(1000);
+            // Autocomplete cache creation
+            autocompleteCache = new ConcurrentLinkedHashMap.Builder<String, Map<String, String>>()
+                    .maximumWeightedCapacity(maximumAutocompleteCacheSize)
+                    .initialCapacity(maximumAutocompleteCacheSize/10)
+                    .build();
+            // SR cache creation
+            srCache = new ConcurrentLinkedHashMap.Builder<DataMetric.Tuple<String, String>, String>()
+                    .maximumWeightedCapacity(maximumSRCacheSize)
+                    .initialCapacity(maximumSRCacheSize / 10)
+                    .build();
+            // Explanations cache creation
+            northwesternExplanationsCache = new ConcurrentLinkedHashMap.Builder<DataMetric.Tuple<String, String>, JSONArray>()
+                    .maximumWeightedCapacity(maximumExplanationsSize)
+                    .initialCapacity(maximumExplanationsSize/10)
+                    .build();
+            dbpeidaExplanationsCache = new ConcurrentLinkedHashMap.Builder<DataMetric.Tuple<String, String>, List<Explanation>>()
+                    .maximumWeightedCapacity(maximumExplanationsSize)
+                    .initialCapacity(maximumExplanationsSize/10)
+                    .build();
             System.out.println("FINISHED LOADING CACHES");
             if(loadWikibrainSR){
                 sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
@@ -360,10 +384,23 @@ public class AtlasifyResource {
         if(lpDao == null ){
             wikibrainSRinit();
         }
-        String[] featureIdList = query.getFeatureIdList();
-        String[] featureNameList = query.getFeatureNameList();
+
+        List<String> featureIdList = new ArrayList<String>(Arrays.asList(query.getFeatureIdList()));
+        List<String> featureNameList = new ArrayList<String>(Arrays.asList(query.getFeatureNameList()));
+        String keyword = query.getKeyword();
         Map<String, String> srMap = new HashMap<String, String>();
-        System.out.println("Receive featureId size of " + featureIdList.length + " and featureName size of " + featureNameList.length);
+        System.out.println("Receive featureId size of " + featureIdList.size() + " and featureName size of " + featureNameList.size());
+
+        // Get values out of the cache
+        for (int i = 0; i < featureNameList.size(); i++) {
+            DataMetric.Tuple<String, String> pair = new DataMetric.Tuple<String, String>(keyword, featureNameList.get(i));
+
+            if (srCache.containsKey(pair)) {
+                srMap.put(featureNameList.get(i), srCache.get(pair));
+                featureNameList.remove(i);
+                featureIdList.remove(i);
+            }
+        }
 
         if (useNorthWesternAPI) {
             LocalId queryID = new LocalId(lang, 0);
@@ -378,21 +415,21 @@ public class AtlasifyResource {
             try {
                 Map<LocalId, Double> srValues = accessNorthwesternAPI(queryID, -1);
 
-                for (int i = 0; i < featureIdList.length; i++) {
+                for (int i = 0; i < featureIdList.size(); i++) {
                     LocalId featureID = new LocalId(lang, 0);
 
                     try{
-                        featureID = new LocalId(lang, Integer.parseInt(featureIdList[i]));
+                        featureID = new LocalId(lang, Integer.parseInt(featureIdList.get(i)));
                     }
                     catch (Exception e){
-                        System.out.println("Failed to resolve " + featureNameList[i]);
+                        System.out.println("Failed to resolve " + featureNameList.get(i));
                         continue;
                         //do nothing
                     }
 
                     try{
                         String color = getColorStringFromSR(srValues.get(featureID));
-                        srMap.put(featureNameList[i].toString(), color);
+                        srMap.put(featureNameList.get(i).toString(), color);
                         System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
                     }
                     catch (Exception e){
@@ -403,7 +440,7 @@ public class AtlasifyResource {
                         catch (Exception e1){
                             System.out.println("Failed to get SR");
                         }
-                        srMap.put(featureNameList[i].toString(), "#ffffff");
+                        srMap.put(featureNameList.get(i).toString(), "#ffffff");
                         continue;
                         //do nothing
                     }
@@ -416,11 +453,17 @@ public class AtlasifyResource {
                 // Switch to wikibrain based SR when NU API fails
                 if(loadWikibrainSR){
                     System.out.println("Defaulting to Wikibrain SR");
-                    srMap = wikibrainSR(query, featureNameList);
+                    srMap = wikibrainSR(query, (String[])featureNameList.toArray());
                 }
             }
         } else {
-            srMap = wikibrainSR(query, featureNameList);
+            srMap = wikibrainSR(query, (String[])featureNameList.toArray());
+        }
+
+        // Cache all of the relieved results
+        for (int i = 0; i < featureNameList.size(); i++) {
+            String feature = featureNameList.get(i);
+            srCache.put(new DataMetric.Tuple<String, String>(keyword, feature), srMap.get(feature));
         }
 
         return Response.ok(new JSONObject(srMap).toString()).build();
@@ -702,7 +745,17 @@ public class AtlasifyResource {
 
             // Get DBPedia Explanations using the disambiguator
             try{
-                for (Explanation exp : dbMetric.similarity(keywordPageId, featurePageId, true).getExplanations()) {
+                List<Explanation> explanationList;
+                DataMetric.Tuple<String, String> pair = new DataMetric.Tuple<String, String>(keywordTitle, featureTitle);
+                if (dbpeidaExplanationsCache.containsKey(pair)) {
+                    explanationList = dbpeidaExplanationsCache.get(pair);
+                } else {
+                    explanationList = dbMetric.similarity(keywordPageId, featurePageId, true).getExplanations();
+                    // Cache them
+                    dbpeidaExplanationsCache.put(pair, explanationList);
+                }
+
+                for (Explanation exp : explanationList) {
                     try {
                         String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
                         if (containsExplanation(explanationSection, explanationString)) {
@@ -735,33 +788,43 @@ public class AtlasifyResource {
             addElementesToArray(explanations, explanationSection);
             explanationSection = new JSONArray();
 
-            String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
-            StringBuilder stringBuilder = new StringBuilder();
-            try{
-                URLConnection urlConnection = new URL(url).openConnection();
-                urlConnection.setConnectTimeout(NorthwesternTimeout);
-                urlConnection.setReadTimeout(NorthwesternTimeout);
+            // Check to see if the northwestern explanations are cached
+            JSONArray northwesternExplanationList;
+            DataMetric.Tuple northwesternPair = new DataMetric.Tuple(keywordTitle, featureTitle);
+            if (northwesternExplanationsCache.containsKey(northwesternPair)) {
+                northwesternExplanationList = northwesternExplanationsCache.get(northwesternPair);
+            } else {
+                String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
+                StringBuilder stringBuilder = new StringBuilder();
+                try {
+                    URLConnection urlConnection = new URL(url).openConnection();
+                    urlConnection.setConnectTimeout(NorthwesternTimeout);
+                    urlConnection.setReadTimeout(NorthwesternTimeout);
 
-                InputStream inputStream = urlConnection.getInputStream();
+                    InputStream inputStream = urlConnection.getInputStream();
 
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
-                int currentChar;
-                while ((currentChar = bufferedReader.read()) != -1) {
-                    stringBuilder.append((char) currentChar);
-                }
+                    int currentChar;
+                    while ((currentChar = bufferedReader.read()) != -1) {
+                        stringBuilder.append((char) currentChar);
+                    }
                     //System.out.println("GOT REPLY\n" + stringBuilder.toString());
-            }
-            catch (Exception e){
-                System.out.println("ERROR: failed to get NU Explanation for "+ keyword + " and " + feature + "\n");
-                e.printStackTrace();
+                } catch (Exception e) {
+                    System.out.println("ERROR: failed to get NU Explanation for " + keyword + " and " + feature + "\n");
+                    e.printStackTrace();
+                }
+
+                northwesternExplanationList = new JSONArray(stringBuilder.toString());
+
+                // Cache the explanations
+                northwesternExplanationsCache.put(northwesternPair, northwesternExplanationList);
             }
 
             // Process the northwestern json
             try{
-                JSONArray northwesternJSONArray = new JSONArray(stringBuilder.toString());
-                for (int i = 0; i < northwesternJSONArray.length(); i++) {
-                    JSONObject northwesternJSON = northwesternJSONArray.getJSONObject(i);
+                for (int i = 0; i < northwesternExplanationList.length(); i++) {
+                    JSONObject northwesternJSON = northwesternExplanationList.getJSONObject(i);
                     JSONArray northwesternExplanations = northwesternJSON.getJSONArray("explanations");
                     double srval = northwesternJSON.getDouble("srval");
                     String title = northwesternJSON.getString("title");

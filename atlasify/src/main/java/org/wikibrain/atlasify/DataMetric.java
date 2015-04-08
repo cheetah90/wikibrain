@@ -25,7 +25,7 @@ import java.util.Map;
  * Created by Josh on 3/2/15.
  */
 public abstract class DataMetric extends BaseSRMetric {
-    protected class Tuple<X, Y> {
+    static class Tuple<X, Y> {
         public final X x;
         public final Y y;
         public Boolean reversed = false;
