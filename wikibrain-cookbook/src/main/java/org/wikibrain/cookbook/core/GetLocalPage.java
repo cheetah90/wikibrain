@@ -61,7 +61,7 @@ public class GetLocalPage {
                 boolean failed = true;
                 Integer talkId = -1;
                 while(failCount++ < 5){
-                    talkId = lpDao_live.getIdByTitle(talkTitle, lang, NameSpace.TALK);
+                    talkId = lpDao_live.getByTitle(lang, NameSpace.TALK, talkTitle).getLocalId();
                     if(talkId != -1){
                         failed = false;
                         break;
@@ -69,7 +69,7 @@ public class GetLocalPage {
                 }
                 if(failed){
                     System.out.println("Failed to get talk page for  " + readRow[1]);
-                    System.out.println("GOT: " + lpDao_live.getByTitle(Language.EN, NameSpace.TALK, talkTitle));
+                    //System.out.println("GOT: " + lpDao_live.getByTitle(Language.EN, NameSpace.TALK, talkTitle));
                     throw  new Exception();
                 }
                 row[0] = readRow[0];
