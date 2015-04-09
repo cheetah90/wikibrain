@@ -63,6 +63,9 @@ import sun.security.provider.certpath.Builder;
 import java.util.*;
 
 import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RunnableFuture;
 
 // The Java class will be hosted at the URI path "/helloworld"
 @Path("/wikibrain")
@@ -365,6 +368,8 @@ public class AtlasifyResource {
 
     static private boolean useNorthWesternAPI  = true;
     static private int     NorthwesternTimeout = 60000; // in milliseconds
+    // The number of explanations to preemptively download and cache
+    static private int     numberOfExplanationsToLoad = 10;
 
     /**
      * return a <name, color> map to the client
@@ -413,7 +418,7 @@ public class AtlasifyResource {
             }
             // LocalId queryID = new LocalId(Language.EN, 19908980);
             try {
-                Map<LocalId, Double> srValues = accessNorthwesternAPI(queryID, -1);
+                final Map<LocalId, Double> srValues = accessNorthwesternAPI(queryID, -1);
 
                 for (int i = 0; i < featureIdList.size(); i++) {
                     LocalId featureID = new LocalId(lang, 0);
@@ -445,6 +450,40 @@ public class AtlasifyResource {
                         //do nothing
                     }
                 }
+
+                // Find the top sr items to load
+                List<String> topPages = new ArrayList<String>(featureIdList);
+                Collections.sort(topPages, new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        return srValues.get(o1).compareTo(srValues.get(o2));
+                    }
+                });
+
+                class BackgroundExplanationLoader implements Runnable {
+                    public LocalId featureID;
+                    public String keyword;
+                    public BackgroundExplanationLoader(String keyword, LocalId featureID) {
+                        this.keyword = keyword;
+                        this.featureID = featureID;
+                    }
+
+                    public void run() {
+                        try {
+                            handleExplanation(keyword, lpDao.getById(featureID).getTitle().getCanonicalTitle());
+                        } catch (Exception e) {
+                            System.out.println("ERROR: Unable to process explanation on background thread");
+                            e.printStackTrace();
+                        }
+                    }
+                };
+
+                ExecutorService executor = Executors.newCachedThreadPool();
+                for (int i = 0; i < Math.min(topPages.size(), numberOfExplanationsToLoad); i++) {
+                    LocalId featureID = new LocalId(lang, Integer.parseInt(topPages.get(i)));
+                    BackgroundExplanationLoader loader = new BackgroundExplanationLoader(keyword, featureID);
+                    executor.submit(loader);
+                }
             }
             catch (Exception e) {
                 System.out.println("Error when connecting to Northwestern Server ");
@@ -460,7 +499,7 @@ public class AtlasifyResource {
             srMap = wikibrainSR(query, (String[])featureNameList.toArray());
         }
 
-        // Cache all of the relieved results
+        // Cache all of the retrieved results
         for (int i = 0; i < featureNameList.size(); i++) {
             String feature = featureNameList.get(i);
             srCache.put(new DataMetric.Tuple<String, String>(keyword, feature), srMap.get(feature));
