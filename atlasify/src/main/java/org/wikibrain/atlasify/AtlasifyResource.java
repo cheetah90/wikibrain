@@ -678,24 +678,7 @@ public class AtlasifyResource {
         System.out.println("Get Auto Complete Result" + new JSONObject(autocompleteMap).toString());
         return Response.ok(new JSONObject(autocompleteMap).toString()).build();
     }
-
-    /**
-     *
-     * @param keyword
-     * @param feature
-     * @return a response contains explanation for the given pair of keyword & feature
-     * @throws DaoException
-     * @throws MalformedURLException
-     * @throws IOException
-     * @throws Exception
-     */
-    @GET
-    // The Java method will produce content identified by the MIME Media
-    // type "text/plain"
-    @Path("/SR/Explanation/keyword={keyword}&feature={feature}")
-    @Consumes("text/plain")
-    @Produces("text/plain")
-    public Response handleExplanation(@PathParam("keyword") String keyword, @PathParam("feature") String feature) throws  DaoException, MalformedURLException, IOException, Exception{
+    public String getExplanation(String keyword, String feature) throws Exception{
         if (lpDao == null && wikibrainLoadingInProcess == false) {
             wikibrainSRinit();
         }
@@ -940,6 +923,27 @@ public class AtlasifyResource {
 
         System.out.println("REQUESTED explanation between " + keyword + " and " + feature + "\n\n" + explanations.toString());
 
+        return result.toString();
+    }
+
+    /**
+     *
+     * @param keyword
+     * @param feature
+     * @return a response contains explanation for the given pair of keyword & feature
+     * @throws DaoException
+     * @throws MalformedURLException
+     * @throws IOException
+     * @throws Exception
+     */
+    @GET
+    // The Java method will produce content identified by the MIME Media
+    // type "text/plain"
+    @Path("/SR/Explanation/keyword={keyword}&feature={feature}")
+    @Consumes("text/plain")
+    @Produces("text/plain")
+    public Response handleExplanation(@PathParam("keyword") String keyword, @PathParam("feature") String feature) throws  DaoException, MalformedURLException, IOException, Exception{
+        String result = getExplanation(keyword, feature);
         return Response.ok(result.toString()).build();
     }
 
