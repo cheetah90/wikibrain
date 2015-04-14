@@ -573,27 +573,22 @@ public class AtlasifyResource {
      * @return
      */
     private String getColorStringFromSR(double SR){
-        if(SR < 0.2873)
-            return "#ffffff";
+
         if(SR < 0.3651)
-            return "#f7fcf5";
-        if(SR < 0.4095)
-            return "#e5f5e0";
-        if(SR < 0.4654)
-            return "#c7e9c0";
+            return "#ffffff";
+        if(SR < 0.4500)
+            return "#e5f5f9";
         if(SR < 0.5072)
-            return "#a1d99b";
+            return "#ccece6";
         if(SR < 0.5670)
-            return "#74c476";
+            return "#99d8c9";
         if(SR < 0.6137)
-            return "#41ab5d";
-        if(SR < 0.6809)
-            return "#238b45";
-        if(SR < 0.7345)
-            return "#006d2c";
+            return "#66c2a4";
+        if(SR < 0.7000)
+            return "#41ae76";
         if(SR < 0.7942)
-            return "#00441b";
-        return "#002000";
+            return "#238b45";
+        return "#005824";
     }
 
     @POST
