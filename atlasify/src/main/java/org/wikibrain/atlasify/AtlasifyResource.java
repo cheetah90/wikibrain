@@ -14,6 +14,7 @@ import org.apache.commons.collections15.map.LRUMap;
 import com.vividsolutions.jts.geom.Point;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.lucene.search.Query;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
@@ -37,6 +38,8 @@ import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.model.Title;
 import org.wikibrain.core.model.LocalPage;
 import org.wikibrain.core.lang.LocalId;
+import org.wikibrain.lucene.QueryBuilder;
+import org.wikibrain.lucene.WikiBrainScoreDoc;
 import org.wikibrain.phrases.PhraseAnalyzer;
 
 import org.wikibrain.sr.Explanation;
@@ -46,6 +49,7 @@ import org.wikibrain.wikidata.WikidataDao;
 import org.wikibrain.spatial.dao.SpatialDataDao;
 import org.wikibrain.atlasify.LocalPageAutocompleteSqlDao;
 import org.wikibrain.atlasify.AtlasifyLogger;
+import org.wikibrain.lucene.LuceneSearcher;
 
 
 import java.io.*;
@@ -123,17 +127,19 @@ public class AtlasifyResource {
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static RealMatrix gameCorrelationMatrix;
     private static List<String> gameTitles;
+    private static LuceneSearcher luceneSearcher;
 
     // A cache which will keep the last 5000 autocomplete requests
     private static int maximumAutocompleteCacheSize = 5000;
     private static ConcurrentLinkedHashMap<String, Map<String, String>> autocompleteCache;
     // An SR cache which will keep the last 50000 request string pairs
     private static int maximumSRCacheSize = 50000;
-    private static ConcurrentLinkedHashMap<DataMetric.Tuple<String, String>, String> srCache;
+    private static ConcurrentLinkedHashMap<String, String> srCache;
     // An explanations cache
     private static int maximumExplanationsSize = 1000;
-    private static ConcurrentLinkedHashMap<DataMetric.Tuple<String, String>, JSONArray> northwesternExplanationsCache;
-    private static ConcurrentLinkedHashMap<DataMetric.Tuple<String, String>, List<Explanation>> dbpeidaExplanationsCache;
+    private static ConcurrentLinkedHashMap<String, JSONArray> northwesternExplanationsCache;
+    private static ConcurrentLinkedHashMap<String, List<Explanation>> dbpeidaExplanationsCache;
+    private static String pairSeperator = "%";
     //intialize all the DAOs we'll need to use
     private static void wikibrainSRinit(){
 
@@ -153,20 +159,21 @@ public class AtlasifyResource {
                     .initialCapacity(maximumAutocompleteCacheSize/10)
                     .build();
             // SR cache creation
-            srCache = new ConcurrentLinkedHashMap.Builder<DataMetric.Tuple<String, String>, String>()
+            srCache = new ConcurrentLinkedHashMap.Builder<String, String>()
                     .maximumWeightedCapacity(maximumSRCacheSize)
                     .initialCapacity(maximumSRCacheSize / 10)
                     .build();
             // Explanations cache creation
-            northwesternExplanationsCache = new ConcurrentLinkedHashMap.Builder<DataMetric.Tuple<String, String>, JSONArray>()
+            northwesternExplanationsCache = new ConcurrentLinkedHashMap.Builder<String, JSONArray>()
                     .maximumWeightedCapacity(maximumExplanationsSize)
                     .initialCapacity(maximumExplanationsSize/10)
                     .build();
-            dbpeidaExplanationsCache = new ConcurrentLinkedHashMap.Builder<DataMetric.Tuple<String, String>, List<Explanation>>()
+            dbpeidaExplanationsCache = new ConcurrentLinkedHashMap.Builder<String, List<Explanation>>()
                     .maximumWeightedCapacity(maximumExplanationsSize)
                     .initialCapacity(maximumExplanationsSize/10)
                     .build();
             System.out.println("FINISHED LOADING CACHES");
+
             if(loadWikibrainSR){
                 sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
                 System.out.println("FINISHED LOADING SR");
@@ -174,6 +181,8 @@ public class AtlasifyResource {
             if(loadWikibrainSR == false && useNorthWesternAPI == false){
                 throw new Exception("Need to load Wikibrain SR if not using NU API!");
             }
+
+            luceneSearcher = conf.get(LuceneSearcher.class);
 
             wdDao = conf.get(WikidataDao.class);
             System.out.println("FINISHED LOADING WIKIDATA DAO");
@@ -398,114 +407,141 @@ public class AtlasifyResource {
 
         // Get values out of the cache
         for (int i = 0; i < featureNameList.size(); i++) {
-            DataMetric.Tuple<String, String> pair = new DataMetric.Tuple<String, String>(keyword, featureNameList.get(i));
-
+            String pair = keyword + pairSeperator + featureNameList.get(i);
             if (srCache.containsKey(pair)) {
                 srMap.put(featureNameList.get(i), srCache.get(pair));
                 featureNameList.remove(i);
                 featureIdList.remove(i);
+                i--;
             }
         }
 
-        if (useNorthWesternAPI) {
-            LocalId queryID = new LocalId(lang, 0);
-            try{
-                queryID = wikibrainPhaseResolution(query.getKeyword());
-            }
-            catch (Exception e){
-                System.out.println("Failed to resolve keyword " + query.getKeyword());
-                return Response.ok(new JSONObject(srMap).toString()).build();
-            }
-            // LocalId queryID = new LocalId(Language.EN, 19908980);
-            try {
-                final Map<LocalId, Double> srValues = accessNorthwesternAPI(queryID, -1);
-
-                for (int i = 0; i < featureIdList.size(); i++) {
-                    LocalId featureID = new LocalId(lang, 0);
-
-                    try{
-                        featureID = new LocalId(lang, Integer.parseInt(featureIdList.get(i)));
-                    }
-                    catch (Exception e){
-                        System.out.println("Failed to resolve " + featureNameList.get(i));
-                        continue;
-                        //do nothing
-                    }
-
-                    try{
-                        String color = getColorStringFromSR(srValues.get(featureID));
-                        srMap.put(featureNameList.get(i).toString(), color);
-                        System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
-                    }
-                    catch (Exception e){
-                        //put white for anything not present in the SR map
-                        try{
-                            System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
-                        }
-                        catch (Exception e1){
-                            System.out.println("Failed to get SR");
-                        }
-                        srMap.put(featureNameList.get(i).toString(), "#ffffff");
-                        continue;
-                        //do nothing
-                    }
+        if (featureIdList.size() > 0) {
+            if (useNorthWesternAPI) {
+                LocalId queryID = new LocalId(lang, 0);
+                try {
+                    queryID = wikibrainPhaseResolution(query.getKeyword());
+                } catch (Exception e) {
+                    System.out.println("Failed to resolve keyword " + query.getKeyword());
+                    return Response.ok(new JSONObject(srMap).toString()).build();
                 }
+                // LocalId queryID = new LocalId(Language.EN, 19908980);
+                try {
+                    final Map<LocalId, Double> srValues = accessNorthwesternAPI(queryID, -1);
 
-                // Find the top sr items to load
-                List<String> topPages = new ArrayList<String>(featureIdList);
-                Collections.sort(topPages, new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        return srValues.get(o1).compareTo(srValues.get(o2));
-                    }
-                });
+                    for (int i = 0; i < featureIdList.size(); i++) {
+                        LocalId featureID = new LocalId(lang, 0);
 
-                class BackgroundExplanationLoader implements Runnable {
-                    public LocalId featureID;
-                    public String keyword;
-                    public BackgroundExplanationLoader(String keyword, LocalId featureID) {
-                        this.keyword = keyword;
-                        this.featureID = featureID;
-                    }
-
-                    public void run() {
                         try {
-                            handleExplanation(keyword, lpDao.getById(featureID).getTitle().getCanonicalTitle());
+                            featureID = new LocalId(lang, Integer.parseInt(featureIdList.get(i)));
                         } catch (Exception e) {
-                            System.out.println("ERROR: Unable to process explanation on background thread");
-                            e.printStackTrace();
+                            System.out.println("Failed to resolve " + featureNameList.get(i));
+                            continue;
+                            //do nothing
+                        }
+
+                        try {
+                            String color = getColorStringFromSR(srValues.get(featureID));
+                            srMap.put(featureNameList.get(i).toString(), color);
+                            System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
+                        } catch (Exception e) {
+                            //put white for anything not present in the SR map
+                            try {
+                                System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
+                            } catch (Exception e1) {
+                                System.out.println("Failed to get SR");
+                            }
+                            srMap.put(featureNameList.get(i).toString(), "#ffffff");
+                            continue;
+                            //do nothing
                         }
                     }
-                };
 
-                ExecutorService executor = Executors.newCachedThreadPool();
-                for (int i = 0; i < Math.min(topPages.size(), numberOfExplanationsToLoad); i++) {
-                    LocalId featureID = new LocalId(lang, Integer.parseInt(topPages.get(i)));
-                    BackgroundExplanationLoader loader = new BackgroundExplanationLoader(keyword, featureID);
-                    executor.submit(loader);
+                    // Find the top sr items to load
+                    List<String> topPages = new ArrayList<String>();//(featureIdList);
+                    for (String id : featureNameList) {
+                        if (!srMap.containsKey(id)) {
+                            continue;
+                        }
+
+                        // Find the new location inside the topPages array, searching from the bottom
+                        int index = topPages.size();
+                        for (int i = topPages.size() - 1; i >= 0; i--) {
+                            String pageToCompare = topPages.get(i);
+                            if (compareSRColorStrings(srMap.get(id), srMap.get(pageToCompare)) < 0) {
+                                index = i;
+                            }
+                        }
+
+                        if (index < numberOfExplanationsToLoad) {
+                            topPages.add(index, id);
+                        }
+                        // Make sure the size is bounded
+                        while (topPages.size() > numberOfExplanationsToLoad) {
+                            topPages.remove(topPages.size() - 1);
+                        }
+                    }
+
+                    class BackgroundExplanationLoader implements Runnable {
+                        public LocalId featureID;
+                        public String keyword;
+                        public BackgroundExplanationLoader(String keyword, LocalId featureID) {
+                            this.keyword = keyword;
+                            this.featureID = featureID;
+                        }
+
+                        public void run() {
+                            try {
+                                String title = lpDao.getById(featureID).getTitle().getCanonicalTitle();
+                                System.out.println("BACKGROUND loading explanations between " + keyword + " and " + title);
+                                handleExplanation(keyword, title);
+                            } catch (Exception e) {
+                                System.out.println("ERROR: Unable to process explanation on background thread");
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+
+                    ExecutorService executor = Executors.newCachedThreadPool();
+                    for (int i = 0; i < topPages.size(); i++) {
+                        LocalId featureID = new LocalId(lang, lpDao.getIdByTitle(new Title(topPages.get(i), lang)));
+                        BackgroundExplanationLoader loader = new BackgroundExplanationLoader(keyword, featureID);
+                        executor.submit(loader);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error when connecting to Northwestern Server ");
+                    e.printStackTrace();
+
+                    // Switch to wikibrain based SR when NU API fails
+                    if (loadWikibrainSR) {
+                        System.out.println("Defaulting to Wikibrain SR");
+                        srMap = wikibrainSR(query, (String[]) featureNameList.toArray());
+                    }
                 }
+            } else {
+                srMap = wikibrainSR(query, (String[]) featureNameList.toArray());
             }
-            catch (Exception e) {
-                System.out.println("Error when connecting to Northwestern Server ");
-                e.printStackTrace();
 
-                // Switch to wikibrain based SR when NU API fails
-                if(loadWikibrainSR){
-                    System.out.println("Defaulting to Wikibrain SR");
-                    srMap = wikibrainSR(query, (String[])featureNameList.toArray());
-                }
+            // Cache all of the retrieved results
+            for (int i = 0; i < featureNameList.size(); i++) {
+                String feature = featureNameList.get(i);
+                srCache.put(keyword + pairSeperator + feature, srMap.get(feature));
             }
-        } else {
-            srMap = wikibrainSR(query, (String[])featureNameList.toArray());
-        }
-
-        // Cache all of the retrieved results
-        for (int i = 0; i < featureNameList.size(); i++) {
-            String feature = featureNameList.get(i);
-            srCache.put(new DataMetric.Tuple<String, String>(keyword, feature), srMap.get(feature));
         }
 
         return Response.ok(new JSONObject(srMap).toString()).build();
+    }
+    int compareSRColorStrings(String s1, String s2) {
+        if (s1.contains("#")) {
+            s1 = s1.substring(s1.lastIndexOf('#') + 1);
+        }
+        if (s2.contains("#")) {
+            s2 = s2.substring(s2.lastIndexOf('#') + 1);
+        }
+
+        double brightness1 = 0.2126*Integer.valueOf(s1.substring(0, 2), 16) + 0.7152*Integer.valueOf(s1.substring(2, 4), 16) + 0.0722*Integer.valueOf(s1.substring(4), 16);
+        double brightness2 = 0.2126*Integer.valueOf(s2.substring(0, 2), 16) + 0.7152*Integer.valueOf(s2.substring(2, 4), 16) + 0.0722*Integer.valueOf(s2.substring(4), 16);
+        return ((Double)brightness1).compareTo(brightness2);
     }
 
     /**
@@ -650,6 +686,7 @@ public class AtlasifyResource {
             bingResponse = bingResponse.getJSONObject("d");
             JSONArray bingResponses = bingResponse.getJSONArray("results");
             JSONObject response;
+
             for (int j = 0; j < bingResponses.length() && i < 10; j++) {
                 response = bingResponses.getJSONObject(j);
                 URL url = new URL(response.getString("Url"));
@@ -668,6 +705,25 @@ public class AtlasifyResource {
                     // There was an error, lets keep keep going
                 }
             }
+
+            /* Lucene */
+            /*
+            QueryBuilder luceneQuery = new QueryBuilder(luceneSearcher, lang)
+                    .setPhraseQuery(query.getKeyword());
+            WikiBrainScoreDoc[] scores = luceneQuery.search();
+
+            for (int j = 0; j < scores.length && i < 10; j++) {
+                try {
+                    WikiBrainScoreDoc score = scores[i];
+                    LocalPage page = lpDao.getById(lang, score.wpId);
+                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
+                        autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
+                        i++;
+                    }
+                } catch (Exception e) {
+                    // There was an error, lets keep keep going
+                }
+            }*/
         } catch (Exception e) {
             autocompleteMap = new HashMap<String, String>();
         }
@@ -768,7 +824,7 @@ public class AtlasifyResource {
             // Get DBPedia Explanations using the disambiguator
             try{
                 List<Explanation> explanationList;
-                DataMetric.Tuple<String, String> pair = new DataMetric.Tuple<String, String>(keywordTitle, featureTitle);
+                String pair = keywordTitle + pairSeperator + featureTitle;
                 if (dbpeidaExplanationsCache.containsKey(pair)) {
                     explanationList = dbpeidaExplanationsCache.get(pair);
                 } else {
@@ -812,7 +868,7 @@ public class AtlasifyResource {
 
             // Check to see if the northwestern explanations are cached
             JSONArray northwesternExplanationList;
-            DataMetric.Tuple northwesternPair = new DataMetric.Tuple(keywordTitle, featureTitle);
+            String northwesternPair = keywordTitle + pairSeperator + featureTitle;
             if (northwesternExplanationsCache.containsKey(northwesternPair)) {
                 northwesternExplanationList = northwesternExplanationsCache.get(northwesternPair);
             } else {
@@ -908,7 +964,6 @@ public class AtlasifyResource {
                 e.printStackTrace();
             }
 
-            shuffleJSONArray(explanationSection);
             addElementesToArray(explanations, explanationSection);
         }
         catch (Exception e){

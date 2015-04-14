@@ -7,15 +7,16 @@
     </Phrase>
     <Phrase>
         <DBPediaID>location</DBPediaID>
-        <DBPediaID>locationCity</DBPediaID>
+        <DBPediaID>city</DBPediaID>
         <DBPediaID>country</DBPediaID>
+        <DBPediaID>locationCity</DBPediaID>
         <DBPediaID>locationCountry</DBPediaID>
-        <Text>%2$s is located in %1$s</Text>
+        <Text>%s is located in %s</Text>
     </Phrase>
     <Phrase>
-        <DBPediaID>foundationPlace</DBPediaID>
         <DBPediaID>foundation</DBPediaID>
-        <Text>%2$s was founded in %1$s</Text>
+        <DBPediaID>foundationPlace</DBPediaID>
+        <Text>%s was founded in %s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>residence</DBPediaID>
@@ -23,7 +24,7 @@
     </Phrase>
     <Phrase>
         <DBPediaID>hostCity</DBPediaID>
-        <Text>%s was the host city of %s</Text>
+        <Text>%2$s was the host of %1$s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>routeEnd</DBPediaID>
@@ -39,20 +40,20 @@
     </Phrase>
     <Phrase>
         <DBPediaID>regionServed</DBPediaID>
-        <Text>%s is in the region servicied by %s</Text>
+        <Text>%2$s is in the region serviced by %1$s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>curlingClub</DBPediaID>
-        <Text>%s participated in %s</Text>
+        <Text>%2$s participated in %1$s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>headquarter</DBPediaID>
-        <Text>%2$s's headquarters is located in %1$s</Text>
+        <Text>%s's headquarters is located in %s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>place</DBPediaID>
         <DBPediaID>city</DBPediaID>
-        <Text>%s is the location of %s</Text>
+        <Text>%$2s is the location of %1$s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>countySeat</DBPediaID>
@@ -60,7 +61,7 @@
     </Phrase>
     <Phrase>
         <DBPediaID>broadcastArea</DBPediaID>
-        <Text>%s is in the broadcasting area of %s</Text>
+        <Text>%2$s is in the broadcasting area of %1$s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>populationPlace</DBPediaID>
@@ -68,11 +69,15 @@
     </Phrase>
     <Phrase>
         <DBPediaID>regions</DBPediaID>
-        <Text>%2$s are located in %1$s</Text>
+        <Text>%s are located in %s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>twin1City</DBPediaID>
         <Text>%s and %s are twin cities</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>mascot</DBPediaID>
+        <Text>%s is the mascot of %s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>east</DBPediaID>
@@ -113,6 +118,14 @@
     <Phrase>
         <DBPediaID>nominator</DBPediaID>
         <Text>%s nominated %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>flagbearer</DBPediaID>
+        <Text>%s was the flagbearer at %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>exportGoods</DBPediaID>
+        <Text>%2$s is an export of %1$s</Text>
     </Phrase>
     <Phrase>
         <WikiDataID>7</WikiDataID>
@@ -349,6 +362,10 @@
         <Media>range map image</Media>
     </Phrase>
     <Phrase>
+        <WikiDataID>183</WikiDataID>
+        <Text>%s is endemic to %s</Text>
+    </Phrase>
+    <Phrase>
         <WikiDataID>184</WikiDataID>
         <Text>%2$s was the doctoral advisor of %1$s</Text>
     </Phrase>
@@ -403,11 +420,8 @@
     </Phrase>
     <Phrase>
         <WikiDataID>361</WikiDataID>
-        <Text>%s is a part of %s</Text>
-    </Phrase>
-    <Phrase>
         <DBPediaID>isPartOf</DBPediaID>
-        <Text>%2$s is a part of %1$s</Text>
+        <Text>%s is a part of %s</Text>
     </Phrase>
     <Phrase>
         <WikiDataID>366</WikiDataID>
@@ -504,6 +518,10 @@
     <Phrase>
         <WikiDataID>491</WikiDataID>
         <Media>orbit diagram</Media>
+    </Phrase>
+    <Phrase>
+        <WikiDataID>495</WikiDataID>
+        <Text>%s's country of origin is %s</Text>
     </Phrase>
     <Phrase>
         <WikiDataID>509</WikiDataID>
@@ -671,7 +689,7 @@
     </Phrase>
     <Phrase>
         <WikiDataID>1344</WikiDataID>
-        <Text>%s is a participant of %s</Text>
+        <Text>%s was a participant of %s</Text>
     </Phrase>
     <Phrase>
         <WikiDataID>1383</WikiDataID>
