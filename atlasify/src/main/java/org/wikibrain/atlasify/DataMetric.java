@@ -121,7 +121,7 @@ public abstract class DataMetric extends BaseSRMetric {
 
     // This will not correctly set the ID of the SRResult
     private SRResult recursiveSimilarity(String page1, String page2, boolean explanations, int currentDepth, int totalDepth) throws DaoException {
-        assert(currentDepth > 1); // The depth should start and 1 and increase
+        assert(currentDepth >= 1); // The depth should start at 1 and increase
         if (currentDepth > totalDepth) {
             return null;
         }
@@ -144,13 +144,14 @@ public abstract class DataMetric extends BaseSRMetric {
                         String format = formatStringForProperty(pair.x);
                         String itemString = WordUtils.capitalize(convertToLocalPageTitle(page1).getTitle().getCanonicalTitle());
                         String valueString = WordUtils.capitalize(item); //convertToLocalPageTitle(page2).getTitle().getCanonicalTitle();
-                        Explanation e = new Explanation(format, itemString, valueString);
 
                         if (pair.reversed) {
                             String temp = valueString;
                             valueString = itemString;
                             itemString = temp;
                         }
+
+                        Explanation e = new Explanation(format, itemString, valueString);
 
                         // Not a very useful explanation
                         if (format.contains("unknown") || itemString.contains("unknown") || valueString.contains("unknown")) {
