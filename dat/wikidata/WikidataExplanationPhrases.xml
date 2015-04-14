@@ -40,7 +40,7 @@
     </Phrase>
     <Phrase>
         <DBPediaID>regionServed</DBPediaID>
-        <Text>%2$s is in the region servicied by %1$s</Text>
+        <Text>%2$s is in the region serviced by %1$s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>curlingClub</DBPediaID>
