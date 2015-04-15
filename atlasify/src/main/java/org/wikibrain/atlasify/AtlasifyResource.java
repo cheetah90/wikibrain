@@ -77,6 +77,7 @@ public class AtlasifyResource {
 
     private static class AtlasifyQuery{
         private String keyword;
+        private String refSystem;
         private String[] featureIdList;
         private String[] featureNameList;
 
@@ -84,20 +85,26 @@ public class AtlasifyResource {
 
         }
 
-        public AtlasifyQuery(String keyword, String[] featureIdList, String[] featureNameList){
+        public AtlasifyQuery(String keyword, String refSystem, String[] featureIdList, String[] featureNameList){
             this.keyword = keyword;
+            this.refSystem = refSystem;
             this.featureIdList = featureIdList;
             this.featureNameList = featureNameList;
         }
 
-        public AtlasifyQuery(String keyword, List<String> featureIdList, List<String> featureNameList){
+        public AtlasifyQuery(String keyword, String refSystem, List<String> featureIdList, List<String> featureNameList){
             this.keyword = keyword;
+            this.refSystem = refSystem;
             this.featureIdList = featureIdList.toArray(new String[featureIdList.size()]);
             this.featureNameList = featureNameList.toArray(new String[featureNameList.size()]);
         }
 
         public String getKeyword(){
             return keyword;
+        }
+
+        public String getRefSystem(){
+            return refSystem;
         }
 
         public String[] getFeatureIdList(){
@@ -430,7 +437,13 @@ public class AtlasifyResource {
                 }
                 // LocalId queryID = new LocalId(Language.EN, 19908980);
                 try {
-                    final Map<LocalId, Double> srValues = accessNorthwesternAPI(queryID, -1);
+                    Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
+                    if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
+                        srValues = accessNorthwesternAPI(queryID, -1, true);
+                    }
+                    else{
+                        srValues = accessNorthwesternAPI(queryID, -1, false);
+                    }
 
                     for (int i = 0; i < featureIdList.size(); i++) {
                         LocalId featureID = new LocalId(lang, 0);
