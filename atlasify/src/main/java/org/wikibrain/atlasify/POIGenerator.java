@@ -138,7 +138,7 @@ public class POIGenerator {
         Map<Integer, String> idTitleMap = new HashMap<Integer, String>();
         Map<Integer, String> idExplanationMap = new HashMap<Integer, String>();
         try{
-            Map<LocalId, Double>srValues=atlasifyResource.accessNorthwesternAPI(queryID, 400);
+            Map<LocalId, Double>srValues=atlasifyResource.accessNorthwesternAPI(queryID, 400, false);
             for(Map.Entry<LocalId, Double>e:srValues.entrySet()){
                 try{
                     LocalPage localPage=atlasifyResource.lpDao.getById(e.getKey());
