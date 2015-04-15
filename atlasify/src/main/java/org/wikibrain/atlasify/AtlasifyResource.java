@@ -925,17 +925,17 @@ public class AtlasifyResource {
             try{
                 for (int i = 0; i < northwesternExplanationList.length(); i++) {
                     JSONObject northwesternJSON = northwesternExplanationList.getJSONObject(i);
-                    JSONArray northwesternExplanations = northwesternJSON.getJSONArray("explanations");
-                    double srval = northwesternJSON.getDouble("srval");
+                    JSONArray northwesternExplanations = northwesternJSON.getJSONArray("paragraphs");
+                    double srval = northwesternJSON.getDouble("c-score");
                     String title = northwesternJSON.getString("title");
 
                     for (int j = 0; j < northwesternExplanations.length(); j++) {
                         JSONObject northwesternExplanation = (JSONObject) northwesternExplanations.get(j);
 
-                        String explanationString = northwesternExplanation.getString("content");
+                        String explanationString = northwesternExplanation.getString("curated");
                         // Load the complete content if content is unavailable
                         if (explanationString.equals("")) {
-                            explanationString = northwesternExplanation.getString("completeContent");
+                            explanationString = northwesternExplanation.getString("complete");
                         }
                         // Make sure the string is still valid
                         if (explanationString.equals("") || explanationString.contains("Category:") || containsExplanation(explanationSection, explanationString)) {
