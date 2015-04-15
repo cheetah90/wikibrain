@@ -287,13 +287,16 @@ public class AtlasifyResource {
      * @return a map contains <localID, SRValue>, each entry represents the sr value for a pair of articles
      * @throws Exception
      */
-    public static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN) throws Exception {
+    public static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN, boolean spatialOnly) throws Exception {
         Language language = lang;
         String url = "";
-        if(topN == -1){
+        if(topN == -1 && spatialOnly){
             url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId() + "/spatial/true";
         }
-        else{
+        else if (topN == -1){
+            url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId();
+        }
+        else {
             url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId()+ "/top/" + topN.toString();
         }
         System.out.println("NU QUERY " + url);
@@ -376,7 +379,7 @@ public class AtlasifyResource {
 
 
     static private boolean useNorthWesternAPI  = true;
-    static private int     NorthwesternTimeout = 60000; // in milliseconds
+    static private int     NorthwesternTimeout = 100000; // in milliseconds
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
 
