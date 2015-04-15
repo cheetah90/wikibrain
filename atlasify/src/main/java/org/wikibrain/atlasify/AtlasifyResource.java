@@ -419,6 +419,7 @@ public class AtlasifyResource {
             }
         }
 
+        boolean gotUsefulDataToCache = false;
         if (featureIdList.size() > 0) {
             if (useNorthWesternAPI) {
                 LocalId queryID = new LocalId(lang, 0);
@@ -447,6 +448,7 @@ public class AtlasifyResource {
                             String color = getColorStringFromSR(srValues.get(featureID));
                             srMap.put(featureNameList.get(i).toString(), color);
                             System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
+                            gotUsefulDataToCache = true;
                         } catch (Exception e) {
                             //put white for anything not present in the SR map
                             try {
@@ -463,7 +465,7 @@ public class AtlasifyResource {
                     // Find the top sr items to load
                     List<String> topPages = new ArrayList<String>();//(featureIdList);
                     for (String id : featureNameList) {
-                        if (!srMap.containsKey(id)) {
+                        if (!srMap.containsKey(id) || compareSRColorStrings(srMap.get(id), "#ffffff") >= 0) {
                             continue;
                         }
 
@@ -526,9 +528,11 @@ public class AtlasifyResource {
             }
 
             // Cache all of the retrieved results
-            for (int i = 0; i < featureNameList.size(); i++) {
-                String feature = featureNameList.get(i);
-                srCache.put(keyword + pairSeperator + feature, srMap.get(feature));
+            if (gotUsefulDataToCache) {
+                for (int i = 0; i < featureNameList.size(); i++) {
+                    String feature = featureNameList.get(i);
+                    srCache.put(keyword + pairSeperator + feature, srMap.get(feature));
+                }
             }
         }
 
@@ -721,13 +725,16 @@ public class AtlasifyResource {
                 } catch (Exception e) {
                     // There was an error, lets keep keep going
                 }
-            }*/
+            }
+            */
         } catch (Exception e) {
             autocompleteMap = new HashMap<String, String>();
         }
 
         // Cache the autocomplete
-        autocompleteCache.put(query.getKeyword(), autocompleteMap);
+        if (autocompleteMap.size() > 0) {
+            autocompleteCache.put(query.getKeyword(), autocompleteMap);
+        }
 
         System.out.println("Get Auto Complete Result" + new JSONObject(autocompleteMap).toString());
         return Response.ok(new JSONObject(autocompleteMap).toString()).build();
@@ -828,7 +835,9 @@ public class AtlasifyResource {
                 } else {
                     explanationList = dbMetric.similarity(keywordPageId, featurePageId, true).getExplanations();
                     // Cache them
-                    dbpeidaExplanationsCache.put(pair, explanationList);
+                    if (explanationList.size() > 0) {
+                        dbpeidaExplanationsCache.put(pair, explanationList);
+                    }
                 }
 
                 for (Explanation exp : explanationList) {
@@ -894,7 +903,9 @@ public class AtlasifyResource {
                 northwesternExplanationList = new JSONArray(stringBuilder.toString());
 
                 // Cache the explanations
-                northwesternExplanationsCache.put(northwesternPair, northwesternExplanationList);
+                if (northwesternExplanationList.length() > 0) {
+                    northwesternExplanationsCache.put(northwesternPair, northwesternExplanationList);
+                }
             }
 
             // Process the northwestern json
