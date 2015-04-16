@@ -474,7 +474,7 @@ public class AtlasifyResource {
                             //do nothing
                         }
                     }
-
+                    /*
                     // Find the top sr items to load
                     List<String> topPages = new ArrayList<String>();//(featureIdList);
                     for (String id : featureNameList) {
@@ -526,6 +526,7 @@ public class AtlasifyResource {
                         BackgroundExplanationLoader loader = new BackgroundExplanationLoader(keyword, featureID);
                         executor.submit(loader);
                     }
+                    */
                 } catch (Exception e) {
                     System.out.println("Error when connecting to Northwestern Server ");
                     e.printStackTrace();
