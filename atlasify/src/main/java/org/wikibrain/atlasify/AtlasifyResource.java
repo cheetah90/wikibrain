@@ -143,7 +143,7 @@ public class AtlasifyResource {
     private static int maximumSRCacheSize = 50000;
     private static ConcurrentLinkedHashMap<String, String> srCache;
     // An explanations cache
-    private static int maximumExplanationsSize = 1000;
+    private static int maximumExplanationsSize = 10000;
     private static ConcurrentLinkedHashMap<String, JSONArray> northwesternExplanationsCache;
     private static ConcurrentLinkedHashMap<String, List<Explanation>> dbpeidaExplanationsCache;
     private static String pairSeperator = "%";
@@ -500,22 +500,35 @@ public class AtlasifyResource {
                         }
                     }
 
-                    class BackgroundExplanationLoader implements Runnable {
-                        public LocalId featureID;
+                    class BackgroundExplanationLoader extends Thread {
+                        public List<String> topPages;
                         public String keyword;
-                        public BackgroundExplanationLoader(String keyword, LocalId featureID) {
+                        public BackgroundExplanationLoader(String keyword, List<String> topPages) {
                             this.keyword = keyword;
-                            this.featureID = featureID;
+                            this.topPages = topPages;
+                            setPriority(MIN_PRIORITY);
                         }
+                        public long timeout = 5000; // In milliseconds
 
                         public void run() {
                             try {
-                                String title = lpDao.getById(featureID).getTitle().getCanonicalTitle();
-                                System.out.println("BACKGROUND loading explanations between " + keyword + " and " + title);
-                                handleExplanation(keyword, title);
+                                long beginTime = System.currentTimeMillis();
+                                for (int i = 0; i < topPages.size(); i++) {
+                                    if ((System.currentTimeMillis() - beginTime) > timeout) {
+                                        break;
+                                    }
+                                    LocalId featureID = new LocalId(lang, lpDao.getIdByTitle(new Title(topPages.get(i), lang)));
+                                    try {
+                                        String title = lpDao.getById(featureID).getTitle().getCanonicalTitle();
+                                        System.out.println("BACKGROUND loading explanations between " + keyword + " and " + title);
+                                        handleExplanation(keyword, title);
+                                    } catch (Exception e) {
+                                        System.out.println("ERROR Unable to process explanation on background thread");
+                                        e.printStackTrace();
+                                    }
+                                }
                             } catch (Exception e) {
-                                System.out.println("ERROR: Unable to process explanation on background thread");
-                                e.printStackTrace();
+                                System.out.println("ERROR Error occurred while loading background explanations");
                             }
                         }
                     };
