@@ -77,6 +77,7 @@ public class AtlasifyResource {
 
     private static class AtlasifyQuery{
         private String keyword;
+        private String refSystem;
         private String[] featureIdList;
         private String[] featureNameList;
 
@@ -84,20 +85,26 @@ public class AtlasifyResource {
 
         }
 
-        public AtlasifyQuery(String keyword, String[] featureIdList, String[] featureNameList){
+        public AtlasifyQuery(String keyword, String refSystem, String[] featureIdList, String[] featureNameList){
             this.keyword = keyword;
+            this.refSystem = refSystem;
             this.featureIdList = featureIdList;
             this.featureNameList = featureNameList;
         }
 
-        public AtlasifyQuery(String keyword, List<String> featureIdList, List<String> featureNameList){
+        public AtlasifyQuery(String keyword, String refSystem, List<String> featureIdList, List<String> featureNameList){
             this.keyword = keyword;
+            this.refSystem = refSystem;
             this.featureIdList = featureIdList.toArray(new String[featureIdList.size()]);
             this.featureNameList = featureNameList.toArray(new String[featureNameList.size()]);
         }
 
         public String getKeyword(){
             return keyword;
+        }
+
+        public String getRefSystem(){
+            return refSystem;
         }
 
         public String[] getFeatureIdList(){
@@ -287,13 +294,16 @@ public class AtlasifyResource {
      * @return a map contains <localID, SRValue>, each entry represents the sr value for a pair of articles
      * @throws Exception
      */
-    public static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN) throws Exception {
+    public static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN, boolean spatialOnly) throws Exception {
         Language language = lang;
         String url = "";
-        if(topN == -1){
+        if(topN == -1 && spatialOnly){
             url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId() + "/spatial/true";
         }
-        else{
+        else if (topN == -1){
+            url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId();
+        }
+        else {
             url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId()+ "/top/" + topN.toString();
         }
         System.out.println("NU QUERY " + url);
@@ -376,7 +386,7 @@ public class AtlasifyResource {
 
 
     static private boolean useNorthWesternAPI  = true;
-    static private int     NorthwesternTimeout = 60000; // in milliseconds
+    static private int     NorthwesternTimeout = 100000; // in milliseconds
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
 
@@ -428,7 +438,13 @@ public class AtlasifyResource {
                 }
                 // LocalId queryID = new LocalId(Language.EN, 19908980);
                 try {
-                    final Map<LocalId, Double> srValues = accessNorthwesternAPI(queryID, -1);
+                    Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
+                    if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
+                        srValues = accessNorthwesternAPI(queryID, -1, true);
+                    }
+                    else{
+                        srValues = accessNorthwesternAPI(queryID, -1, false);
+                    }
 
                     for (int i = 0; i < featureIdList.size(); i++) {
                         LocalId featureID = new LocalId(lang, 0);
@@ -918,17 +934,17 @@ public class AtlasifyResource {
             try{
                 for (int i = 0; i < northwesternExplanationList.length(); i++) {
                     JSONObject northwesternJSON = northwesternExplanationList.getJSONObject(i);
-                    JSONArray northwesternExplanations = northwesternJSON.getJSONArray("explanations");
-                    double srval = northwesternJSON.getDouble("srval");
+                    JSONArray northwesternExplanations = northwesternJSON.getJSONArray("paragraphs");
+                    double srval = northwesternJSON.getDouble("c-score");
                     String title = northwesternJSON.getString("title");
 
                     for (int j = 0; j < northwesternExplanations.length(); j++) {
                         JSONObject northwesternExplanation = (JSONObject) northwesternExplanations.get(j);
 
-                        String explanationString = northwesternExplanation.getString("content");
+                        String explanationString = northwesternExplanation.getString("curated");
                         // Load the complete content if content is unavailable
                         if (explanationString.equals("")) {
-                            explanationString = northwesternExplanation.getString("completeContent");
+                            explanationString = northwesternExplanation.getString("complete");
                         }
                         // Make sure the string is still valid
                         if (explanationString.equals("") || explanationString.contains("Category:") || containsExplanation(explanationSection, explanationString)) {
