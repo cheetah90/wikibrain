@@ -685,8 +685,8 @@ public class AtlasifyResource {
         Map<String, String> autocompleteMap;
 
         if ((autocompleteMap = autocompleteCache.get(query.getKeyword())) != null) {
-            System.out.println("Get Auto Complete Result from cache " + new JSONObject(autocompleteMap).toString());
-            return Response.ok(new JSONObject(autocompleteMap).toString()).build();
+            System.out.println("Get Auto Complete Result from cache " + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+            return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
         }
 
         autocompleteMap = new HashMap<String, String>();
