@@ -654,8 +654,8 @@ public class AtlasifyResource {
     }
 
     class autoCompeleteResponse {
-        private Map<String, String> resultList;
-        private Integer autoCompleteChecksum;
+        public Map<String, String> resultList;
+        public Integer autoCompleteChecksum;
 
         autoCompeleteResponse(Map<String, String> resultList, Integer autoCompleteChecksum){
             this.resultList = resultList;
@@ -782,7 +782,7 @@ public class AtlasifyResource {
         }
 
         System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
-        return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum())).toString()).build();
+        return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
     }
     public String getExplanation(String keyword, String feature) throws Exception{
         if (lpDao == null && wikibrainLoadingInProcess == false) {
