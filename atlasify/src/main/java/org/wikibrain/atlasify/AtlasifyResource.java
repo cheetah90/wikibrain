@@ -1166,14 +1166,21 @@ public class AtlasifyResource {
             writer.close();
         }
     }
-
+    public static class poiResponse{
+        public String geoJSON;
+        public Integer poiChecksum;
+        poiResponse(String geoJSON, Integer poiChecksum){
+            this.geoJSON = geoJSON;
+            this.poiChecksum = poiChecksum;
+        }
+    }
         //return the list of all spatial objects in the top 100 most realted articles
     @GET
-    @Path("/getpoi/id={keyword}")
+    @Path("/getpoi/id={keyword}/checksum={checksum}")
     @Consumes("text/plain")
     @Produces("text/plain")
 
-    public Response getPOIs (@PathParam("keyword") String keyword) throws SchemaException, IOException, WikiBrainException, DaoException{
+    public Response getPOIs (@PathParam("keyword") String keyword, @PathParam("checksum") Integer checksum) throws SchemaException, IOException, WikiBrainException, DaoException{
         if(lpDao==null){
             wikibrainSRinit();
         }
@@ -1181,7 +1188,7 @@ public class AtlasifyResource {
         //System.out.println("GOT JSON RESULT " + jsonResult);
         String result = poiGenerator.getTopNPOI(keyword, this);
         System.out.println("FINISHED GETTING POI FOR "+keyword);
-        return Response.ok(result).build();
+        return Response.ok(new JSONObject(new poiResponse(result, checksum), new String[]{"geoJSON", "poiChecksum"}).toString()).build();
     }
 
 
