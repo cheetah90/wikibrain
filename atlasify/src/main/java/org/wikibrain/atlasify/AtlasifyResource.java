@@ -80,23 +80,26 @@ public class AtlasifyResource {
         private String refSystem;
         private String[] featureIdList;
         private String[] featureNameList;
+        private Integer checksum;
 
         public AtlasifyQuery(){
 
         }
 
-        public AtlasifyQuery(String keyword, String refSystem, String[] featureIdList, String[] featureNameList){
+        public AtlasifyQuery(String keyword, String refSystem, String[] featureIdList, String[] featureNameList, Integer checksum){
             this.keyword = keyword;
             this.refSystem = refSystem;
             this.featureIdList = featureIdList;
             this.featureNameList = featureNameList;
+            this.checksum = checksum;
         }
 
-        public AtlasifyQuery(String keyword, String refSystem, List<String> featureIdList, List<String> featureNameList){
+        public AtlasifyQuery(String keyword, String refSystem, List<String> featureIdList, List<String> featureNameList, Integer checksum){
             this.keyword = keyword;
             this.refSystem = refSystem;
             this.featureIdList = featureIdList.toArray(new String[featureIdList.size()]);
             this.featureNameList = featureNameList.toArray(new String[featureNameList.size()]);
+            this.checksum = checksum;
         }
 
         public String getKeyword(){
@@ -114,6 +117,8 @@ public class AtlasifyResource {
         public String[] getFeatureNameList(){
             return featureNameList;
         }
+
+        public Integer getChecksum() {return checksum; }
 
     }
 
@@ -648,6 +653,19 @@ public class AtlasifyResource {
         return Response.ok("received").build();
     }
 
+    class autoCompeleteResponse {
+        private Map<String, String> resultList;
+        private Integer autoCompleteChecksum;
+
+        autoCompeleteResponse(Map<String, String> resultList, Integer autoCompleteChecksum){
+            this.resultList = resultList;
+            this.autoCompleteChecksum = autoCompleteChecksum;
+        }
+
+        Map<String, String> getResultList() {return resultList;}
+        Integer getAutoCompleteChecksum() {return autoCompleteChecksum;}
+    }
+
     @POST
     @Path("/autocomplete")
     @Consumes("application/json")
@@ -764,7 +782,7 @@ public class AtlasifyResource {
         }
 
         System.out.println("Get Auto Complete Result" + new JSONObject(autocompleteMap).toString());
-        return Response.ok(new JSONObject(autocompleteMap).toString()).build();
+        return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum())).toString()).build();
     }
     public String getExplanation(String keyword, String feature) throws Exception{
         if (lpDao == null && wikibrainLoadingInProcess == false) {
