@@ -653,7 +653,7 @@ public class AtlasifyResource {
         return Response.ok("received").build();
     }
 
-    class autoCompeleteResponse {
+    public static class autoCompeleteResponse {
         public Map<String, String> resultList;
         public Integer autoCompleteChecksum;
 
