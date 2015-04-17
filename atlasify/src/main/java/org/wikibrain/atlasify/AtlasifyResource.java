@@ -781,7 +781,7 @@ public class AtlasifyResource {
             autocompleteCache.put(query.getKeyword(), autocompleteMap);
         }
 
-        System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum())).toString());
+        System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
         return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum())).toString()).build();
     }
     public String getExplanation(String keyword, String feature) throws Exception{
