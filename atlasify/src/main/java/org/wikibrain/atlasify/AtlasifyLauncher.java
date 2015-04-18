@@ -111,7 +111,7 @@ public class AtlasifyLauncher {
         server.stopAtlasify();
         LOG.info("Atlasify stopped.");
         serverLog("Stop", "Successful");
-
+        return;
     }
 
 }
