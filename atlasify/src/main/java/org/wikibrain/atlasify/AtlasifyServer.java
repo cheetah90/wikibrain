@@ -52,6 +52,7 @@ public class AtlasifyServer {
 
 
     private static URI getBaseURI() {
+        System.out.println("Creating Server with URL " + baseUrl + " and port number " + portNo);
         return UriBuilder.fromUri(baseUrl).port(portNo).build();
     }
     private static URI baseURI = getBaseURI();
