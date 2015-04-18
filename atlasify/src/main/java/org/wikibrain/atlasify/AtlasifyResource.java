@@ -75,6 +75,10 @@ import java.util.concurrent.RunnableFuture;
 @Path("/wikibrain")
 public class AtlasifyResource {
 
+    public AtlasifyResource() {
+        wikibrainSRinit();
+    }
+
     private static class AtlasifyQuery{
         private String keyword;
         private String refSystem;

@@ -65,7 +65,8 @@ public class AtlasifyServer {
 
     public static ByteArrayOutputStream logger = new ByteArrayOutputStream();
     public static final boolean useLocalLogger = true;
-    public static void main(String[] args) throws IOException {
+    public static HttpServer server;
+    public void startAtlasify() throws IOException {
         if (useLocalLogger == false) {
             PrintStream stdOut = System.out;
             System.setOut(new OutputRedirector(logger, stdOut));
@@ -73,15 +74,14 @@ public class AtlasifyServer {
             System.setErr(new OutputRedirector(logger, stdErr));
         }
 
-        HttpServer server = startServer();
+        server = startServer();
         System.out.println(String.format("Jersey app started with WADL available at "
                 + "%sapplication.wadl\nTry out %shelloworld\nHit enter to stop it...",
                 baseURI, baseURI));
-        System.in.read();
-        server.stop();
-
 
     }
-
+    public void stopAtlasify(){
+        server.shutdownNow();
+    }
 
 }
