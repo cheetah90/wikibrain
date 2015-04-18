@@ -75,7 +75,7 @@ import java.util.concurrent.RunnableFuture;
 @Path("/wikibrain")
 public class AtlasifyResource {
 
-    
+
     private static class AtlasifyQuery{
         private String keyword;
         private String refSystem;
@@ -466,12 +466,12 @@ public class AtlasifyResource {
                         try {
                             String color = getColorStringFromSR(srValues.get(featureID));
                             srMap.put(featureNameList.get(i).toString(), color);
-                            System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
+                            //System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
                             gotUsefulDataToCache = true;
                         } catch (Exception e) {
                             //put white for anything not present in the SR map
                             try {
-                                System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
+                                //System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
                             } catch (Exception e1) {
                                 System.out.println("Failed to get SR");
                             }
@@ -841,8 +841,8 @@ public class AtlasifyResource {
 
             // Get Wikidata Explanations using the LocalPageDao
             try{
-                int keywordID = lpDao.getIdByTitle(new Title(keyword, Language.SIMPLE));
-                int featureID = lpDao.getIdByTitle(new Title(feature, Language.SIMPLE));
+                int keywordID = lpDao.getIdByTitle(new Title(keyword, lang));
+                int featureID = lpDao.getIdByTitle(new Title(feature, lang));
                 for (Explanation exp : wdMetric.similarity(keywordID, featureID, true).getExplanations()) {
                     try {
                         String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());

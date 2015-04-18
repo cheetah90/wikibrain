@@ -59,13 +59,13 @@ public class AtlasifyLauncher {
                 }
             }
             try{
-                LOG.info("Server is not responsive! Attemping restarting Atlasify");
+                LOG.warning("Server is not responsive! Attemping restarting Atlasify");
                 restartAtlasify();
                 LOG.info("Atlasify server restarted");
                 serverLog("Check Status", "Bad - Restart successfully");
             }
             catch (Exception e){
-                LOG.info("Failed to restart Atlasify");
+                LOG.warning("Failed to restart Atlasify");
                 serverLog("Check Status", "Bad - Restart failed");
             }
 
@@ -107,6 +107,9 @@ public class AtlasifyLauncher {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(atlasifyTask, 120000, 120000);
         System.in.read();
+        LOG.info("Stopping Atlasfiy...");
+        server.stopAtlasify();
+        LOG.info("Atlasify stopped.");
         serverLog("Stop", "Successful");
 
     }
