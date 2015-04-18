@@ -74,10 +74,7 @@ public class AtlasifyLauncher {
 
     private static AtlasifyServer server;
 
-    public AtlasifyLauncher() throws IOException{
-        server = new AtlasifyServer(baseURL, portNo);
-        serverLogWriter = new CSVWriter(new FileWriter(new File("atlasifyServerLog.csv"), true), ',');
-    }
+
 
     private static void restartAtlasify() throws InterruptedException, IOException{
         server.stopAtlasify();
@@ -100,7 +97,8 @@ public class AtlasifyLauncher {
     }
 
     public static void main(String args[])  throws IOException{
-
+        server = new AtlasifyServer(baseURL, portNo);
+        serverLogWriter = new CSVWriter(new FileWriter(new File("atlasifyServerLog.csv"), true), ',');
         LOG.info("Starting Atlasify server...");
         server.startAtlasify();
         LOG.info("Atlasify server started! Hit enter to stop");
