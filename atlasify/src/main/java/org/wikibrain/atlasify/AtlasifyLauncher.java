@@ -19,7 +19,7 @@ public class AtlasifyLauncher {
 
     private static final Logger LOG = Logger.getLogger(AtlasifyLauncher.class.getName());
     private static CSVWriter serverLogWriter;
-    private static String baseURL = "http://spatialization.cs.umn.edu";
+    private static String baseURL = new String("http://spatialization.cs.umn.edu/");
     private static int portNo = 8080;
     private static class checkAtlasifyStatus extends TimerTask{
         @Override
