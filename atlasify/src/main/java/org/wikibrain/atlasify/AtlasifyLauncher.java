@@ -18,8 +18,9 @@ import java.util.logging.Logger;
 public class AtlasifyLauncher {
 
     private static final Logger LOG = Logger.getLogger(AtlasifyLauncher.class.getName());
-    static CSVWriter serverLogWriter;
-
+    private static CSVWriter serverLogWriter;
+    private static String baseURL = "http://spatialization.cs.umn.edu";
+    private static int portNo = 8080;
     private static class checkAtlasifyStatus extends TimerTask{
         @Override
         public void run(){
@@ -27,7 +28,7 @@ public class AtlasifyLauncher {
             int retryCounter = 0;
             while(retryCounter ++ < 5){
                 try{
-                    URL helloWorldUrl = new URL("http://spatialization.cs.umn.edu/wikibrain/helloworld");
+                    URL helloWorldUrl = new URL(baseURL + "/wikibrain/helloworld");
                     HttpURLConnection connection = (HttpURLConnection)helloWorldUrl.openConnection();
                     connection.setRequestMethod("GET");
                     BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
@@ -38,12 +39,12 @@ public class AtlasifyLauncher {
                     }
 
                     if(sb.toString().contains("hello world")){
-                        serverLog("Check Status", "Good");
+                        //serverLog("Check Status", "Good");
                         LOG.info("Server is good! Next check in 2 minutes");
                         return;
                     }
                     else {
-                        serverLog("Check Status", "Bad - Try again");
+                        //serverLog("Check Status", "Bad - Try again");
                         LOG.info("Server is bad! Will check again");
                         Thread.sleep(1000);
                     }
@@ -74,7 +75,7 @@ public class AtlasifyLauncher {
     private static AtlasifyServer server;
 
     public AtlasifyLauncher() throws IOException{
-        server = new AtlasifyServer();
+        server = new AtlasifyServer(baseURL, portNo);
         serverLogWriter = new CSVWriter(new FileWriter(new File("atlasifyServerLog.csv"), true), ',');
     }
 

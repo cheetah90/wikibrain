@@ -41,12 +41,18 @@ import java.util.Map;
 
 public class AtlasifyServer {
 
-
-
-
     private static int portNo = 8080;
+    private static String baseUrl;
+
+    public AtlasifyServer(String baseUrl, int portNo){
+        this.portNo = portNo;
+        this.baseUrl = baseUrl;
+    }
+
+
+
     private static URI getBaseURI() {
-        return UriBuilder.fromUri("http://spatialization.cs.umn.edu/").port(portNo).build();
+        return UriBuilder.fromUri(baseUrl).port(portNo).build();
     }
     private static URI baseURI = getBaseURI();
 
