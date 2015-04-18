@@ -41,12 +41,14 @@ import java.util.Map;
 
 public class AtlasifyServer {
 
-    private static int portNo = 8080;
+    private static int portNo;
     private static String baseUrl;
+    private static URI baseURI;
 
     public AtlasifyServer(String baseUrl, int portNo){
         this.portNo = portNo;
         this.baseUrl = baseUrl;
+        baseURI = getBaseURI();
     }
 
 
@@ -55,7 +57,7 @@ public class AtlasifyServer {
         System.out.println("Creating Server with URL " + baseUrl + " and port number " + portNo);
         return UriBuilder.fromUri(baseUrl).port(portNo).build();
     }
-    private static URI baseURI = getBaseURI();
+
 
 
 
