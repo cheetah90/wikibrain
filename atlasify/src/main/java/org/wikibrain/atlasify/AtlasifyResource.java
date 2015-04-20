@@ -137,7 +137,6 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     private static boolean loadWikibrainSR = false;
-    public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static RealMatrix gameCorrelationMatrix;
     private static List<String> gameTitles;
     private static LuceneSearcher luceneSearcher;
@@ -241,13 +240,7 @@ public class AtlasifyResource {
             System.out.println("FINISHED LOADING POI GENERATOR");
 
 
-            //construct black list for GADM0/1 in POI Generation
-            CSVReader reader = new CSVReader(new FileReader("gadm_matched.csv"), ',');
-            List<String[]> gadmList = reader.readAll();
-            for(String[] gadmItem : gadmList){
-                if(Integer.parseInt(gadmItem[2]) < 2)
-                    GADM01Concepts.add(Integer.parseInt(gadmItem[0]));
-            }
+
 
 
 
@@ -1187,7 +1180,7 @@ public class AtlasifyResource {
         }
         System.out.println("REQUESTED POI "+keyword);
         //System.out.println("GOT JSON RESULT " + jsonResult);
-        String result = poiGenerator.getTopNPOI(keyword, this);
+        String result = poiGenerator.getTopNPOI(keyword);
         System.out.println("FINISHED GETTING POI FOR "+keyword);
         return Response.ok(new JSONObject(new poiResponse(result, checksum), new String[]{"geoJSON", "poiChecksum"}).toString()).build();
     }
