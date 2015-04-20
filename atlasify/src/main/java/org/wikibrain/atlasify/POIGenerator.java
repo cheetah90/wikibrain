@@ -31,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Created by toby on 3/4/15.
@@ -42,6 +43,8 @@ public class POIGenerator {
     private static LocalPageDao lpDao = null;
     private static UniversalPageDao upDao = null;
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
+    private static final Logger LOG = Logger.getLogger(POIGenerator.class.getName());
+
     SimpleFeatureBuilder fb;
     FeatureJSON featureJSON = new FeatureJSON();
 
@@ -170,6 +173,7 @@ public class POIGenerator {
         Map<Integer, String> idExplanationMap = new HashMap<Integer, String>();
         try{
             Map<LocalId, Double>srValues=AtlasifyResource.accessNorthwesternAPI(queryID, 400, false);
+            LOG.info("Finished getting SR info for POI calculation for keyword " + keyword);
             for(Map.Entry<LocalId, Double>e:srValues.entrySet()){
                 try{
                     LocalPage localPage = lpDao.getById(e.getKey());
@@ -197,6 +201,7 @@ public class POIGenerator {
         }
         //System.out.println("START PACKING JSON FOR POI REQUEST " + keyword + " MAP SIZE " + idGeomMap.size() + " " + idTitleMap.size() + " " + idExplanationMap.size());
         String result = "";
+        LOG.info("Finished poi data construction for keyword " + keyword);
         try{
             result = geoJSONPacking(idGeomMap, idTitleMap, idExplanationMap);
         }
