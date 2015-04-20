@@ -183,7 +183,6 @@ public class POIGenerator {
                     if(geometryMap.containsKey(univId)){
                         idGeomMap.put(univId, geometryMap.get(univId).getCentroid());
                         idTitleMap.put(univId, localPage.getTitle().getCanonicalTitle());
-                        idExplanationMap.put(univId, localPage.getTitle().getCanonicalTitle() + " : " + localPage.getTitle().getCanonicalTitle() + " is a top related article to " + keyword);
                     }
                 }
                 catch(Exception e1){
