@@ -617,18 +617,18 @@ public class AtlasifyResource {
         if(SR < 0.3651)
             return "#ffffff";
         if(SR < 0.4500)
-            return "#e5f5f9";
+            return "#edf8e9";
         if(SR < 0.5072)
-            return "#ccece6";
+            return "#c7e9c0";
         if(SR < 0.5670)
-            return "#99d8c9";
+            return "#a1d99b";
         if(SR < 0.6137)
-            return "#66c2a4";
+            return "#74c476";
         if(SR < 0.7000)
-            return "#41ae76";
+            return "#41ab5d";
         if(SR < 0.7942)
             return "#238b45";
-        return "#005824";
+        return "#005a32";
     }
 
     @POST
