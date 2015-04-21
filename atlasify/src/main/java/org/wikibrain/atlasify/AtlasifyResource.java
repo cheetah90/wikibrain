@@ -918,6 +918,7 @@ public class AtlasifyResource {
             if (northwesternExplanationsCache.containsKey(northwesternPair)) {
                 northwesternExplanationResult = northwesternExplanationsCache.get(northwesternPair);
             } else {
+                System.out.println("Querying NU server for explanation between " + keyword + " and " + feature);
                 String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
                 StringBuilder stringBuilder = new StringBuilder();
                 try {
