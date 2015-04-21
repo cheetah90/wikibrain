@@ -44,8 +44,6 @@ public class MovieSRCalculator {
         int i = 0;
         int count = 0;
         for(String[] entry: movieRowList){
-            if(count++ > 20)
-                break;
             Integer uId = Integer.parseInt(entry[0]);
             Integer localId = upDao.getLocalId(Language.EN, uId);
             localIdTitleMap.put(localId, entry[1]);
@@ -59,7 +57,7 @@ public class MovieSRCalculator {
 
         for(int x = 0; x < i; x ++){
             for(int y = 0; y < i; y ++){
-                if(x % 10 == 0){
+                if(x % 100 == 0){
                     System.out.println("FINISHED " + x + " OUT OF " + i);
                 }
                 row[0] = localIdImdbMap.get(array[x]);

@@ -78,28 +78,32 @@ import java.util.concurrent.RunnableFuture;
 @Path("/wikibrain")
 public class AtlasifyResource {
 
+
     private static class AtlasifyQuery{
         private String keyword;
         private String refSystem;
         private String[] featureIdList;
         private String[] featureNameList;
+        private Integer checksum;
 
         public AtlasifyQuery(){
 
         }
 
-        public AtlasifyQuery(String keyword, String refSystem, String[] featureIdList, String[] featureNameList){
+        public AtlasifyQuery(String keyword, String refSystem, String[] featureIdList, String[] featureNameList, Integer checksum){
             this.keyword = keyword;
             this.refSystem = refSystem;
             this.featureIdList = featureIdList;
             this.featureNameList = featureNameList;
+            this.checksum = checksum;
         }
 
-        public AtlasifyQuery(String keyword, String refSystem, List<String> featureIdList, List<String> featureNameList){
+        public AtlasifyQuery(String keyword, String refSystem, List<String> featureIdList, List<String> featureNameList, Integer checksum){
             this.keyword = keyword;
             this.refSystem = refSystem;
             this.featureIdList = featureIdList.toArray(new String[featureIdList.size()]);
             this.featureNameList = featureNameList.toArray(new String[featureNameList.size()]);
+            this.checksum = checksum;
         }
 
         public String getKeyword(){
@@ -117,6 +121,8 @@ public class AtlasifyResource {
         public String[] getFeatureNameList(){
             return featureNameList;
         }
+
+        public Integer getChecksum() {return checksum; }
 
     }
 
@@ -157,7 +163,7 @@ public class AtlasifyResource {
     private static ConcurrentLinkedHashMap<String, String> srCache;
     // An explanations cache
     private static int maximumExplanationsSize = 10000;
-    private static ConcurrentLinkedHashMap<String, JSONArray> northwesternExplanationsCache;
+    private static ConcurrentLinkedHashMap<String, JSONObject> northwesternExplanationsCache;
     private static ConcurrentLinkedHashMap<String, List<Explanation>> dbpeidaExplanationsCache;
     private static String pairSeperator = "%";
     //intialize all the DAOs we'll need to use
@@ -184,7 +190,7 @@ public class AtlasifyResource {
                     .initialCapacity(maximumSRCacheSize / 10)
                     .build();
             // Explanations cache creation
-            northwesternExplanationsCache = new ConcurrentLinkedHashMap.Builder<String, JSONArray>()
+            northwesternExplanationsCache = new ConcurrentLinkedHashMap.Builder<String, JSONObject>()
                     .maximumWeightedCapacity(maximumExplanationsSize)
                     .initialCapacity(maximumExplanationsSize/10)
                     .build();
@@ -229,13 +235,7 @@ public class AtlasifyResource {
             System.out.println("FINISHED LOADING POI GENERATOR");
 
 
-            //construct black list for GADM0/1 in POI Generation
-            CSVReader reader = new CSVReader(new FileReader("gadm_matched.csv"), ',');
-            List<String[]> gadmList = reader.readAll();
-            for(String[] gadmItem : gadmList){
-                if(Integer.parseInt(gadmItem[2]) < 2)
-                    GADM01Concepts.add(Integer.parseInt(gadmItem[0]));
-            }
+
 
 
 
@@ -588,12 +588,12 @@ public class AtlasifyResource {
                         try {
                             String color = getColorStringFromSR(srValues.get(featureID));
                             srMap.put(featureNameList.get(i).toString(), color);
-                            System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
+                            //System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
                             gotUsefulDataToCache = true;
                         } catch (Exception e) {
                             //put white for anything not present in the SR map
                             try {
-                                System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
+                                //System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
                             } catch (Exception e1) {
                                 System.out.println("Failed to get SR");
                             }
@@ -602,7 +602,7 @@ public class AtlasifyResource {
                             //do nothing
                         }
                     }
-
+                    /*
                     // Find the top sr items to load
                     List<String> topPages = new ArrayList<String>();//(featureIdList);
                     for (String id : featureNameList) {
@@ -662,7 +662,12 @@ public class AtlasifyResource {
                     };
 
                     ExecutorService executor = Executors.newCachedThreadPool();
-                    executor.submit(new BackgroundExplanationLoader(keyword, topPages));
+                    for (int i = 0; i < topPages.size(); i++) {
+                        LocalId featureID = new LocalId(lang, lpDao.getIdByTitle(new Title(topPages.get(i), lang)));
+                        BackgroundExplanationLoader loader = new BackgroundExplanationLoader(keyword, featureID);
+                        executor.submit(loader);
+                    }
+                    */
                 } catch (Exception e) {
                     System.out.println("Error when connecting to Northwestern Server ");
                     e.printStackTrace();
@@ -734,18 +739,18 @@ public class AtlasifyResource {
         if(SR < 0.3651)
             return "#ffffff";
         if(SR < 0.4500)
-            return "#e5f5f9";
+            return "#edf8e9";
         if(SR < 0.5072)
-            return "#ccece6";
+            return "#c7e9c0";
         if(SR < 0.5670)
-            return "#99d8c9";
+            return "#a1d99b";
         if(SR < 0.6137)
-            return "#66c2a4";
+            return "#74c476";
         if(SR < 0.7000)
-            return "#41ae76";
+            return "#41ab5d";
         if(SR < 0.7942)
             return "#238b45";
-        return "#005824";
+        return "#005a32";
     }
 
     @POST
@@ -771,6 +776,19 @@ public class AtlasifyResource {
         return Response.ok("received").build();
     }
 
+    public static class autoCompeleteResponse {
+        public Map<String, String> resultList;
+        public Integer autoCompleteChecksum;
+
+        autoCompeleteResponse(Map<String, String> resultList, Integer autoCompleteChecksum){
+            this.resultList = resultList;
+            this.autoCompleteChecksum = autoCompleteChecksum;
+        }
+
+        Map<String, String> getResultList() {return resultList;}
+        Integer getAutoCompleteChecksum() {return autoCompleteChecksum;}
+    }
+
     @POST
     @Path("/autocomplete")
     @Consumes("application/json")
@@ -790,8 +808,8 @@ public class AtlasifyResource {
         Map<String, String> autocompleteMap;
 
         if ((autocompleteMap = autocompleteCache.get(query.getKeyword())) != null) {
-            System.out.println("Get Auto Complete Result from cache " + new JSONObject(autocompleteMap).toString());
-            return Response.ok(new JSONObject(autocompleteMap).toString()).build();
+            System.out.println("Get Auto Complete Result from cache " + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+            return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
         }
 
         autocompleteMap = new HashMap<String, String>();
@@ -886,8 +904,8 @@ public class AtlasifyResource {
             autocompleteCache.put(query.getKeyword(), autocompleteMap);
         }
 
-        System.out.println("Get Auto Complete Result" + new JSONObject(autocompleteMap).toString());
-        return Response.ok(new JSONObject(autocompleteMap).toString()).build();
+        System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+        return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
     }
     public String getExplanation(String keyword, String feature) throws Exception{
         if (lpDao == null && wikibrainLoadingInProcess == false) {
@@ -912,6 +930,8 @@ public class AtlasifyResource {
                 e.printStackTrace();
                 throw  new Exception("failed to resolve titles for " + keyword + " and " + feature);
             }
+            //TODO: Temporarily disable Wikidata explanation for speed
+            /*
             // Get Wikidata Explanations using the disambiguator
             try{
                 for (Explanation exp : wdMetric.similarity(keywordPageId, featurePageId, true).getExplanations()) {
@@ -945,8 +965,8 @@ public class AtlasifyResource {
 
             // Get Wikidata Explanations using the LocalPageDao
             try{
-                int keywordID = lpDao.getIdByTitle(new Title(keyword, Language.SIMPLE));
-                int featureID = lpDao.getIdByTitle(new Title(feature, Language.SIMPLE));
+                int keywordID = lpDao.getIdByTitle(new Title(keyword, lang));
+                int featureID = lpDao.getIdByTitle(new Title(feature, lang));
                 for (Explanation exp : wdMetric.similarity(keywordID, featureID, true).getExplanations()) {
                     try {
                         String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
@@ -975,8 +995,9 @@ public class AtlasifyResource {
                 System.out.println("ERROR: failed to get Wikidata Explanations using the localPageDao for "+ keyword + " and " + feature + "\n");
                 e.printStackTrace();
             }
-
+            */
             // Get DBPedia Explanations using the disambiguator
+            System.out.println("Querying DBPedia server for explanation between " + keyword + " and " + feature);
             try{
                 List<Explanation> explanationList;
                 String pair = keywordTitle + pairSeperator + featureTitle;
@@ -1018,17 +1039,19 @@ public class AtlasifyResource {
                 System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
                 e.printStackTrace();
             }
+            System.out.println("Finished querying DBPedia server for explanation between " + keyword + " and " + feature);
 
             shuffleJSONArray(explanationSection);
             addElementesToArray(explanations, explanationSection);
             explanationSection = new JSONArray();
 
             // Check to see if the northwestern explanations are cached
-            JSONArray northwesternExplanationList;
+            JSONObject northwesternExplanationResult;
             String northwesternPair = keywordTitle + pairSeperator + featureTitle;
             if (northwesternExplanationsCache.containsKey(northwesternPair)) {
-                northwesternExplanationList = northwesternExplanationsCache.get(northwesternPair);
+                northwesternExplanationResult = northwesternExplanationsCache.get(northwesternPair);
             } else {
+                System.out.println("Querying NU server for explanation between " + keyword + " and " + feature);
                 String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
                 StringBuilder stringBuilder = new StringBuilder();
                 try {
@@ -1050,20 +1073,20 @@ public class AtlasifyResource {
                     e.printStackTrace();
                 }
 
-                northwesternExplanationList = new JSONArray(stringBuilder.toString());
+                northwesternExplanationResult = new JSONObject(stringBuilder.toString());
 
                 // Cache the explanations
-                if (northwesternExplanationList.length() > 0) {
-                    northwesternExplanationsCache.put(northwesternPair, northwesternExplanationList);
+                if (northwesternExplanationResult.length() > 0) {
+                    northwesternExplanationsCache.put(northwesternPair, northwesternExplanationResult);
                 }
             }
-
+            JSONArray northwesternExplanationList = northwesternExplanationResult.getJSONArray("explanations");
             // Process the northwestern json
             try{
                 for (int i = 0; i < northwesternExplanationList.length(); i++) {
                     JSONObject northwesternJSON = northwesternExplanationList.getJSONObject(i);
                     JSONArray northwesternExplanations = northwesternJSON.getJSONArray("paragraphs");
-                    double srval = northwesternJSON.getDouble("c-score");
+                    double srval = northwesternJSON.getDouble("srval");
                     String title = northwesternJSON.getString("title");
 
                     for (int j = 0; j < northwesternExplanations.length(); j++) {
@@ -1271,22 +1294,29 @@ public class AtlasifyResource {
             writer.close();
         }
     }
-
+    public static class poiResponse{
+        public String geoJSON;
+        public Integer poiChecksum;
+        poiResponse(String geoJSON, Integer poiChecksum){
+            this.geoJSON = geoJSON;
+            this.poiChecksum = poiChecksum;
+        }
+    }
         //return the list of all spatial objects in the top 100 most realted articles
     @GET
-    @Path("/getpoi/id={keyword}")
+    @Path("/getpoi/id={keyword}/checksum={checksum}")
     @Consumes("text/plain")
     @Produces("text/plain")
 
-    public Response getPOIs (@PathParam("keyword") String keyword) throws SchemaException, IOException, WikiBrainException, DaoException{
+    public Response getPOIs (@PathParam("keyword") String keyword, @PathParam("checksum") Integer checksum) throws SchemaException, IOException, WikiBrainException, DaoException{
         if(lpDao==null){
             wikibrainSRinit();
         }
         System.out.println("REQUESTED POI "+keyword);
         //System.out.println("GOT JSON RESULT " + jsonResult);
-        String result = poiGenerator.getTopNPOI(keyword, this);
+        String result = poiGenerator.getTopNPOI(keyword);
         System.out.println("FINISHED GETTING POI FOR "+keyword);
-        return Response.ok(result).build();
+        return Response.ok(new JSONObject(new poiResponse(result, checksum), new String[]{"geoJSON", "poiChecksum"}).toString()).build();
     }
 
 

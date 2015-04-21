@@ -41,14 +41,23 @@ import java.util.Map;
 
 public class AtlasifyServer {
 
+    private static int portNo;
+    private static String baseUrl;
+    private static URI baseURI;
 
-
-
-    private static int portNo = 8080;
-    private static URI getBaseURI() {
-        return UriBuilder.fromUri("http://spatialization.cs.umn.edu/").port(portNo).build();
+    public AtlasifyServer(String baseUrl, int portNo){
+        this.portNo = portNo;
+        this.baseUrl = baseUrl;
+        baseURI = getBaseURI();
     }
-    private static URI baseURI = getBaseURI();
+
+
+
+    private static URI getBaseURI() {
+        System.out.println("Creating Server with URL " + baseUrl + " and port number " + portNo);
+        return UriBuilder.fromUri(baseUrl).port(portNo).build();
+    }
+
 
 
 
@@ -65,7 +74,8 @@ public class AtlasifyServer {
 
     public static ByteArrayOutputStream logger = new ByteArrayOutputStream();
     public static final boolean useLocalLogger = true;
-    public static void main(String[] args) throws IOException {
+    public static HttpServer server;
+    public void startAtlasify() throws IOException {
         if (useLocalLogger == false) {
             PrintStream stdOut = System.out;
             System.setOut(new OutputRedirector(logger, stdOut));
@@ -73,15 +83,14 @@ public class AtlasifyServer {
             System.setErr(new OutputRedirector(logger, stdErr));
         }
 
-        HttpServer server = startServer();
+        server = startServer();
         System.out.println(String.format("Jersey app started with WADL available at "
                 + "%sapplication.wadl\nTry out %shelloworld\nHit enter to stop it...",
                 baseURI, baseURI));
-        System.in.read();
-        server.stop();
-
 
     }
-
+    public void stopAtlasify(){
+        server.shutdownNow();
+    }
 
 }
