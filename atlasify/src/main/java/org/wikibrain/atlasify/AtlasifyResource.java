@@ -801,6 +801,8 @@ public class AtlasifyResource {
                 e.printStackTrace();
                 throw  new Exception("failed to resolve titles for " + keyword + " and " + feature);
             }
+            //TODO: Temporarily disable Wikidata explanation for speed
+            /*
             // Get Wikidata Explanations using the disambiguator
             try{
                 for (Explanation exp : wdMetric.similarity(keywordPageId, featurePageId, true).getExplanations()) {
@@ -864,8 +866,9 @@ public class AtlasifyResource {
                 System.out.println("ERROR: failed to get Wikidata Explanations using the localPageDao for "+ keyword + " and " + feature + "\n");
                 e.printStackTrace();
             }
-
+            */
             // Get DBPedia Explanations using the disambiguator
+            System.out.println("Querying DBPedia server for explanation between " + keyword + " and " + feature);
             try{
                 List<Explanation> explanationList;
                 String pair = keywordTitle + pairSeperator + featureTitle;
@@ -907,6 +910,7 @@ public class AtlasifyResource {
                 System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
                 e.printStackTrace();
             }
+            System.out.println("Finished querying DBPedia server for explanation between " + keyword + " and " + feature);
 
             shuffleJSONArray(explanationSection);
             addElementesToArray(explanations, explanationSection);
