@@ -12,6 +12,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import jersey.repackaged.com.google.common.cache.Weigher;
 import org.apache.commons.collections15.map.LRUMap;
 import com.vividsolutions.jts.geom.Point;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.lucene.search.Query;
@@ -22,8 +23,10 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geojson.geom.GeometryJSON;
+import org.hibernate.mapping.Array;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mapdb.Atomic;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.wikibrain.conf.Configurator;
@@ -132,9 +135,19 @@ public class AtlasifyResource {
     private static boolean wikibrainLoadingInProcess = false;
     private static boolean loadWikibrainSR = false;
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
-    private static RealMatrix gameCorrelationMatrix;
-    private static List<String> gameTitles;
     private static LuceneSearcher luceneSearcher;
+
+    // Game data
+    private static RealMatrix gameCountryCorrelationMatrix;
+    private static List<String> gameCountryTitles;
+    private static List<Integer> gameCountryIndexList;
+    private static RealMatrix gameElementCorrelationMatrix;
+    private static List<String> gameElementTitles;
+    private static List<Integer> gameElementIndexList;
+    private static RealMatrix gameSenateCorrelationMatrix;
+    private static List<String> gameSenateTitles;
+    private static List<Integer> gameSenateIndexList;
+    private static String gameDataLocation = "dat/game/";
 
     // A cache which will keep the last 5000 autocomplete requests
     private static int maximumAutocompleteCacheSize = 5000;
@@ -206,27 +219,8 @@ public class AtlasifyResource {
             pa = conf.get(PhraseAnalyzer.class, "anchortext");
             System.out.println("FINISHED LOADING PHRASE ANALYZER");
 
-            String gameTitlesFile = "game_page_titles.csv";
-            CSVReader fileReader = new CSVReader(new FileReader(new File(gameTitlesFile)), ',');
-            gameTitles = new ArrayList<String>();
-            for (String[] array : fileReader.readAll()) {
-                String s = array[0];
-                gameTitles.add(s);
-            }
-            fileReader.close();
-            String gameCorrelationFile = "game_corr_table.csv";
-            fileReader = new CSVReader(new FileReader(new File((gameCorrelationFile))), ',');
-            gameCorrelationMatrix = new BlockRealMatrix(gameTitles.size(), gameTitles.size());
-            int i = 0;
-            for (String[] array : fileReader.readAll()) {
-                int j = 0;
-                for (String s : array) {
-                    gameCorrelationMatrix.setEntry(i, j, Double.parseDouble(s));
-                    j++;
-                }
-                i++;
-            }
-            fileReader.close();
+            loadGameData(conf);
+            System.out.println("FINISHED LOADING GAME DATA");
 
             upDao = conf.get(UniversalPageDao.class);
             System.out.println("FINISHED LOADING UNIVERSALPAGE DAO");
@@ -259,6 +253,140 @@ public class AtlasifyResource {
             wikibrainLoadingInProcess = false;
         }
 
+    }
+
+    public static void loadGameData(Configurator conf) throws IOException {
+        // Country titles
+        String countryTitlesFile = gameDataLocation + "game_page_titles_country.csv";
+        CSVReader csvReader = new CSVReader(new FileReader(new File(countryTitlesFile)), ',');
+        gameCountryTitles = new ArrayList<String>();
+        gameCountryIndexList = new ArrayList<Integer>();
+        Map<Integer, Geometry> geometryMap = new HashMap<Integer, Geometry>();
+        try {
+            SpatialDataDao sdDao = conf.get(SpatialDataDao.class);
+            geometryMap = sdDao.getAllGeometriesInLayer("wikidata");
+        } catch (Exception e) {
+            // We are doing spatial articles
+        }
+
+        for (String[] line : csvReader.readAll()) {
+            String item = line[0];
+            boolean skipTitle = false;
+
+            // There are some interesting articles in Wikipedia...
+            // And we don't want them
+            if (item.toLowerCase().contains("fuck")) {
+                skipTitle = true;
+            }
+
+            // Check for spatial articles
+            try {
+                int localId = lpDao.getByTitle(lang, item).getLocalId();
+                int univId = upDao.getUnivPageId(Language.EN, localId);
+                if (geometryMap.containsKey(univId)) {
+                    skipTitle = true;
+                }
+            } catch (Exception e) {
+                // Assuming it wasn't a spatial article...
+            }
+
+
+            if (!skipTitle) {
+                gameCountryIndexList.add(gameCountryTitles.size());
+            }
+            gameCountryTitles.add(item);
+        }
+        csvReader.close();
+
+        // Periodic Table title
+        String elementTitlesFile = gameDataLocation + "game_page_titles_periodic_table.csv";
+        csvReader = new CSVReader(new FileReader(new File(elementTitlesFile)), ',');
+        gameElementTitles = new ArrayList<String>();
+        gameElementIndexList = new ArrayList<Integer>();
+        for (String[] line : csvReader.readAll()) {
+            String item = line[0];
+            boolean skipTitle = false;
+
+            // There are some interesting articles in Wikipedia...
+            // And we don't want them
+            if (item.toLowerCase().contains("fuck")) {
+                skipTitle = true;
+            }
+
+            if (!skipTitle) {
+                gameElementIndexList.add(gameElementTitles.size());
+            }
+            gameElementTitles.add(item);
+        }
+        csvReader.close();
+
+        // Senate Table title
+        String senateTitlesFile = gameDataLocation + "game_page_titles_senate.csv";
+        csvReader = new CSVReader(new FileReader(new File(senateTitlesFile)), ',');
+        gameSenateTitles = new ArrayList<String>();
+        gameSenateIndexList = new ArrayList<Integer>();
+        for (String[] line : csvReader.readAll()) {
+            String item = line[0];
+            boolean skipTitle = false;
+
+            // There are some interesting articles in Wikipedia...
+            // And we don't want them
+            if (item.toLowerCase().contains("fuck")) {
+                skipTitle = true;
+            }
+
+            if (skipTitle) {
+                gameSenateIndexList.add(gameSenateTitles.size());
+            }
+            gameSenateTitles.add(item);
+        }
+        csvReader.close();
+
+
+        // Country correlation data
+        String countryCorrelationFile = gameDataLocation + "game_corr_table_country.csv";
+        csvReader = new CSVReader(new FileReader(new File((countryCorrelationFile))), ',');
+        gameCountryCorrelationMatrix = new BlockRealMatrix(gameCountryTitles.size(), gameCountryTitles.size());
+        int i = 0;
+        for (String[] line : csvReader.readAll()) {
+            int j = 0;
+            for (String item : line) {
+                gameCountryCorrelationMatrix.setEntry(i, j, Double.parseDouble(item));
+                j++;
+            }
+            i++;
+        }
+        csvReader.close();
+
+        // Element correlation data
+        String elementCorrelationFile = gameDataLocation + "game_corr_table_periodic_table.csv";
+        csvReader = new CSVReader(new FileReader(new File((elementCorrelationFile))), ',');
+        gameElementCorrelationMatrix = new BlockRealMatrix(gameElementTitles.size(), gameElementTitles.size());
+        i = 0;
+        for (String[] line : csvReader.readAll()) {
+            int j = 0;
+            for (String item : line) {
+                gameElementCorrelationMatrix.setEntry(i, j, Double.parseDouble(item));
+                j++;
+            }
+            i++;
+        }
+        csvReader.close();
+
+        // Senate correlation data
+        String senateCorrelationFile = gameDataLocation + "game_corr_table_senate.csv";
+        csvReader = new CSVReader(new FileReader(new File((senateCorrelationFile))), ',');
+        gameSenateCorrelationMatrix = new BlockRealMatrix(gameSenateTitles.size(), gameSenateTitles.size());
+        i = 0;
+        for (String[] line : csvReader.readAll()) {
+            int j = 0;
+            for (String item : line) {
+                gameSenateCorrelationMatrix.setEntry(i, j, Double.parseDouble(item));
+                j++;
+            }
+            i++;
+        }
+        csvReader.close();
     }
 
     /**
@@ -1172,9 +1300,7 @@ public class AtlasifyResource {
     @Produces("text/plain")
 
     public Response generateGameTitles(@PathParam("difficulty") String difficulty) {
-        if (gameCorrelationMatrix == null) {
-            wikibrainSRinit();
-        }
+
 
         double minCorrelation = 0.0;
         double maxCorrelation = 1.0;
@@ -1190,34 +1316,63 @@ public class AtlasifyResource {
             maxCorrelation = 0.25;
         }
 
-        int index = numGenerator.nextInt(gameTitles.size());
-        String articleOne = gameTitles.get(index);
+        String refSys = "country";
+        List<Integer> indicies = getGameArticles(refSys, minCorrelation, maxCorrelation);
+        String articleOne = resolveGameIndex(refSys, indicies.get(0));
+        String articleTwo = resolveGameIndex(refSys, indicies.get(1));
 
-        int nextIndex = -1;
+        JSONObject result = new JSONObject();
+        result.put("one", articleOne);
+        result.put("two", articleTwo);
 
-        // Search for a random page
-        double[] correlationRow = gameCorrelationMatrix.getRow(index);
-        ArrayList<Integer> gameTitleIndicies = new ArrayList<Integer>();
-        for (int i = 0; i < gameTitles.size(); i++) {
-            gameTitleIndicies.add(i);
+        return Response.ok(result.toString()).build();
+    }
+
+    // Returns a list of two strings for two articles within the specification
+    public List<Integer> getGameArticles(String refSys, double minCorrelation, double maxCorrelation) {
+        RealMatrix corrMatrix;
+        List<Integer> indicesList;
+
+        if (refSys.equals("country")) {
+            corrMatrix = gameCountryCorrelationMatrix;
+            indicesList = gameCountryIndexList;
+        } else if (refSys.equals("element")) {
+            corrMatrix = gameElementCorrelationMatrix;
+            indicesList = gameElementIndexList;
+        } else if (refSys.equals("senate")) {
+            corrMatrix = gameSenateCorrelationMatrix;
+            indicesList = gameSenateIndexList;
+        } else {
+            return new ArrayList<Integer>();
         }
-        List<Integer> shuffledList = new ArrayList<Integer>(gameTitleIndicies);
-        Collections.shuffle(shuffledList);
-        for(Integer i : shuffledList) {
+
+
+        if (corrMatrix == null) {
+            wikibrainSRinit();
+            return getGameArticles(refSys, minCorrelation, maxCorrelation);
+        }
+
+        int index = indicesList.get(numGenerator.nextInt(indicesList.size()));
+        double[] row = corrMatrix.getRow(index);
+
+        List<Integer> shuffledIndices = new ArrayList<Integer>(indicesList);
+        Collections.shuffle(shuffledIndices);
+
+        Integer nextIndex = -1;
+        for(Integer i : shuffledIndices) {
             if (i.equals(index)) {
                 continue;
             }
 
-            if (minCorrelation <= correlationRow[i] && correlationRow[i] <= maxCorrelation) {
+            if (minCorrelation <= row[i] && row[i] <= maxCorrelation) {
                 nextIndex = i;
                 break;
             }
         }
 
         if (nextIndex == -1) {
-            // Just get another page, doesn't really matter what it is
-            // We hope this doesn't happen
-            for (Integer i : shuffledList) {
+            // We didn't find an article, so we will just pick one
+            for (Integer i : shuffledIndices) {
                 if (i.equals(index)) {
                     continue;
                 }
@@ -1227,18 +1382,180 @@ public class AtlasifyResource {
             }
         }
 
-        String articleTwo = gameTitles.get(nextIndex);
-
-        // Randomly shuffle articles
+        // Randomly shuffle indices
         if (numGenerator.nextInt(2) == 1) {
-            String temp = articleTwo;
-            articleOne = articleOne;
-            articleTwo = temp;
+            int temp = index;
+            index = nextIndex;
+            nextIndex = temp;
         }
+
+        List<Integer> result = new ArrayList<Integer>();
+        result.add(index);
+        result.add(nextIndex);
+        return result;
+    }
+    public String resolveGameIndex(String refSys, int i) {
+        List<String> titleList;
+        if (refSys.equals("country")) {
+            titleList = gameCountryTitles;
+        } else if (refSys.equals("element")) {
+            titleList = gameElementTitles;
+        } else if (refSys.equals("senate")) {
+            titleList = gameSenateTitles;
+        } else {
+            return null;
+        }
+
+        if (titleList == null) {
+            wikibrainSRinit();
+            return resolveGameIndex(refSys, i);
+        }
+
+        return titleList.get(i);
+    }
+    class GameData {
+        String refSys;
+        int article1;
+        int article2;
+
+        GameData(String refSys, int article1, int article2) {
+            this.refSys = refSys;
+            this.article1 = article1;
+            this.article2 = article2;
+        }
+    }
+    public String encodeGameDataInHex(GameData data) {
+        int system;
+        String refSys = data.refSys;
+        if (refSys.equals("country")) {
+            system = 1;
+        } else if (refSys.equals("element")) {
+            system = 2;
+        } else if (refSys.equals("senate")) {
+            system = 3;
+        } else {
+            return null;
+        }
+
+        return system + "X" + Integer.toHexString(data.article1) + "X" + Integer.toHexString(data.article2);
+    }
+    public GameData decodeGameData(String data) {
+        String[] components = data.split("X");
+        int refSys = Integer.parseInt(components[0]);
+
+        String system;
+        if (refSys == 1) {
+            system = "country";
+        } else if (refSys == 2) {
+            system = "element";
+        } else if (refSys == 3) {
+            system = "senate";
+        } else {
+            return null;
+        }
+
+        return new GameData(system, Integer.parseInt(components[1], 16), Integer.parseInt(components[2], 16));
+    }
+
+    @GET
+    @Path("/game/type={refSys}&diff={difficulty}")
+    @Consumes("text/plain")
+    @Produces("text/plain")
+
+    public Response generateGameData(@PathParam("refSys") String refSys, @PathParam("difficulty") String difficulty) {
+        List<String> data = new ArrayList<String>();
+        for (double[] corr : correlationForDifficult(difficulty)) {
+            data.add(encodeGameDataInHex(createDataForReferenceSystem(refSys, corr[0], corr[1])));
+        }
+
+        return Response.ok(StringUtils.join(data, "Q")).build();
+    }
+    public GameData createDataForReferenceSystem(String refSys, double min, double max) {
+        String system;
+        if (refSys.equals("country")) {
+            system = "country";
+        } else if (refSys.equals("element")) {
+            system = "element";
+        } else if (refSys.equals("senate")) {
+            system = "senate";
+        } else {
+            switch (numGenerator.nextInt(5)) {
+                case 1:
+                    system = "element";
+                    break;
+                case 2:
+                    system = "senate";
+                    break;
+                default:
+                    system = "country";
+                    break;
+            }
+        }
+
+        List<Integer> results = getGameArticles(system, min, max);
+        return new GameData(system, results.get(0), results.get(1));
+    }
+    public List<double[]> correlationForDifficult(String diff) {
+        List<double[]> results = new ArrayList<double[]>();
+        if (diff.equals("easy")) {
+            results.add(new double[] {0.00, 0.25});
+            results.add(new double[] {0.05, 0.30});
+            results.add(new double[] {0.10, 0.35});
+            results.add(new double[] {0.20, 0.45});
+            results.add(new double[] {0.25, 0.50});
+            results.add(new double[] {0.30, 0.55});
+            results.add(new double[] {0.35, 0.60});
+            results.add(new double[] {0.40, 0.65});
+            results.add(new double[] {0.45, 0.70});
+            results.add(new double[] {0.50, 0.75});
+        } else if (diff.equals("hard")) {
+            results.add(new double[] {0.90, 0.99});
+            results.add(new double[] {0.91, 0.99});
+            results.add(new double[] {0.92, 0.99});
+            results.add(new double[] {0.93, 0.99});
+            results.add(new double[] {0.94, 0.99});
+            results.add(new double[] {0.95, 0.99});
+            results.add(new double[] {0.96, 0.99});
+            results.add(new double[] {0.97, 0.99});
+            results.add(new double[] {0.98, 0.99});
+            results.add(new double[] {0.98, 0.99});
+        } else {
+            results.add(new double[] {0.40, 0.65});
+            results.add(new double[] {0.50, 0.75});
+            results.add(new double[] {0.60, 0.80});
+            results.add(new double[] {0.70, 0.80});
+            results.add(new double[] {0.70, 0.80});
+            results.add(new double[] {0.75, 0.80});
+            results.add(new double[] {0.80, 0.90});
+            results.add(new double[] {0.85, 0.90});
+            results.add(new double[] {0.90, 0.95});
+            results.add(new double[] {0.90, 0.95});
+        }
+        return results;
+    }
+
+    @GET
+    @Path("/game/data={data}&round={round}")
+    @Consumes("text/plain")
+    @Produces("text/plain")
+
+    public Response decodeGameData(@PathParam("data") String data, @PathParam("round") String round) {
+        String[] strings = data.split("Q");
+        GameData gameData = decodeGameData(strings[Integer.parseInt(round)]);
+
+        String articleOne = resolveGameIndex(gameData.refSys, gameData.article1);
+        String articleTwo = resolveGameIndex(gameData.refSys, gameData.article2);
 
         JSONObject result = new JSONObject();
         result.put("one", articleOne);
         result.put("two", articleTwo);
+        if (gameData.refSys.equals("element")) {
+            result.put("refSys", "periodicTable");
+        } else if (gameData.refSys.equals("senate")) {
+            result.put("refSys", "senate");
+        } else {
+            result.put("refSys", "country");
+        }
 
         return Response.ok(result.toString()).build();
     }
