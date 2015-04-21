@@ -149,7 +149,7 @@ public class AtlasifyResource {
     private static ConcurrentLinkedHashMap<String, String> srCache;
     // An explanations cache
     private static int maximumExplanationsSize = 10000;
-    private static ConcurrentLinkedHashMap<String, JSONArray> northwesternExplanationsCache;
+    private static ConcurrentLinkedHashMap<String, JSONObject> northwesternExplanationsCache;
     private static ConcurrentLinkedHashMap<String, List<Explanation>> dbpeidaExplanationsCache;
     private static String pairSeperator = "%";
     //intialize all the DAOs we'll need to use
@@ -176,7 +176,7 @@ public class AtlasifyResource {
                     .initialCapacity(maximumSRCacheSize / 10)
                     .build();
             // Explanations cache creation
-            northwesternExplanationsCache = new ConcurrentLinkedHashMap.Builder<String, JSONArray>()
+            northwesternExplanationsCache = new ConcurrentLinkedHashMap.Builder<String, JSONObject>()
                     .maximumWeightedCapacity(maximumExplanationsSize)
                     .initialCapacity(maximumExplanationsSize/10)
                     .build();
@@ -913,10 +913,10 @@ public class AtlasifyResource {
             explanationSection = new JSONArray();
 
             // Check to see if the northwestern explanations are cached
-            JSONArray northwesternExplanationList;
+            JSONObject northwesternExplanationResult;
             String northwesternPair = keywordTitle + pairSeperator + featureTitle;
             if (northwesternExplanationsCache.containsKey(northwesternPair)) {
-                northwesternExplanationList = northwesternExplanationsCache.get(northwesternPair);
+                northwesternExplanationResult = northwesternExplanationsCache.get(northwesternPair);
             } else {
                 String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
                 StringBuilder stringBuilder = new StringBuilder();
@@ -939,20 +939,20 @@ public class AtlasifyResource {
                     e.printStackTrace();
                 }
 
-                northwesternExplanationList = new JSONArray(stringBuilder.toString());
+                northwesternExplanationResult = new JSONObject(stringBuilder.toString());
 
                 // Cache the explanations
-                if (northwesternExplanationList.length() > 0) {
-                    northwesternExplanationsCache.put(northwesternPair, northwesternExplanationList);
+                if (northwesternExplanationResult.length() > 0) {
+                    northwesternExplanationsCache.put(northwesternPair, northwesternExplanationResult);
                 }
             }
-
+            JSONArray northwesternExplanationList = northwesternExplanationResult.getJSONArray("explanations");
             // Process the northwestern json
             try{
                 for (int i = 0; i < northwesternExplanationList.length(); i++) {
                     JSONObject northwesternJSON = northwesternExplanationList.getJSONObject(i);
                     JSONArray northwesternExplanations = northwesternJSON.getJSONArray("paragraphs");
-                    double srval = northwesternJSON.getDouble("c-score");
+                    double srval = northwesternJSON.getDouble("srval");
                     String title = northwesternJSON.getString("title");
 
                     for (int j = 0; j < northwesternExplanations.length(); j++) {
