@@ -1216,7 +1216,7 @@ public class AtlasifyResource {
         Integer[] blackListArray = new Integer[]{170584, 23893, 23814944, 19728, 128608, 23410163, 39736};
         blackList.addAll(Arrays.asList(blackListArray));
         for(Map.Entry<LocalId, Double> srEntry : srValues.entrySet()){
-            if(blackList.contains(srEntry.getKey()))
+            if(blackList.contains(Integer.valueOf(srEntry.getKey().getId())))
                 continue;
             try{
                 LocalPage localPage = lpDao.getById(srEntry.getKey());
