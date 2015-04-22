@@ -594,12 +594,12 @@ public class AtlasifyResource {
                                 throw new Exception("can't get SR value for " + featureID);
                             }
                             srMap.put(featureNameList.get(i).toString(), srValues.get(featureID));
-                            System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
+                            //System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
                             gotUsefulDataToCache = true;
                         } catch (Exception e) {
                             //put white for anything not present in the SR map
                             try {
-                                System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
+                                //System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
                             } catch (Exception e1) {
                                 System.out.println("Failed to get SR");
                             }
