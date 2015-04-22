@@ -161,7 +161,7 @@ public class AtlasifyResource {
     private static ConcurrentLinkedHashMap<String, Map<String, String>> autocompleteCache;
     // An SR cache which will keep the last 50000 request string pairs
     private static int maximumSRCacheSize = 50000;
-    private static ConcurrentLinkedHashMap<String, String> srCache;
+    private static ConcurrentLinkedHashMap<String, Double> srCache;
     // An explanations cache
     private static int maximumExplanationsSize = 10000;
     private static ConcurrentLinkedHashMap<String, JSONObject> northwesternExplanationsCache;
@@ -186,7 +186,7 @@ public class AtlasifyResource {
                     .initialCapacity(maximumAutocompleteCacheSize/10)
                     .build();
             // SR cache creation
-            srCache = new ConcurrentLinkedHashMap.Builder<String, String>()
+            srCache = new ConcurrentLinkedHashMap.Builder<String, Double>()
                     .maximumWeightedCapacity(maximumSRCacheSize)
                     .initialCapacity(maximumSRCacheSize / 10)
                     .build();
@@ -541,7 +541,7 @@ public class AtlasifyResource {
         List<String> featureIdList = new ArrayList<String>(Arrays.asList(query.getFeatureIdList()));
         List<String> featureNameList = new ArrayList<String>(Arrays.asList(query.getFeatureNameList()));
         String keyword = query.getKeyword();
-        Map<String, String> srMap = new HashMap<String, String>();
+        Map<String, Double> srMap = new HashMap<String, Double>();
         System.out.println("Receive featureId size of " + featureIdList.size() + " and featureName size of " + featureNameList.size());
 
         // Get values out of the cache
@@ -587,8 +587,7 @@ public class AtlasifyResource {
                         }
 
                         try {
-                            String color = getColorStringFromSR(srValues.get(featureID));
-                            srMap.put(featureNameList.get(i).toString(), color);
+                            srMap.put(featureNameList.get(i).toString(), srValues.get(featureID));
                             //System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
                             gotUsefulDataToCache = true;
                         } catch (Exception e) {
@@ -598,7 +597,7 @@ public class AtlasifyResource {
                             } catch (Exception e1) {
                                 System.out.println("Failed to get SR");
                             }
-                            srMap.put(featureNameList.get(i).toString(), "#ffffff");
+                            srMap.put(featureNameList.get(i).toString(), 0.0);
                             continue;
                             //do nothing
                         }
@@ -713,18 +712,18 @@ public class AtlasifyResource {
      * @param featureNameList
      * @return
      */
-    private Map<String, String> wikibrainSR(AtlasifyQuery query, String[] featureNameList) {
-        Map<String, String> srMap = new HashMap<String, String>();
+    private Map<String, Double> wikibrainSR(AtlasifyQuery query, String[] featureNameList) {
+        Map<String, Double> srMap = new HashMap<String, Double>();
         for (int i = 0; i < featureNameList.length; i++) {
-            String color = "#ffffff";
+            Double value = 0.0;
             try {
 
-                color = getColorStringFromSR(sr.similarity(query.getKeyword(), featureNameList[i].toString(), false).getScore());
+                value = sr.similarity(query.getKeyword(), featureNameList[i].toString(), false).getScore();
             } catch (Exception e) {
                 //do nothing
             }
 
-            srMap.put(featureNameList[i].toString(), color);
+            srMap.put(featureNameList[i].toString(), value);
         }
 
         return srMap;
