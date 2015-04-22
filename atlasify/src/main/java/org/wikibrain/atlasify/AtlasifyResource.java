@@ -5,6 +5,7 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.Response;
 
 import au.com.bytecode.opencsv.CSVReader;
+import com.ctc.wstx.util.StringUtil;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1144,6 +1145,30 @@ public class AtlasifyResource {
             catch (Exception e){
                 System.out.println("ERROR: failed to process NU Explanation for "+ keyword + " and " + feature + "\n");
                 e.printStackTrace();
+            }
+
+            addElementesToArray(explanations, explanationSection);
+            explanationSection = new JSONArray();
+
+            // Get the common pages from Northwestern
+            JSONArray northwesternCommonPages = northwesternExplanationResult.getJSONArray("common pages");
+            for (int i = 0; i < northwesternCommonPages.length(); i++) {
+                String commonPage = northwesternCommonPages.getString(i);
+                commonPage = commonPage.replace('_', ' ');
+
+                String explanationString = keyword + " and " + feature + " are related by the common page " + commonPage;
+                explanationString = StringUtils.capitalize(explanationString);
+
+                JSONObject jsonExplanation = new JSONObject();
+                jsonExplanation.put("explanation", explanationString);
+
+                JSONObject data = new JSONObject();
+                data.put("algorithm", "northwestern-common-page");
+                data.put("keyword", keyword);
+                data.put("feature", feature);
+                jsonExplanation.put("data", data);
+
+                explanationSection.put(explanationSection.length(), jsonExplanation);
             }
 
             addElementesToArray(explanations, explanationSection);
