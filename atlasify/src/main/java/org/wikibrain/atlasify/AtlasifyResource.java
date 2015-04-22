@@ -575,6 +575,8 @@ public class AtlasifyResource {
                     else{
                         srValues = accessNorthwesternAPI(queryID, -1, false);
                     }
+                    System.out.println("Got NU SR data for keyworld " + query.getKeyword());
+
 
                     for (int i = 0; i < featureIdList.size(); i++) {
                         LocalId featureID = new LocalId(lang, 0);
@@ -588,6 +590,9 @@ public class AtlasifyResource {
                         }
 
                         try {
+                            if((!srValues.containsKey(featureID) || srValues.get(featureID) == null)){
+                                throw new Exception("can't get SR value for " + featureID);
+                            }
                             srMap.put(featureNameList.get(i).toString(), srValues.get(featureID));
                             //System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
                             gotUsefulDataToCache = true;
@@ -691,7 +696,7 @@ public class AtlasifyResource {
                 }
             }
         }
-
+        System.out.println(srMap);
         return Response.ok(new JSONObject(srMap).toString()).build();
     }
     int compareSRColorStrings(String s1, String s2) {
