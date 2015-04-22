@@ -575,6 +575,8 @@ public class AtlasifyResource {
                     else{
                         srValues = accessNorthwesternAPI(queryID, -1, false);
                     }
+                    System.out.println("Got NU SR data for keyworld " + query.getKeyword());
+
 
                     for (int i = 0; i < featureIdList.size(); i++) {
                         LocalId featureID = new LocalId(lang, 0);
