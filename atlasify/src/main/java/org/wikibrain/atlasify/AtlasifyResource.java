@@ -590,6 +590,8 @@ public class AtlasifyResource {
                         }
 
                         try {
+                            if(!srValues.containsKey(featureID))
+                                throw new Exception("can't get SR value for " + featureID);
                             srMap.put(featureNameList.get(i).toString(), srValues.get(featureID));
                             System.out.println("SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle() + " is " + srValues.get(featureID));
                             gotUsefulDataToCache = true;
