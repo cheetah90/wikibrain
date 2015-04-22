@@ -24,6 +24,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.hibernate.mapping.Array;
+import org.jooq.util.derby.sys.Sys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mapdb.Atomic;
@@ -129,7 +130,7 @@ public class AtlasifyResource {
     private static SRMetric sr = null;
     private static PhraseAnalyzer pa = null;
     public static LocalPageDao lpDao = null;
-    public static Language lang = Language.getByLangCode("en");
+    public static Language lang = Language.getByLangCode(AtlasifyLauncher.useLocalHost ? "simple" : "en");
     private static LocalPageAutocompleteSqlDao lpaDao = null;
     public static LocalLinkDao llDao = null;
     private static WikidataMetric wdMetric = null;
@@ -335,7 +336,7 @@ public class AtlasifyResource {
                 skipTitle = true;
             }
 
-            if (skipTitle) {
+            if (!skipTitle) {
                 gameSenateIndexList.add(gameSenateTitles.size());
             }
             gameSenateTitles.add(item);
@@ -1360,6 +1361,9 @@ public class AtlasifyResource {
 
     // Returns a list of two strings for two articles within the specification
     public List<Integer> getGameArticles(String refSys, double minCorrelation, double maxCorrelation) {
+        if (gameCountryCorrelationMatrix == null) {
+            wikibrainSRinit();
+        }
         RealMatrix corrMatrix;
         List<Integer> indicesList;
 
@@ -1374,12 +1378,6 @@ public class AtlasifyResource {
             indicesList = gameSenateIndexList;
         } else {
             return new ArrayList<Integer>();
-        }
-
-
-        if (corrMatrix == null) {
-            wikibrainSRinit();
-            return getGameArticles(refSys, minCorrelation, maxCorrelation);
         }
 
         int index = indicesList.get(numGenerator.nextInt(indicesList.size()));
@@ -1493,10 +1491,16 @@ public class AtlasifyResource {
     @Produces("text/plain")
 
     public Response generateGameData(@PathParam("refSys") String refSys, @PathParam("difficulty") String difficulty) {
+        System.out.println("REQUESTED GAME DATA refSys=" + refSys + " difficulty=" + difficulty);
         List<String> data = new ArrayList<String>();
+        List<String> gameResults = new ArrayList<String>(); // For logging
         for (double[] corr : correlationForDifficult(difficulty)) {
-            data.add(encodeGameDataInHex(createDataForReferenceSystem(refSys, corr[0], corr[1])));
+            GameData gameData = createDataForReferenceSystem(refSys, corr[0], corr[1]);
+            data.add(encodeGameDataInHex(gameData));
+            gameResults.add(resolveGameIndex(refSys, gameData.article1) + " and " + resolveGameIndex(refSys, gameData.article2));
         }
+
+        System.out.println("FINISHED GETTING GAME DATA refSys=" + refSys + " difficulty=" + difficulty + " " + gameResults);
 
         return Response.ok(StringUtils.join(data, "Q")).build();
     }
@@ -1591,24 +1595,25 @@ public class AtlasifyResource {
     }
 
     // A logging method called by the god mode of Atlasify to check the status of the system
-   /* @POST
+    @POST
     @Path("/status")
     @Produces("application/json")
 
     public Response getLog () throws DaoException{
         ByteArrayOutputStream output = AtlasifyServer.logger;
-        String s = output.toString();*/
+        String s = output.toString();
 
         /* In order to support multiple god modes running the console
          * output cannot be cleared. This functionality could change
          * in the future if there are performance problems.
+         * Currently this clearing occurs whenever the server restarts
+         * in AtlasifyLauncher
          */
         // output.reset();
 
-        /*Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<String, String>();
         result.put("log", s);
 
         return Response.ok(new JSONObject(result).toString()).header("Access-Control-Allow-Origin", "*").build();
     }
-    */
 }

@@ -16,10 +16,10 @@ import java.util.logging.Logger;
  * Created by toby on 4/18/15.
  */
 public class AtlasifyLauncher {
-
+    public static final boolean useLocalHost = false;
     private static final Logger LOG = Logger.getLogger(AtlasifyLauncher.class.getName());
     private static CSVWriter serverLogWriter;
-    private static String baseURL = new String("http://spatialization.cs.umn.edu/");
+    private static String baseURL = new String(useLocalHost ? "http://localhost/" : "http://spatialization.cs.umn.edu/");
     private static int portNo = 8080;
     private static class checkAtlasifyStatus extends TimerTask{
         @Override
@@ -79,6 +79,8 @@ public class AtlasifyLauncher {
     private static void restartAtlasify() throws InterruptedException, IOException{
         server.stopAtlasify();
         Thread.sleep(30000);
+        System.out.println("Clearing God Mode Log");
+        server.logger.reset();
         server.startAtlasify();
     }
 
@@ -97,6 +99,8 @@ public class AtlasifyLauncher {
     }
 
     public static void main(String args[])  throws IOException{
+        AtlasifyResource resource = new AtlasifyResource();
+        resource.getGameArticles("senate", 0.0, 1.0);
         server = new AtlasifyServer(baseURL, portNo);
         serverLogWriter = new CSVWriter(new FileWriter(new File("atlasifyServerLog.csv"), true), ',');
         LOG.info("Starting Atlasify server...");
