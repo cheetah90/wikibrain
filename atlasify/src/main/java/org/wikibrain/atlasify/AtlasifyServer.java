@@ -76,7 +76,7 @@ public class AtlasifyServer {
     public static final boolean useLocalLogger = true;
     public static HttpServer server;
     public void startAtlasify() throws IOException {
-        if (useLocalLogger == false) {
+        if (useLocalLogger) {
             PrintStream stdOut = System.out;
             System.setOut(new OutputRedirector(logger, stdOut));
             PrintStream stdErr = System.err;
