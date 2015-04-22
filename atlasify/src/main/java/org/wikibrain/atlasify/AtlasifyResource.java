@@ -1199,10 +1199,10 @@ public class AtlasifyResource {
      * @return a response contains title & link to the top related pages to the give page id
      */
     @GET
-    @Path("/SR/TopRelated/pageid={pageId}&number={number}")
+    @Path("/SR/TopRelated/pageid={pageid}&number={number}")
     @Consumes("text/plain")
     @Produces("text/plain")
-    public Response getTopRelated(@PathParam("pageId") Integer pageId, @PathParam("number") Integer number){
+    public Response getTopRelated(@PathParam("pageid") Integer pageId, @PathParam("number") Integer number){
         Map<String, String> resultMap = new HashMap<String, String>();
         Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
         System.out.println("Querying top related pages to " + pageId);
