@@ -73,7 +73,7 @@ public class AtlasifyServer {
     }
 
     public static ByteArrayOutputStream logger = new ByteArrayOutputStream();
-    public static final boolean useLocalLogger = true;
+    public static final boolean useLocalLogger = false;
     public static HttpServer server;
     public void startAtlasify() throws IOException {
         if (useLocalLogger) {

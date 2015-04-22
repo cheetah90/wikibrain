@@ -1192,6 +1192,12 @@ public class AtlasifyResource {
         return result.toString();
     }
 
+    /**
+     * Getting top related pages to a given page
+     * @param pageId the page id of the page
+     * @param number the number of results wanted
+     * @return a response contains title & link to the top related pages to the give page id
+     */
     @GET
     @Path("SR/TopRelated/id={pageId}&numbuer={number}")
     @Consumes("text/plain")
@@ -1199,8 +1205,9 @@ public class AtlasifyResource {
     public Response getTopRelated(@PathParam("pageId") Integer pageId, @PathParam("number") Integer number){
         Map<String, String> resultMap = new HashMap<String, String>();
         Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
+        System.out.println("Querying top related pages to " + pageId);
         try{
-            srValues=AtlasifyResource.accessNorthwesternAPI(new LocalId(Language.EN ,pageId), 20, false);
+            srValues=AtlasifyResource.accessNorthwesternAPI(new LocalId(Language.EN ,pageId), number, false);
         }
         catch (Exception e){
             //failed to get srValues
@@ -1215,6 +1222,7 @@ public class AtlasifyResource {
                 continue;
             }
         }
+        System.out.println("Finished getting top related pages to " + pageId);
         return Response.ok(new JSONObject(resultMap).toString()).build();
 
 
