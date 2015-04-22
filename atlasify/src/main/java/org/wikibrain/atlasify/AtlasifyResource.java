@@ -1200,8 +1200,7 @@ public class AtlasifyResource {
      */
     @GET
     @Path("SR/TopRelated/id={pageId}&numbuer={number}")
-    @Consumes("text/plain")
-    @Produces("application/json")
+    @Produces("text/plain")
     public Response getTopRelated(@PathParam("pageId") Integer pageId, @PathParam("number") Integer number){
         Map<String, String> resultMap = new HashMap<String, String>();
         Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
