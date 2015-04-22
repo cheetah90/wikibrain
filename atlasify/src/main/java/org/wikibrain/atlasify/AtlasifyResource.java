@@ -35,10 +35,7 @@ import org.wikibrain.conf.Configurator;
 import org.wikibrain.core.WikiBrainException;
 import org.wikibrain.core.cmd.Env;
 import org.wikibrain.core.cmd.EnvBuilder;
-import org.wikibrain.core.dao.DaoException;
-import org.wikibrain.core.dao.LocalPageDao;
-import org.wikibrain.core.dao.LocalLinkDao;
-import org.wikibrain.core.dao.UniversalPageDao;
+import org.wikibrain.core.dao.*;
 import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.model.Title;
 import org.wikibrain.core.model.LocalPage;
@@ -520,6 +517,8 @@ public class AtlasifyResource {
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
 
+
+
     /**
      * return a <name, color> map to the client
      * @param query AtlasifyQuery sent from the client
@@ -696,7 +695,7 @@ public class AtlasifyResource {
                 }
             }
         }
-        System.out.println(srMap);
+
         return Response.ok(new JSONObject(srMap).toString()).build();
     }
     int compareSRColorStrings(String s1, String s2) {
@@ -1191,6 +1190,34 @@ public class AtlasifyResource {
         System.out.println("REQUESTED explanation between " + keyword + " and " + feature + "\n\n" + explanations.toString());
 
         return result.toString();
+    }
+
+    @GET
+    @Path("SR/TopRelated/id={pageId}&numbuer={number}")
+    @Consumes("text/plain")
+    @Produces("application/json")
+    public Response getTopRelated(@PathParam("pageId") Integer pageId, @PathParam("number") Integer number){
+        Map<String, String> resultMap = new HashMap<String, String>();
+        Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
+        try{
+            srValues=AtlasifyResource.accessNorthwesternAPI(new LocalId(Language.EN ,pageId), 20, false);
+        }
+        catch (Exception e){
+            //failed to get srValues
+        }
+        for(Map.Entry<LocalId, Double> srEntry : srValues.entrySet()){
+            try{
+                LocalPage localPage = lpDao.getById(srEntry.getKey());
+                resultMap.put(localPage.getTitle().getCanonicalTitle(), "http://en.wikipedia.org/wiki/" + localPage.getTitle().getCanonicalTitle().replace(" ", "_"));
+            }
+            catch (Exception e){
+                //do nothing
+                continue;
+            }
+        }
+        return Response.ok(new JSONObject(resultMap).toString()).build();
+
+
     }
 
     /**
