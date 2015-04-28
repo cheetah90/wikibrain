@@ -35,10 +35,7 @@ import org.wikibrain.conf.Configurator;
 import org.wikibrain.core.WikiBrainException;
 import org.wikibrain.core.cmd.Env;
 import org.wikibrain.core.cmd.EnvBuilder;
-import org.wikibrain.core.dao.DaoException;
-import org.wikibrain.core.dao.LocalPageDao;
-import org.wikibrain.core.dao.LocalLinkDao;
-import org.wikibrain.core.dao.UniversalPageDao;
+import org.wikibrain.core.dao.*;
 import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.model.Title;
 import org.wikibrain.core.model.LocalPage;
@@ -523,6 +520,8 @@ public class AtlasifyResource {
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
 
+
+
     /**
      * return a <name, color> map to the client
      * @param query AtlasifyQuery sent from the client
@@ -699,7 +698,7 @@ public class AtlasifyResource {
                 }
             }
         }
-        System.out.println(srMap);
+
         return Response.ok(new JSONObject(srMap).toString()).build();
     }
     int compareSRColorStrings(String s1, String s2) {
@@ -817,7 +816,7 @@ public class AtlasifyResource {
         Map<String, String> autocompleteMap;
 
         if ((autocompleteMap = autocompleteCache.get(query.getKeyword())) != null) {
-            System.out.println("Get Auto Complete Result from cache " + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+            //System.out.println("Get Auto Complete Result from cache " + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
             return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
         }
 
@@ -913,7 +912,7 @@ public class AtlasifyResource {
             autocompleteCache.put(query.getKeyword(), autocompleteMap);
         }
 
-        System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+        //System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
         return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
     }
     public String getExplanation(String keyword, String feature) throws Exception{
@@ -1095,7 +1094,13 @@ public class AtlasifyResource {
                 for (int i = 0; i < northwesternExplanationList.length(); i++) {
                     JSONObject northwesternJSON = northwesternExplanationList.getJSONObject(i);
                     JSONArray northwesternExplanations = northwesternJSON.getJSONArray("paragraphs");
-                    double srval = northwesternJSON.getDouble("srval");
+                    double srval = 0;
+                    try{
+                        srval = northwesternJSON.getDouble("srval");
+                    }
+                    catch (Exception e){
+                        srval = northwesternJSON.getDouble("c-score");
+                    }
                     String title = northwesternJSON.getString("title");
 
                     for (int j = 0; j < northwesternExplanations.length(); j++) {
@@ -1164,7 +1169,7 @@ public class AtlasifyResource {
                 String commonPage = northwesternCommonPages.getString(i);
                 commonPage = commonPage.replace('_', ' ');
 
-                String explanationString = keyword + " and " + feature + " are related by the common page " + commonPage;
+                String explanationString = "<b>" + keyword + " and " + feature + " are related by the common page: </b> " + "<br><a href=\"" + "http://en.wikipedia.org/wiki/" + commonPage.replace(' ', '_') + "\" target=\"_blank\">" +  commonPage + "</a>";
                 explanationString = StringUtils.capitalize(explanationString);
 
                 JSONObject jsonExplanation = new JSONObject();
@@ -1191,9 +1196,53 @@ public class AtlasifyResource {
         result.put("keyword", keyword);
         result.put("feature", feature);
 
+
         System.out.println("REQUESTED explanation between " + keyword + " and " + feature + "\n\n" + explanations.toString());
 
         return result.toString();
+    }
+
+    /**
+     * Getting top related pages to a given page
+     * @param pageId the page id of the page
+     * @param number the number of results wanted
+     * @return a response contains title & link to the top related pages to the give page id
+     */
+    @GET
+    @Path("/SR/TopRelated/pageid={pageid}&number={number}")
+    @Consumes("text/plain")
+    @Produces("text/plain")
+    public Response getTopRelated(@PathParam("pageid") Integer pageId, @PathParam("number") Integer number){
+        Map<String, String> resultMap = new HashMap<String, String>();
+        Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
+        System.out.println("Querying top related pages to " + pageId);
+        try{
+            srValues=AtlasifyResource.accessNorthwesternAPI(new LocalId(Language.EN ,pageId), number + 10, false);
+        }
+        catch (Exception e){
+            //failed to get srValues
+        }
+        Set<Integer> blackList = new HashSet<Integer>();
+        Integer[] blackListArray = new Integer[]{170584, 23893, 23814944, 19728, 128608, 23410163, 39736};
+        blackList.addAll(Arrays.asList(blackListArray));
+        for(Map.Entry<LocalId, Double> srEntry : srValues.entrySet()){
+            if(blackList.contains(Integer.valueOf(srEntry.getKey().getId())))
+                continue;
+            try{
+                LocalPage localPage = lpDao.getById(srEntry.getKey());
+                if(localPage.getTitle().getCanonicalTitle().contains("Census"))
+                    continue;
+                resultMap.put(localPage.getTitle().getCanonicalTitle(), "http://en.wikipedia.org/wiki/" + localPage.getTitle().getCanonicalTitle().replace(" ", "_"));
+            }
+            catch (Exception e){
+                //do nothing
+                continue;
+            }
+        }
+        System.out.println("Finished getting top related pages to " + pageId);
+        return Response.ok(new JSONObject(resultMap).toString()).build();
+
+
     }
 
     /**
