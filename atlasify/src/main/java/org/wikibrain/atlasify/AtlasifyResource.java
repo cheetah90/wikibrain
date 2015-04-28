@@ -1091,7 +1091,13 @@ public class AtlasifyResource {
                 for (int i = 0; i < northwesternExplanationList.length(); i++) {
                     JSONObject northwesternJSON = northwesternExplanationList.getJSONObject(i);
                     JSONArray northwesternExplanations = northwesternJSON.getJSONArray("paragraphs");
-                    double srval = northwesternJSON.getDouble("srval");
+                    double srval = 0;
+                    try{
+                        srval = northwesternJSON.getDouble("srval");
+                    }
+                    catch (Exception e){
+                        srval = northwesternJSON.getDouble("c-score");
+                    }
                     String title = northwesternJSON.getString("title");
 
                     for (int j = 0; j < northwesternExplanations.length(); j++) {
