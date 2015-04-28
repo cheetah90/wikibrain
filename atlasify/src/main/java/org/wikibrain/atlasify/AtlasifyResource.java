@@ -813,7 +813,7 @@ public class AtlasifyResource {
         Map<String, String> autocompleteMap;
 
         if ((autocompleteMap = autocompleteCache.get(query.getKeyword())) != null) {
-            System.out.println("Get Auto Complete Result from cache " + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+            //System.out.println("Get Auto Complete Result from cache " + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
             return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
         }
 
@@ -909,7 +909,7 @@ public class AtlasifyResource {
             autocompleteCache.put(query.getKeyword(), autocompleteMap);
         }
 
-        System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+        //System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
         return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
     }
     public String getExplanation(String keyword, String feature) throws Exception{
@@ -1186,6 +1186,7 @@ public class AtlasifyResource {
         result.put("explanations", explanations);
         result.put("keyword", keyword);
         result.put("feature", feature);
+
 
         System.out.println("REQUESTED explanation between " + keyword + " and " + feature + "\n\n" + explanations.toString());
 
