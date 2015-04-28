@@ -1166,7 +1166,7 @@ public class AtlasifyResource {
                 String commonPage = northwesternCommonPages.getString(i);
                 commonPage = commonPage.replace('_', ' ');
 
-                String explanationString = keyword + " and " + feature + " are related by the common page " + commonPage;
+                String explanationString = keyword + " and " + feature + " are related by the common page " + "<a href=\"" + "http://en.wikipedia.org/wiki/" + commonPage.replace(' ', '_') + "\" target=\"_blank\">" +  commonPage + "</a>";
                 explanationString = StringUtils.capitalize(explanationString);
 
                 JSONObject jsonExplanation = new JSONObject();
