@@ -222,7 +222,10 @@ public class AtlasifyResource {
             dbMetric = new DBpeidaMetric("dbpedia", lang, lpDao, dis);
             System.out.println("FINISHED LOADING DBPEDIA METRIC");
 
-            atlasifyLogger = new AtlasifyLogger("./log/AtlasifyLogin.csv", "./log/AtlasifyQuery.csv");
+            atlasifyLogger = new AtlasifyLogger("./log/AtlasifyLogin.csv",
+                    "./log/AtlasifyQuery.csv",
+                    "./log/AtlasifyCrowdSourceData.csv",
+                    "./log/AtlasifyExplanationsData.csv");
             System.out.println("FINISHED LOADING LOGGER");
             pa = conf.get(PhraseAnalyzer.class, "anchortext");
             System.out.println("FINISHED LOADING PHRASE ANALYZER");
@@ -1253,47 +1256,99 @@ public class AtlasifyResource {
     @Produces("text/plain")
 
 
-    public Response processesExplanations(String json) throws DaoException {
+    public Response processesExplanations(String json) throws DaoException, IOException {
+        if (atlasifyLogger == null) {
+            wikibrainSRinit();
+        }
+
         JSONObject explanationsData = new JSONObject(json);
         int id = explanationsData.getInt("id");
-        int sessionID = explanationsData.getInt("sessionID");
         String keyword = explanationsData.getString("keyword");
         String feature = explanationsData.getString("feature");
 
         JSONArray dataArray = explanationsData.getJSONArray("data");
-        JSONObject data = new JSONObject();
-        data.put("data", dataArray);
-        data.put("time", new Date().getTime());
-        data.put("id", id);
-        data.put("sessionID", sessionID);
-        data.put("keyword", keyword);
-        data.put("feature", feature);
+        List<JSONObject> interactionData = new ArrayList<JSONObject>();
+        for (int i = 0; i < dataArray.length(); i++) {
+            JSONObject data = dataArray.getJSONObject(i);
+            JSONObject interaction = new JSONObject();
 
-        // See if log file exists
-        String file = "explanation-logs/" + id + ".json";
-        File f = new File(file);
-        if (f.isFile()) {
-            // Append to the file
-            try {
-                PrintWriter writer = new PrintWriter(new BufferedWriter(
-                        new FileWriter(file, true)));
-                writer.print("\n");
-                writer.print(data.toString());
-                writer.close();
-            } catch (IOException e) {
+            interaction.put("explanation", data.getString("explanation"));
+            JSONObject explanationData = data.getJSONObject("data");
+            interaction.put("algorithm", explanationData.getString("algorithm"));
+            interaction.put("keyword", explanationData.getString("keyword"));
+            interaction.put("feature", explanationData.getString("feature"));
 
+            if (explanationData.has("disambiguator"))
+                interaction.put("disambiguator", explanationData.getString("disambiguator"));
+            if (explanationData.has("keyword-data"))
+                interaction.put("keyword-data", explanationData.getJSONArray("keyword-data"));
+            if (explanationData.has("feature-data"))
+                interaction.put("feature-data", explanationData.getJSONArray("feature-data"));
+            if (explanationData.has("srval"))
+                interaction.put("srval", explanationData.getDouble("srval"));
+            if (explanationData.has("title"))
+                interaction.put("title", explanationData.getString("title"));
+
+            // Determine how much of the explanation is visible (this is compressing a lot of data down to a simple value)
+            double visibleAmount = 0.0;
+            double duration = 0.0;
+
+            JSONArray visibilityData = data.getJSONArray("visibility");
+
+            int position = visibilityData.getJSONObject(0).getInt("position");
+            int tableHeight = visibilityData.getJSONObject(0).getInt("tableHeight");
+            int height = visibilityData.getJSONObject(0).getInt("height");
+            long lastTime = visibilityData.getJSONObject(0).getLong("time");
+
+            for (int j = 1; j < visibilityData.length(); j++) {
+                JSONObject visibility = visibilityData.getJSONObject(j);
+
+                long time = visibility.getLong("time");
+                int top = visibility.getInt("scrolledAmount") + position;
+                boolean isVisible = 0 <= (top + height) && top <= tableHeight;
+                boolean isFullyVisible = 0 <= top && (top + height) <= tableHeight;
+                if (isFullyVisible) {
+                    visibleAmount = 1.0;
+                    duration += time - lastTime;
+                } else if (isVisible) {
+                    // Determine which end it is on
+                    double currentVisibleAmount = 0.0;
+                    if (top < 0) {
+                        // This is on the top of the table
+                        currentVisibleAmount = (height - (-top)) / (double)height;
+                    } else {
+                        // This is the bottom of the table
+                        currentVisibleAmount = (tableHeight - top) / (double)height;
+                    }
+                    visibleAmount = Math.max(visibleAmount, currentVisibleAmount);
+                    duration += time - lastTime;
+                }
             }
-        } else {
-            // Create it
-            try {
-                PrintWriter writer = new PrintWriter(new BufferedWriter(
-                        new FileWriter(file, true)));
-                writer.print(data.toString());
-                writer.close();
-            } catch (IOException e) {
 
+            interaction.put("visible-percent", visibleAmount);
+            interaction.put("visible-duration", duration);
+
+            boolean selected = false;
+            boolean wasEverSelected = false;
+
+            JSONArray selectionData = data.getJSONArray("selection");
+            for (int j = 0; j < selectionData.length(); j++) {
+                boolean checked = selectionData.getJSONObject(j).getBoolean("checked");
+                selected = checked;
+                if (checked) {
+                    wasEverSelected = true;
+                }
             }
+
+            interaction.put("selected", selected);
+            interaction.put("was-selected", wasEverSelected && !selected);
+
+            interactionData.add(interaction);
         }
+
+        AtlasifyLogger.explanationsData data = new AtlasifyLogger.explanationsData(keyword, feature, Integer.toString(id), interactionData);
+        atlasifyLogger.ExplanationsDataLogger(data, "");
+
         return Response.ok("").header("Access-Control-Allow-Origin", "*").build();
     }
 
@@ -1303,26 +1358,21 @@ public class AtlasifyResource {
     @Path("/SR/CrowdSource/keyword={keyword}&feature={feature}&sr={sr}&explanation={explanation}")
     @Consumes("text/plain")
     public void processCrowdSourcedData(@PathParam("keyword") String keyword, @PathParam("feature") String feature, @PathParam("sr") double sr, @PathParam("explanation") String explanation) throws  DaoException, MalformedURLException, IOException, Exception {
-        String srLocation = "crowd-source-data/sr.csv";
-        String expLocation = "crowd-source-data/explanations.csv";
+        System.out.println("RECEIVED crowd sourced data between " + keyword + " and " + feature + "\n\tSR=" + sr + "\n\tExplanation=" + explanation);
 
-        System.out.println("RECEIVED crowd sourced data between " + keyword + " and " + feature + "\nSR=" + sr + "\nExplanation=" + explanation);
+        String srString = "";
+        String explanationString = "";
 
-        if (sr > 0.0) {
-            // Valid SR was provided
-            PrintWriter writer = new PrintWriter(new BufferedWriter(
-                    new FileWriter(srLocation, true)));
-            writer.println("\"" + keyword + "\",\"" + feature + "\",\"" + sr + "\"");
-            writer.close();
+        if (sr >= 0.0) {
+            srString = Double.toString(sr);
         }
 
         if (explanation != null && explanation != "") {
-            // Valid explanation was provided
-            PrintWriter writer = new PrintWriter(new BufferedWriter(
-                    new FileWriter(expLocation, true)));
-            writer.println("\"" + keyword + "\",\"" + feature + "\",\"" + explanation + "\"");
-            writer.close();
+            explanationString = explanation;
         }
+
+        AtlasifyLogger.crowdSourceData data = new AtlasifyLogger.crowdSourceData(keyword, feature, srString, explanationString);
+        atlasifyLogger.CrowdSourceDataLogger(data, "");
     }
     public static class poiResponse{
         public String geoJSON;

@@ -99,8 +99,6 @@ public class AtlasifyLauncher {
     }
 
     public static void main(String args[])  throws IOException{
-        AtlasifyResource resource = new AtlasifyResource();
-        resource.getGameArticles("senate", 0.0, 1.0);
         server = new AtlasifyServer(baseURL, portNo);
         serverLogWriter = new CSVWriter(new FileWriter(new File("atlasifyServerLog.csv"), true), ',');
         LOG.info("Starting Atlasify server...");
