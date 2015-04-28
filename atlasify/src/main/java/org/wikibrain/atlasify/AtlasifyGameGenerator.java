@@ -9,6 +9,7 @@ import org.joda.time.DateTime;
 import org.jooq.util.derby.sys.Sys;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mockito.cglib.core.Local;
 import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.conf.Configurator;
 import org.wikibrain.core.cmd.Env;
@@ -214,104 +215,114 @@ public class AtlasifyGameGenerator {
         ArrayList<double[]> senateSR = new ArrayList<double[]>();
         int currentCount = 0;
         for (LocalPage p : topPages) {
-            String[] line = new String[1];
-            String title = p.getTitle().getCanonicalTitle();
-            line[0] = title;
+            try {
+                String[] line = new String[1];
+                String title = p.getTitle().getCanonicalTitle();
+                line[0] = title;
 
-            System.out.println(title + "(" + currentCount + "/" + maximumArticleToProcess + ")");
-            currentCount++;
+                System.out.println(title + "(" + currentCount + "/" + maximumArticleToProcess + ")");
+                currentCount++;
 
-            // Compute SR country
-            System.out.println("\tCountry SR");
-            int i = 0;
-            double[] countrySRValues = new double[countries.size()];
-            double highestCountrySR = 0.0;
-            String highestCountry = "";
-            for (String country : countries) {
-                try {
-                    countrySRValues[i] = sr.similarity(title, country, false).getScore();
-                } catch (Exception e) {
-                    countrySRValues[i] = 0.0;
-                    System.out.println("\tERROR: calculating sr between " + title + " and " + country +
-                                        "\n\tUse an SR Value of zero");
-                    e.printStackTrace();
-                }
-                if (highestCountrySR < countrySRValues[i]) {
-                    highestCountrySR = countrySRValues[i];
-                    highestCountry = country;
-                }
-                i++;
-            }
-
-            // Periodic Table SR
-            System.out.println("\tPeriodic Table SR");
-            i = 0;
-            double[] periodicTableSRValues = new double[periodicTable.size()];
-            double highestPeriodicTableSR = 0.0;
-            String highestElement = "";
-            for (String element : periodicTable) {
-                try {
-                    periodicTableSRValues[i] = sr.similarity(title, element, false).getScore();
-                } catch (Exception e) {
-                    periodicTableSRValues[i] = 0.0;
-                    System.out.println("\tERROR: calculating sr between " + title + " and " + element +
-                            "\n\tUse an SR Value of zero");
-                    e.printStackTrace();
+                // Compute SR country
+                System.out.println("\tCountry SR");
+                int i = 0;
+                double[] countrySRValues = new double[countries.size()];
+                double highestCountrySR = 0.0;
+                String highestCountry = "";
+                LocalId id = new LocalId(lang, lpDao.getIdByTitle(title, lang, NameSpace.ARTICLE));
+                Map<LocalId, Double> srMap = AtlasifyResource.accessNorthwesternAPI(id, -1, false);
+                for (String country : countries) {
+                    try {
+                        LocalId countryId = new LocalId(lang, lpDao.getIdByTitle(country, lang, NameSpace.ARTICLE));
+                        countrySRValues[i] = srMap.get(countryId);
+                    } catch (Exception e) {
+                        countrySRValues[i] = 0.0;
+                        System.out.println("\tERROR: calculating sr between " + title + " and " + country +
+                                "\n\tUse an SR Value of zero");
+                        e.printStackTrace();
+                    }
+                    if (highestCountrySR < countrySRValues[i]) {
+                        highestCountrySR = countrySRValues[i];
+                        highestCountry = country;
+                    }
+                    i++;
                 }
 
-                if (highestPeriodicTableSR < periodicTableSRValues[i]) {
-                    highestPeriodicTableSR = periodicTableSRValues[i];
-                    highestElement = element;
+                // Periodic Table SR
+                System.out.println("\tPeriodic Table SR");
+                i = 0;
+                double[] periodicTableSRValues = new double[periodicTable.size()];
+                double highestPeriodicTableSR = 0.0;
+                String highestElement = "";
+                for (String element : periodicTable) {
+                    try {
+                        LocalId elementId = new LocalId(lang, lpDao.getIdByTitle(element, lang, NameSpace.ARTICLE));
+                        periodicTableSRValues[i] = srMap.get(elementId);
+                    } catch (Exception e) {
+                        periodicTableSRValues[i] = 0.0;
+                        System.out.println("\tERROR: calculating sr between " + title + " and " + element +
+                                "\n\tUse an SR Value of zero");
+                        e.printStackTrace();
+                    }
+
+                    if (highestPeriodicTableSR < periodicTableSRValues[i]) {
+                        highestPeriodicTableSR = periodicTableSRValues[i];
+                        highestElement = element;
+                    }
+                    i++;
                 }
-                i++;
-            }
 
-            // Senate SR
-            System.out.println("\tSenate SR");
-            i = 0;
-            double[] senateSRValues = new double[periodicTable.size()];
-            double highestSenateSR = 0.0;
-            String highestSenator = "";
-            for (String senator : senate) {
-                try {
-                    senateSRValues[i] = sr.similarity(title, senator, false).getScore();
-                } catch (Exception e) {
-                    senateSRValues[i] = 0.0;
-                    System.out.println("\tERROR: calculating sr between " + title + " and " + senator +
-                            "\n\tUse an SR Value of zero");
-                    e.printStackTrace();
+                // Senate SR
+                System.out.println("\tSenate SR");
+                i = 0;
+                double[] senateSRValues = new double[periodicTable.size()];
+                double highestSenateSR = 0.0;
+                String highestSenator = "";
+                for (String senator : senate) {
+                    try {
+                        LocalId senatorId = new LocalId(lang, lpDao.getIdByTitle(senator, lang, NameSpace.ARTICLE));
+                        senateSRValues[i] = srMap.get(senatorId);
+                    } catch (Exception e) {
+                        senateSRValues[i] = 0.0;
+                        System.out.println("\tERROR: calculating sr between " + title + " and " + senator +
+                                "\n\tUse an SR Value of zero");
+                        e.printStackTrace();
+                    }
+
+                    if (highestSenateSR < senateSRValues[i]) {
+                        highestSenateSR = senateSRValues[i];
+                        highestSenator = senator;
+                    }
+                    i++;
                 }
 
-                if (highestSenateSR < senateSRValues[i]) {
-                    highestSenateSR = senateSRValues[i];
-                    highestSenator = senator;
+                // Make sure that there is at least a high enough SR to make the game interesting
+                if (highestCountrySR < 0.7) {
+                    System.out.println("\tSKIP: Too low of country SR (" + highestCountry + " : " + highestCountrySR + ")");
+                } else {
+                    System.out.println("\tHighest country SR: " + highestCountry + " (" + highestCountrySR + ")");
+                    countryWriter.writeNext(line);
+                    countrySR.add(countrySRValues);
                 }
-                i++;
-            }
 
-            // Make sure that there is at least a high enough SR to make the game interesting
-            if (highestCountrySR < 0.7) {
-                System.out.println("\tSKIP: Too low of country SR (" + highestCountry + " : " + highestCountrySR + ")");
-            } else {
-                System.out.println("\tHighest country SR: " + highestCountry + " (" + highestCountrySR + ")");
-                countryWriter.writeNext(line);
-                countrySR.add(countrySRValues);
-            }
+                if (highestPeriodicTableSR < 0.7) {
+                    System.out.println("\tSKIP: Too low of element SR (" + highestElement + " : " + highestPeriodicTableSR + ")");
+                } else {
+                    System.out.println("\tHighest element SR: " + highestElement + " (" + highestPeriodicTableSR + ")");
+                    periodicTableWrite.writeNext(line);
+                    periodicTableSR.add(periodicTableSRValues);
+                }
 
-            if (highestPeriodicTableSR < 0.7) {
-                System.out.println("\tSKIP: Too low of element SR (" + highestElement + " : " + highestPeriodicTableSR + ")");
-            } else {
-                System.out.println("\tHighest element SR: " + highestElement + " (" + highestPeriodicTableSR + ")");
-                periodicTableWrite.writeNext(line);
-                periodicTableSR.add(periodicTableSRValues);
-            }
-
-            if (highestSenateSR < 0.7) {
-                System.out.println("\tSKIP: Too low of senate SR (" + highestSenator + " : " + highestSenateSR + ")");
-            } else {
-                System.out.println("\tHighest senate SR: " + highestSenator + " (" + highestSenateSR + ")");
-                senateWriter.writeNext(line);
-                senateSR.add(senateSRValues);
+                if (highestSenateSR < 0.7) {
+                    System.out.println("\tSKIP: Too low of senate SR (" + highestSenator + " : " + highestSenateSR + ")");
+                } else {
+                    System.out.println("\tHighest senate SR: " + highestSenator + " (" + highestSenateSR + ")");
+                    senateWriter.writeNext(line);
+                    senateSR.add(senateSRValues);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Error occurred calculating SR");
             }
         }
 
