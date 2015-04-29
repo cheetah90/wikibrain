@@ -9,7 +9,6 @@ import org.joda.time.DateTime;
 import org.jooq.util.derby.sys.Sys;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mockito.cglib.core.Local;
 import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.conf.Configurator;
 import org.wikibrain.core.cmd.Env;
@@ -234,7 +233,11 @@ public class AtlasifyGameGenerator {
                 for (String country : countries) {
                     try {
                         LocalId countryId = new LocalId(lang, lpDao.getIdByTitle(country, lang, NameSpace.ARTICLE));
-                        countrySRValues[i] = srMap.get(countryId);
+                        if (srMap.containsKey(countryId)) {
+                            countrySRValues[i] = srMap.get(countryId);
+                        } else {
+                            countrySRValues[i] = 0.0;
+                        }
                     } catch (Exception e) {
                         countrySRValues[i] = 0.0;
                         System.out.println("\tERROR: calculating sr between " + title + " and " + country +
@@ -257,7 +260,11 @@ public class AtlasifyGameGenerator {
                 for (String element : periodicTable) {
                     try {
                         LocalId elementId = new LocalId(lang, lpDao.getIdByTitle(element, lang, NameSpace.ARTICLE));
-                        periodicTableSRValues[i] = srMap.get(elementId);
+                        if (srMap.containsKey(elementId)) {
+                            periodicTableSRValues[i] = srMap.get(elementId);
+                        } else {
+                            periodicTableSRValues[i] = 0.0;
+                        }
                     } catch (Exception e) {
                         periodicTableSRValues[i] = 0.0;
                         System.out.println("\tERROR: calculating sr between " + title + " and " + element +
@@ -281,7 +288,11 @@ public class AtlasifyGameGenerator {
                 for (String senator : senate) {
                     try {
                         LocalId senatorId = new LocalId(lang, lpDao.getIdByTitle(senator, lang, NameSpace.ARTICLE));
-                        senateSRValues[i] = srMap.get(senatorId);
+                        if (srMap.containsKey(senatorId)) {
+                            senateSRValues[i] = srMap.get(senatorId);
+                        } else {
+                            senateSRValues[i] = 0.0;
+                        }
                     } catch (Exception e) {
                         senateSRValues[i] = 0.0;
                         System.out.println("\tERROR: calculating sr between " + title + " and " + senator +
