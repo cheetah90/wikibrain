@@ -1217,15 +1217,20 @@ public class AtlasifyResource {
         Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
         System.out.println("Querying top related pages to " + pageId);
         try{
-            srValues=AtlasifyResource.accessNorthwesternAPI(new LocalId(Language.EN ,pageId), number + 10, false);
+            srValues=AtlasifyResource.accessNorthwesternAPI(new LocalId(Language.EN ,pageId), number * 100 + 10, false);
         }
         catch (Exception e){
             //failed to get srValues
         }
+
         Set<Integer> blackList = new HashSet<Integer>();
         Integer[] blackListArray = new Integer[]{170584, 23893, 23814944, 19728, 128608, 23410163, 39736};
         blackList.addAll(Arrays.asList(blackListArray));
+        int count = 0;
         for(Map.Entry<LocalId, Double> srEntry : srValues.entrySet()){
+            count ++;
+            if(count > number)
+                break;
             if(blackList.contains(Integer.valueOf(srEntry.getKey().getId())))
                 continue;
             try{
