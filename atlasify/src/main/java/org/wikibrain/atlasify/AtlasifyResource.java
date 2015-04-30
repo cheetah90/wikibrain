@@ -1227,12 +1227,13 @@ public class AtlasifyResource {
         catch (Exception e){
             //failed to get srValues
         }
-
+        List<Map.Entry<LocalId, Double>> resultList = new ArrayList<Map.Entry<LocalId, Double>>(srValues.entrySet());
+        Collections.shuffle(resultList);
         Set<Integer> blackList = new HashSet<Integer>();
         Integer[] blackListArray = new Integer[]{170584, 23893, 23814944, 19728, 128608, 23410163, 39736};
         blackList.addAll(Arrays.asList(blackListArray));
         int count = 0;
-        for(Map.Entry<LocalId, Double> srEntry : srValues.entrySet()){
+        for(Map.Entry<LocalId, Double> srEntry : resultList){
             if(count > number)
                 break;
             if(blackList.contains(Integer.valueOf(srEntry.getKey().getId())))
