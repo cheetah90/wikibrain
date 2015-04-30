@@ -1343,22 +1343,30 @@ public class AtlasifyResource {
             double duration = 0.0;
 
             JSONArray visibilityData = data.getJSONArray("visibility");
+            JSONArray rawVisibilityData = new JSONArray();
 
             int position = visibilityData.getJSONObject(0).getInt("position");
             int tableHeight = visibilityData.getJSONObject(0).getInt("tableHeight");
             int height = visibilityData.getJSONObject(0).getInt("height");
             long lastTime = visibilityData.getJSONObject(0).getLong("time");
+            long initialTime = lastTime;
 
-            for (int j = 1; j < visibilityData.length(); j++) {
+            for (int j = 0; j < visibilityData.length(); j++) {
                 JSONObject visibility = visibilityData.getJSONObject(j);
 
                 long time = visibility.getLong("time");
                 int top = visibility.getInt("scrolledAmount") + position;
                 boolean isVisible = 0 <= (top + height) && top <= tableHeight;
                 boolean isFullyVisible = 0 <= top && (top + height) <= tableHeight;
+
+                JSONObject rawData = new JSONObject();
+                rawData.put("time-offset", time - initialTime);
+                rawData.put("top-position", top);
+
                 if (isFullyVisible) {
                     visibleAmount = 1.0;
                     duration += time - lastTime;
+                    rawData.put("visibility", 1.0);
                 } else if (isVisible) {
                     // Determine which end it is on
                     double currentVisibleAmount = 0.0;
@@ -1371,26 +1379,43 @@ public class AtlasifyResource {
                     }
                     visibleAmount = Math.max(visibleAmount, currentVisibleAmount);
                     duration += time - lastTime;
+
+                    rawData.put("visibility", currentVisibleAmount);
+                } else {
+                    rawData.put("visibility", 0.0);
                 }
+
+                rawVisibilityData.put(rawData);
             }
 
             interaction.put("visible-percent", visibleAmount);
             interaction.put("visible-duration", duration);
+            interaction.put("raw-visibility", rawVisibilityData);
+            interaction.put("table-height", tableHeight);
+            interaction.put("explanation-height", height);
 
             boolean selected = false;
             boolean wasEverSelected = false;
 
             JSONArray selectionData = data.getJSONArray("selection");
+            JSONArray rawSelectionData = new JSONArray();
             for (int j = 0; j < selectionData.length(); j++) {
                 boolean checked = selectionData.getJSONObject(j).getBoolean("checked");
                 selected = checked;
                 if (checked) {
                     wasEverSelected = true;
                 }
+
+                JSONObject rawData = new JSONObject();
+                rawData.put("checked", checked);
+                rawData.put("time-offset", selectionData.getJSONObject(j).getLong("time") - initialTime);
+                rawSelectionData.put(rawData);
             }
 
             interaction.put("selected", selected);
             interaction.put("was-selected", wasEverSelected && !selected);
+            interaction.put("raw-selection", rawSelectionData);
+            interaction.put("start-time", initialTime);
 
             interactionData.add(interaction);
         }
