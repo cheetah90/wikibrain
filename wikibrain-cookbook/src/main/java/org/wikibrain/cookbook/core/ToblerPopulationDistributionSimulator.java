@@ -51,7 +51,7 @@ public class ToblerPopulationDistributionSimulator {
         Env env = EnvBuilder.envFromArgs(args);
         Configurator c = env.getConfigurator();
         //String[] languages = {"en", "nl", "de", "sv", "fr", "it", "ru", "es", "pl", "ja", "vi", "pt", "zh", "ca", "no", "fi", "cs", "ko", "ar", "hu" };
-        String[] languages = {"simple"};
+        String[] languages = {"simple", "zh", "ja"};
         sdDao = c.get(SpatialDataDao.class);
         upDao = c.get(UniversalPageDao.class);
         lpDao = c.get(LocalPageDao.class);
@@ -68,17 +68,17 @@ public class ToblerPopulationDistributionSimulator {
             Language lang = Language.getByLangCode(lauange);
             DaoFilter daoFilter = new DaoFilter();
             daoFilter.setLanguages(lang);
-            System.out.println("Getting all local pages");
+            System.out.println("Getting all local pages for " + lang);
             Iterable<LocalPage> localPageIterable = lpDao.get(daoFilter);
             List<LocalPage> localPageList = new ArrayList<LocalPage>();
             Iterator<LocalPage> localPageIterator = localPageIterable.iterator();
             while (localPageIterator.hasNext()){
                 localPageList.add(localPageIterator.next());
             }
-            System.out.println("Finished getting all local pages");
+            System.out.println("Finished getting all local pages for " + lang);
             int count = 0;
 
-            while(count ++ < 10){
+            while(count ++ < 20){
                 getRandomGeometry(localPageList);
             }
 
