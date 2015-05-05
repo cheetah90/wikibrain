@@ -17,6 +17,7 @@ import org.wikibrain.spatial.dao.SpatialDataDao;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -56,8 +57,9 @@ public class ToblerPopulationDistributionSimulator {
     public static void main(String args[]) throws ConfigurationException, IOException, DaoException, WikiBrainException {
         Env env = EnvBuilder.envFromArgs(args);
         Configurator c = env.getConfigurator();
-        //String[] languages = {"en", "nl", "de", "sv", "fr", "it", "ru", "es", "pl", "ja", "vi", "pt", "zh", "ca", "no", "fi", "cs", "ko", "ar", "hu" };
-        String[] languages = {"simple", "zh", "ja"};
+        PrintWriter writer = new PrintWriter("WikipediaDistribution.txt", "UTF-8");
+        String[] languages = {"simple", "en", "nl", "de", "sv", "fr", "it", "ru", "es", "pl", "ja", "vi", "pt", "zh", "ca", "no", "fi", "cs", "ko", "ar", "hu" };
+        //String[] languages = {"simple", "zh", "ja"};
         sdDao = c.get(SpatialDataDao.class);
         upDao = c.get(UniversalPageDao.class);
         lpDao = c.get(LocalPageDao.class);
@@ -94,7 +96,9 @@ public class ToblerPopulationDistributionSimulator {
                 localPageList.add(localPageIterator.next().getLocalId());
             }
             System.out.println("Finished getting all local pages for " + lang);
+            count = 0;
             for(Map.Entry<Integer, Geometry> countryEntry : countryMap.entrySet()){
+                System.out.println("Calculating for " + count++ + " countries for language " + lang.getLangCode());
                 int counter = 0;
                 TIntIterator intIterator = countryContainedMap.get(countryEntry.getKey()).iterator();
                 while(intIterator.hasNext()){
@@ -105,7 +109,9 @@ public class ToblerPopulationDistributionSimulator {
                 countryPageCountMap.put(countryEntry.getKey(), counter);
             }
             for(Map.Entry<Integer, Integer> countryEntry : countryPageCountMap.entrySet()){
-                System.out.println(upDao.getById(countryEntry.getKey()).getBestEnglishTitle(lpDao, true).getCanonicalTitle() + ": " + countryEntry.getValue());
+                System.out.println(lang.getLangCode() + ": " + upDao.getById(countryEntry.getKey()).getBestEnglishTitle(lpDao, true).getCanonicalTitle() + ": " + countryEntry.getValue());
+                writer.println(lang.getLangCode() + ": " + upDao.getById(countryEntry.getKey()).getBestEnglishTitle(lpDao, true).getCanonicalTitle() + ": " + countryEntry.getValue());
+
             }
 
         }
