@@ -30,9 +30,15 @@ public class ToblerPopulationDistributionSimulator {
         while(true){
             int randomNum = rand.nextInt(localPageList.size());
             LocalPage localPage = localPageList.get(randomNum);
-            int univId = upDao.getByLocalPage(localPage).getUnivId();
+            int univId = 0;
+            try{
+                univId = upDao.getByLocalPage(localPage).getUnivId();
+            }
+            catch (Exception e){
+                continue;
+            }
             if(geometryMap.containsKey(univId)){
-                System.out.println("Get random geometry" + localPage.getTitle().getCanonicalTitle() + "  " + geometryMap.get(univId));
+                System.out.println("Get random geometry " + localPage.getTitle().getCanonicalTitle() + "  " + geometryMap.get(univId));
                 return geometryMap.get(univId);
             }
             else
@@ -62,13 +68,16 @@ public class ToblerPopulationDistributionSimulator {
             Language lang = Language.getByLangCode(lauange);
             DaoFilter daoFilter = new DaoFilter();
             daoFilter.setLanguages(lang);
+            System.out.println("Getting all local pages");
             Iterable<LocalPage> localPageIterable = lpDao.get(daoFilter);
             List<LocalPage> localPageList = new ArrayList<LocalPage>();
             Iterator<LocalPage> localPageIterator = localPageIterable.iterator();
             while (localPageIterator.hasNext()){
                 localPageList.add(localPageIterator.next());
             }
+            System.out.println("Finished getting all local pages");
             int count = 0;
+
             while(count ++ < 10){
                 getRandomGeometry(localPageList);
             }
