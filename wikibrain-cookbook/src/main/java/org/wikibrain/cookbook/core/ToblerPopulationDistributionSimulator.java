@@ -1,6 +1,7 @@
 package org.wikibrain.cookbook.core;
 
 import com.vividsolutions.jts.geom.Geometry;
+import org.jooq.util.derby.sys.Sys;
 import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.conf.Configurator;
 import org.wikibrain.core.cmd.Env;
@@ -17,7 +18,7 @@ import java.util.*;
 /**
  * Created by toby on 5/5/15.
  */
-public class ToblerPopulationDistributionSimilator {
+public class ToblerPopulationDistributionSimulator {
     static private SpatialDataDao sdDao;
     static private UniversalPageDao upDao;
     static private LocalPageDao lpDao;
@@ -51,8 +52,12 @@ public class ToblerPopulationDistributionSimilator {
         sdDao = c.get(SpatialDataDao.class);
         upDao = c.get(UniversalPageDao.class);
         lpDao = c.get(LocalPageDao.class);
+        System.out.println("Getting all countries");
         countryMap = sdDao.getAllGeometriesInLayer("country");
+        System.out.println("Finished getting all countries");
+        System.out.println("Getting all wikidata points");
         geometryMap = sdDao.getAllGeometriesInLayer("wikidata");
+        System.out.println("Finished getting all wikidata points");
         for(String lauange : languages){
             Language lang = Language.getByLangCode(lauange);
             DaoFilter daoFilter = new DaoFilter();
