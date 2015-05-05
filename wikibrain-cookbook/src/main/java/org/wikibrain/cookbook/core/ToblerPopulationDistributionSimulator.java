@@ -72,11 +72,13 @@ public class ToblerPopulationDistributionSimulator {
         geometryMap = sdDao.getAllGeometriesInLayer("wikidata");
         System.out.println("Finished getting all wikidata points");
         System.out.println("Getting contained POIs for countries");
+        int count = 0;
         for(Map.Entry<Integer, Geometry> countryEntry : countryMap.entrySet()){
             Set<String> layerSet = new HashSet<String>();
             layerSet.add("wikidata");
             TIntSet resultSet = scDao.getContainedItemIds(countryEntry.getValue(), "earth", layerSet, SpatialContainmentDao.ContainmentOperationType.CONTAINMENT);
             countryContainedMap.put(countryEntry.getKey(), resultSet);
+            System.out.println("Finshed for " + count++ + " countries");
         }
         System.out.println("Finished getting contained POIs for countries");
         for(String lauange : languages){
