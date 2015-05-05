@@ -29,7 +29,7 @@ public class ToblerPopulationDistributionSimulator {
     static private SpatialContainmentDao scDao;
     static private Map<Integer, Geometry> countryMap;
     static private Map<Integer, Geometry> geometryMap;
-    static private Map<Integer, TIntSet> countryContainedMap;
+    static private Map<Integer, TIntSet> countryContainedMap = new HashMap<Integer, TIntSet>();
 
     static public Geometry getRandomGeometry(List<LocalPage> localPageList) throws DaoException{
         Random rand = new Random();
