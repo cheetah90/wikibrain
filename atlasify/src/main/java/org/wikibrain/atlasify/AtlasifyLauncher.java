@@ -19,7 +19,7 @@ public class AtlasifyLauncher {
     public static final boolean useLocalHost = false;
     private static final Logger LOG = Logger.getLogger(AtlasifyLauncher.class.getName());
     private static CSVWriter serverLogWriter;
-    private static String baseURL = new String(useLocalHost ? "http://localhost/" : "http://spatialization.cs.umn.edu/");
+    public static String baseURL = new String(useLocalHost ? "http://localhost/" : "http://spatialization.cs.umn.edu/");
     private static int portNo = 8080;
     private static class checkAtlasifyStatus extends TimerTask{
         @Override

@@ -165,6 +165,8 @@ public class AtlasifyResource {
     private static ConcurrentLinkedHashMap<String, JSONObject> northwesternExplanationsCache;
     private static ConcurrentLinkedHashMap<String, List<Explanation>> dbpeidaExplanationsCache;
     private static String pairSeperator = "%";
+
+    private static FeatureArticleManager articleManager;
     //intialize all the DAOs we'll need to use
     private static void wikibrainSRinit(){
 
@@ -198,6 +200,12 @@ public class AtlasifyResource {
                     .initialCapacity(maximumExplanationsSize/10)
                     .build();
             System.out.println("FINISHED LOADING CACHES");
+
+            String defaultUsername = "atlasify@gmail.com";
+            String defaultPassword = "dfG-6Zh-Rzm-TzV";
+            Date time = new Date(2000, 0, 0, 3, 0, 0); // 3 am
+            articleManager = new FeatureArticleManager(defaultUsername, defaultPassword, time);
+            System.out.println("FINISHED LOADING FEATURE ARTICLE MANAGER");
 
             if(loadWikibrainSR){
                 sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
@@ -903,6 +911,40 @@ public class AtlasifyResource {
                 }
             }
             */
+
+            /* WikiMedia API */
+            /*String wikiMediaQuery = query.getKeyword().trim().replace(' ', '_');
+            URL wikiMediaURL = new URL("http://en.wikipedia.org//w/api.php?action=query&list=search&format=json&srsearch=" + wikiMediaQuery + "&srwhat=text&srinfo=suggestion");
+
+            HttpURLConnection connection = (HttpURLConnection)wikiMediaURL.openConnection();
+            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+
+            String output;
+            StringBuilder sb = new StringBuilder();
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
+            }
+
+            JSONObject wikiMediaResponse = new JSONObject(sb.toString());
+            wikiMediaResponse = wikiMediaResponse.getJSONObject("query");
+            JSONArray wikiMediaResponses = wikiMediaResponse.getJSONArray("search");
+
+            for (int j = 0; j < wikiMediaResponses.length() && i < 10; j++) {
+                JSONObject response = wikiMediaResponses.getJSONObject(j);
+                String title = response.getString("title");
+                LocalPage page = new LocalPage(language, 0, "");
+                try {
+                    for (LocalId p : pa.resolve(language, title, 1).keySet()) {
+                        page = lpDao.getById(p);
+                    }
+                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
+                        autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
+                        i++;
+                    }
+                } catch (Exception e) {
+                    // There was an error, lets keep keep going
+                }
+            }*/
         } catch (Exception e) {
             autocompleteMap = new HashMap<String, String>();
         }
@@ -1768,5 +1810,40 @@ public class AtlasifyResource {
         result.put("log", s);
 
         return Response.ok(new JSONObject(result).toString()).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+    @POST
+    @Path("/articles")
+    @Produces("application/json")
+
+    public Response getFeatureArticles() {
+        if (articleManager == null) {
+            wikibrainSRinit();
+        }
+
+        System.out.println("Received feature articles request");
+        return Response.ok(articleManager.getArticleJSON().toString()).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+    @POST
+    @Path("/game/article={title}&refsys={refsys}&resolution={resolution}")
+    @Consumes("text/plain")
+    @Produces("application/json")
+
+    public Response getArticleImage(@PathParam("title") String title, @PathParam("refsys") int refsys, @PathParam("resolution") int resolution) {
+        if (articleManager == null) {
+            wikibrainSRinit();
+        }
+
+        System.out.println("Received image request for " + title + " in ref sys " + refsys);
+        JSONObject image = new JSONObject();
+        try {
+            image.put("data", new String(articleManager.getImageFor(title, refsys, resolution)));
+        } catch (IOException e) {
+            System.out.println("Unable to load image for " + title + " in ref sys " + refsys);
+            e.printStackTrace();
+        }
+
+        return Response.ok(image.toString()).header("Access-Control-Allow-Origin", "*").build();
     }
 }
