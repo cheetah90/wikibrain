@@ -138,9 +138,12 @@ public class AtlasifyResource {
     private static POIGenerator poiGenerator = null;
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
+    public static SpatialDataDao sdDao = null;
     private static boolean loadWikibrainSR = false;
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static LuceneSearcher luceneSearcher;
+    private static Map<Integer, Geometry> geometryMap = null;
+
 
     // Game data
     private static RealMatrix gameCountryCorrelationMatrix;
@@ -179,6 +182,7 @@ public class AtlasifyResource {
             System.out.println("FINISHED LOADING LOCALPAGE DAO");
             lpaDao = conf.get(LocalPageAutocompleteSqlDao.class);
             llDao = conf.get(LocalLinkDao.class);
+            sdDao = conf.get(SpatialDataDao.class);
             System.out.println("FINISHED LOADING LOCALLINK DAO");
             // Autocomplete cache creation
             autocompleteCache = new ConcurrentLinkedHashMap.Builder<String, Map<String, String>>()
@@ -241,6 +245,7 @@ public class AtlasifyResource {
             upDao = conf.get(UniversalPageDao.class);
             System.out.println("FINISHED LOADING UNIVERSALPAGE DAO");
             System.out.println("STARTED LOADING POI GENERATOR");
+            geometryMap = sdDao.getAllGeometriesInLayer("wikidata");
             poiGenerator = new POIGenerator(conf);
             System.out.println("FINISHED LOADING POI GENERATOR");
 
@@ -1259,22 +1264,31 @@ public class AtlasifyResource {
         Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
         System.out.println("Querying top related pages to " + pageId);
         try{
-            srValues=AtlasifyResource.accessNorthwesternAPI(new LocalId(Language.EN ,pageId), number + 10, false);
+            srValues=AtlasifyResource.accessNorthwesternAPI(new LocalId(Language.EN ,pageId), number * 25 + 10, false);
         }
         catch (Exception e){
             //failed to get srValues
         }
+        List<Map.Entry<LocalId, Double>> resultList = new ArrayList<Map.Entry<LocalId, Double>>(srValues.entrySet());
+        Collections.shuffle(resultList);
         Set<Integer> blackList = new HashSet<Integer>();
         Integer[] blackListArray = new Integer[]{170584, 23893, 23814944, 19728, 128608, 23410163, 39736};
         blackList.addAll(Arrays.asList(blackListArray));
-        for(Map.Entry<LocalId, Double> srEntry : srValues.entrySet()){
+        int count = 0;
+        for(Map.Entry<LocalId, Double> srEntry : resultList){
+            if(count > number)
+                break;
             if(blackList.contains(Integer.valueOf(srEntry.getKey().getId())))
                 continue;
             try{
+                if(geometryMap.containsKey(upDao.getUnivPageId(lang, srEntry.getKey().getId())))
+                    continue;
                 LocalPage localPage = lpDao.getById(srEntry.getKey());
                 if(localPage.getTitle().getCanonicalTitle().contains("Census"))
                     continue;
                 resultMap.put(localPage.getTitle().getCanonicalTitle(), "http://en.wikipedia.org/wiki/" + localPage.getTitle().getCanonicalTitle().replace(" ", "_"));
+                count ++;
+
             }
             catch (Exception e){
                 //do nothing
