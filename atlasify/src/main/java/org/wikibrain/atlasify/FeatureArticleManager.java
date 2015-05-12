@@ -315,8 +315,8 @@ public class FeatureArticleManager {
         firefox.setEnvironmentProperty("DISPLAY", ":" + DISPLAY_NUMBER);
         FirefoxDriver driver = new FirefoxDriver(firefox, null);
         // Would be nice to increase size for hdpi devices
-        int imageWidth  = 2 * 250;
-        int imageHeight = 2 * 170;
+        int imageWidth  = 2 * 125;
+        int imageHeight = 2 * 85;
         int cropTop = 50;
         int cropBottom = 55;
         int cropLeft = 45;
