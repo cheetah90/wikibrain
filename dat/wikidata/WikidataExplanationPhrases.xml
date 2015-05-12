@@ -69,7 +69,7 @@
     </Phrase>
     <Phrase>
         <DBPediaID>regions</DBPediaID>
-        <Text>%s are located in %s</Text>
+        <Text>%s is located in %s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>twin1City</DBPediaID>
@@ -121,11 +121,25 @@
     </Phrase>
     <Phrase>
         <DBPediaID>flagbearer</DBPediaID>
-        <Text>%s was the flagbearer at %s</Text>
+        <Text>%2$s was the flagbearer of %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>religion</DBPediaID>
+        <DBPediaID>religions</DBPediaID>
+        <DBPediaID>rels</DBPediaID>
+        <Text>%s practice the religion of %1$s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>exportGoods</DBPediaID>
         <Text>%2$s is an export of %1$s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>sport</DBPediaID>
+        <Text>%s plays the sport of %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>sportGoverningBody</DBPediaID>
+        <Text>%2$s is the governing body for the sport of %1$s</Text>
     </Phrase>
     <Phrase>
         <WikiDataID>7</WikiDataID>
@@ -786,6 +800,26 @@
     <Phrase>
         <DBPediaID>mapCaption</DBPediaID>
         <Media>map caption</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>thumbnail</DBPediaID>
+        <Media>thumbnail</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>union</DBPediaID>
+        <Media>union</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>wikiPageID</DBPediaID>
+        <Media>wikipedia page id</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>depiction</DBPediaID>
+        <Media>depiction</Media>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>caption</DBPediaID>
+        <Media>caption</Media>
     </Phrase>
     <Phrase>
         <DBPediaID>pushpinMapCaption</DBPediaID>
