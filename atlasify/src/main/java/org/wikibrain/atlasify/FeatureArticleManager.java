@@ -222,10 +222,21 @@ public class FeatureArticleManager {
         this(username, password);
 
         final String masterSpreadsheetName = "Atlasify Featured Maps";
-        // Disable the initial load, since our server isn't online yet
-        //loadSpreadSheetData(masterSpreadsheetName);
+        // Load the data in 5 min, this is hopefully enough time for the server to load
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.schedule(new Runnable() {
+                               @Override
+                               public void run() {
+                                   try {
+                                       loadSpreadSheetData(masterSpreadsheetName);
+                                   } catch (Exception e) {
+                                       System.out.println("Error retrieving new featured article data");
+                                       e.printStackTrace();
+                                   }
+                               }
+                           }, 5, TimeUnit.MINUTES);
 
-        Date current = new Date();
+                Date current = new Date();
         date.setYear(current.getYear());
         date.setMonth(current.getMonth());
         date.setDate(current.getDate());
@@ -233,7 +244,6 @@ public class FeatureArticleManager {
             date.setDate(current.getDate() + 1);
         }
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
