@@ -1836,7 +1836,7 @@ public class AtlasifyResource {
         }
 
         System.out.println("Received feature articles request");
-        return Response.ok(articleManager.getArticleJSON().toString()).header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok(articleManager.getArticleJSON().toString()).build();
     }
 
     @POST
