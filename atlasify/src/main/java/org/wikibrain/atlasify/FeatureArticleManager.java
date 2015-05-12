@@ -222,7 +222,8 @@ public class FeatureArticleManager {
         this(username, password);
 
         final String masterSpreadsheetName = "Atlasify Featured Maps";
-        loadSpreadSheetData(masterSpreadsheetName);
+        // Disable the initial load, since our server isn't online yet
+        //loadSpreadSheetData(masterSpreadsheetName);
 
         Date current = new Date();
         date.setYear(current.getYear());
