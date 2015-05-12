@@ -346,7 +346,7 @@ public class FeatureArticleManager {
                 "if (currentlyShowingRefSysPopover) hideRefSysInfoPopover();");
         try {
             // This should allow for the webpage to load
-            Thread.sleep(1000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
 
         }
