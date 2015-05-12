@@ -1823,7 +1823,7 @@ public class AtlasifyResource {
         Map<String, String> result = new HashMap<String, String>();
         result.put("log", s);
 
-        return Response.ok(new JSONObject(result).toString()).header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok(new JSONObject(result).toString()).build();
     }
 
     @POST
@@ -1836,7 +1836,7 @@ public class AtlasifyResource {
         }
 
         System.out.println("Received feature articles request");
-        return Response.ok(articleManager.getArticleJSON().toString()).header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok(articleManager.getArticleJSON().toString()).build();
     }
 
     @POST
@@ -1858,6 +1858,6 @@ public class AtlasifyResource {
             e.printStackTrace();
         }
 
-        return Response.ok(image.toString()).header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok(image.toString()).build();
     }
 }
