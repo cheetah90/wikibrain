@@ -68,8 +68,13 @@
         <Text>%2$s has a significant population in %1$s</Text>
     </Phrase>
     <Phrase>
+        <DBPediaID>region</DBPediaID>
         <DBPediaID>regions</DBPediaID>
         <Text>%s is located in %s</Text>
+    </Phrase>
+    <Phrase>
+        <DBPediaID>origin</DBPediaID>
+        <Text>%s originates from %s</Text>
     </Phrase>
     <Phrase>
         <DBPediaID>twin1City</DBPediaID>
