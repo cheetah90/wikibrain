@@ -56,7 +56,7 @@ public class WikiEntropyCalculator {
         scDao = c.get(SpatialContainmentDao.class);
         llDao = c.get(LocalLinkDao.class);
 
-        Language lang = Language.SIMPLE;
+        Language lang = Language.EN;
         CSVWriter writer = new CSVWriter(new FileWriter(lang.getLangCode() + "_countyEntropy.csv"), ',');
         String[] row = new String[4];
         row[0] = "Universal ID";
