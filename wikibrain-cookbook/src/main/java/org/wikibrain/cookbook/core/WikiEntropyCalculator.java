@@ -63,7 +63,10 @@ public class WikiEntropyCalculator {
         writer.flush();
 
         Map<Integer, Geometry> countyMap = sdDao.getAllGeometriesInLayer("counties");
+        int countyCounter = 0;
         for(Map.Entry<Integer, Geometry> countyEntry : countyMap.entrySet()){
+            System.out.println("Done with " + countyCounter++ + "counties out of " + countyMap.size());
+
             Set<String> layerSet = new HashSet<String>();
             layerSet.add("wikidata");
             List<LocalLink> allCountyLinks = new ArrayList<LocalLink>();
@@ -98,7 +101,14 @@ public class WikiEntropyCalculator {
                 infoEntropy += (selfInformation * (linkDestinationCountEntry.getValue().doubleValue() / sampleList.size()));
             }
             row[0] = countyEntry.getKey().toString();
-            row[1] = upDao.getById(countyEntry.getKey()).getBestEnglishTitle(lpDao, true).getCanonicalTitle();
+            row[1] = "N/A";
+            try {
+                row[1] = upDao.getById(countyEntry.getKey()).getBestEnglishTitle(lpDao, true).getCanonicalTitle();
+            }
+            catch (Exception e){
+                System.out.println("error in processing " + countyEntry.getKey() + " and " + countyEntry.getValue());
+                
+            }
             row[2] = infoEntropy.toString();
             writer.writeNext(row);
             writer.flush();
