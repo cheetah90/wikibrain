@@ -1,5 +1,6 @@
 package org.wikibrain.cookbook.core;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import com.vividsolutions.jts.geom.Geometry;
 import gnu.trove.iterator.TIntIterator;
@@ -16,6 +17,7 @@ import org.wikibrain.spatial.dao.SpatialContainmentDao;
 import org.wikibrain.spatial.dao.SpatialDataDao;
 
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -29,6 +31,7 @@ public class WikiEntropyCalculator {
     static private LocalPageDao lpDao;
     static private SpatialContainmentDao scDao;
     static private LocalLinkDao llDao;
+    static public Set<Integer> GADM01Concepts = new HashSet<Integer>();
 
     public static <T> List<T> getRandomSubList(List<T> input, int subsetSize)
     {
@@ -55,13 +58,19 @@ public class WikiEntropyCalculator {
 
         Language lang = Language.SIMPLE;
         CSVWriter writer = new CSVWriter(new FileWriter(lang.getLangCode() + "_countyEntropy.csv"), ',');
-        String[] row = new String[3];
+        String[] row = new String[4];
         row[0] = "Universal ID";
         row[1] = "Name";
         row[2] = "Entropy";
+        row[3] = "County Article Count";
         writer.writeNext(row);
         writer.flush();
-
+        CSVReader reader = new CSVReader(new FileReader("gadm_matched.csv"), ',');
+        List<String[]> gadmList = reader.readAll();
+        for(String[] gadmItem : gadmList){
+            if(Integer.parseInt(gadmItem[2]) < 2)
+                GADM01Concepts.add(Integer.parseInt(gadmItem[0]));
+        }
         Map<Integer, Geometry> countyMap = sdDao.getAllGeometriesInLayer("counties");
         int countyCounter = 0;
         for(Map.Entry<Integer, Geometry> countyEntry : countyMap.entrySet()){
@@ -73,8 +82,12 @@ public class WikiEntropyCalculator {
             TIntSet resultSet = scDao.getContainedItemIds(countyEntry.getValue(), "earth", layerSet, SpatialContainmentDao.ContainmentOperationType.CONTAINMENT);
             TIntIterator resultIterator = resultSet.iterator();
             Double infoEntropy = 0.0;
+            int countyArticleCounter = 0;
             while (resultIterator.hasNext()){
                 Integer univId = resultIterator.next();
+                countyArticleCounter ++;
+                if(GADM01Concepts.contains(univId))
+                    continue;
                 Integer localId = upDao.getLocalId(lang, univId);
                 if(localId == -1)
                     //no corresponding local page in the given language
@@ -110,6 +123,7 @@ public class WikiEntropyCalculator {
 
             }
             row[2] = infoEntropy.toString();
+            row[3] = String.valueOf(countyArticleCounter);
             writer.writeNext(row);
             writer.flush();
 
