@@ -962,7 +962,7 @@ public class AtlasifyResource {
         //System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
         return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
     }
-    public String getExplanation(String keyword, String feature) throws Exception{
+    public String getExplanation(String keyword, String feature, boolean useCaches) throws Exception{
         if (lpDao == null && wikibrainLoadingInProcess == false) {
             wikibrainSRinit();
         }
@@ -1056,7 +1056,7 @@ public class AtlasifyResource {
             try{
                 List<Explanation> explanationList;
                 String pair = keywordTitle + pairSeperator + featureTitle;
-                if (dbpeidaExplanationsCache.containsKey(pair)) {
+                if (useCaches && dbpeidaExplanationsCache.containsKey(pair)) {
                     explanationList = dbpeidaExplanationsCache.get(pair);
                 } else {
                     explanationList = dbMetric.similarity(keywordPageId, featurePageId, true).getExplanations();
@@ -1103,7 +1103,7 @@ public class AtlasifyResource {
             // Check to see if the northwestern explanations are cached
             JSONObject northwesternExplanationResult;
             String northwesternPair = keywordTitle + pairSeperator + featureTitle;
-            if (northwesternExplanationsCache.containsKey(northwesternPair)) {
+            if (useCaches && northwesternExplanationsCache.containsKey(northwesternPair)) {
                 northwesternExplanationResult = northwesternExplanationsCache.get(northwesternPair);
             } else {
                 System.out.println("Querying NU server for explanation between " + keyword + " and " + feature);
@@ -1318,7 +1318,18 @@ public class AtlasifyResource {
     @Consumes("text/plain")
     @Produces("text/plain")
     public Response handleExplanation(@PathParam("keyword") String keyword, @PathParam("feature") String feature) throws  DaoException, MalformedURLException, IOException, Exception{
-        String result = getExplanation(keyword, feature);
+        String result = getExplanation(keyword, feature, false);
+        return Response.ok(result.toString()).build();
+    }
+
+    @GET
+    // The Java method will produce content identified by the MIME Media
+    // type "text/plain"
+    @Path("/SR/Explanation/keyword={keyword}&feature={feature}&useCache={cache}")
+    @Consumes("text/plain")
+    @Produces("text/plain")
+    public Response handleExplanation(@PathParam("keyword") String keyword, @PathParam("feature") String feature, @PathParam("cache") boolean cache) throws  DaoException, MalformedURLException, IOException, Exception{
+        String result = getExplanation(keyword, feature, cache);
         return Response.ok(result.toString()).build();
     }
 
