@@ -969,6 +969,7 @@ public class AtlasifyResource {
 
         JSONArray explanations = new JSONArray();
         JSONArray explanationSection = new JSONArray();
+        boolean hasNonCommonPageExplanations = false;
 
         System.out.println("Received query for explanation between " + keyword + " and " + feature);
         String keywordTitle;
@@ -1082,6 +1083,7 @@ public class AtlasifyResource {
                         data.put("keyword", keyword);
                         data.put("feature", feature);
                         jsonExplanation.put("data", data);
+                        hasNonCommonPageExplanations = true;
 
                         explanationSection.put(explanationSection.length(), jsonExplanation);
                     } catch (Exception e) {
@@ -1197,6 +1199,7 @@ public class AtlasifyResource {
                         data.put("title", title);
                         data.put("header-title", title);
                         jsonExplanation.put("data", data);
+                        hasNonCommonPageExplanations = true;
 
                         explanationSection.put(explanationSection.length(), jsonExplanation);
                     }
@@ -1242,7 +1245,7 @@ public class AtlasifyResource {
         result.put("explanations", explanations);
         result.put("keyword", keyword);
         result.put("feature", feature);
-
+        result.put("has-noncommon-page-results", hasNonCommonPageExplanations);
 
         System.out.println("REQUESTED explanation between " + keyword + " and " + feature + "\n\n" + explanations.toString());
 
