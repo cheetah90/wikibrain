@@ -536,7 +536,7 @@ public class AtlasifyResource {
 
 
     /**
-     * return a <name, color> map to the client
+     * return a <name, sr> map to the client
      * @param query AtlasifyQuery sent from the client
      * @return
      */
@@ -552,6 +552,41 @@ public class AtlasifyResource {
         }
         if(lpDao == null ){
             wikibrainSRinit();
+        }
+
+        // Call the new northwestern API to preload the explanations
+        String explanationsLoadingRefSys = null;
+        if (query.getRefSystem().equals("state") || query.getRefSystem().equals("country")) {
+            explanationsLoadingRefSys = "Geography";
+        } else if (query.getRefSystem().equals("periodicTable")) {
+            explanationsLoadingRefSys = "Chemistry";
+        } else if (query.getRefSystem().equals("senate")) {
+            explanationsLoadingRefSys = "Politics";
+        }
+
+        if (explanationsLoadingRefSys != null) {
+            String url = "http://downey-n1.cs.northwestern.edu:3030/precompute?concept=" + query.getKeyword().replace(' ', '_') + "&reference=" + explanationsLoadingRefSys;
+            System.out.println("NU Explanations Precompute " + url);
+            try {
+                URLConnection urlConnection = new URL(url).openConnection();
+                urlConnection.setConnectTimeout(NorthwesternTimeout);
+                urlConnection.setReadTimeout(NorthwesternTimeout);
+
+                InputStream inputStream = urlConnection.getInputStream();
+
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder stringBuilder = new StringBuilder();
+                int currentChar;
+                while ((currentChar = bufferedReader.read()) != -1) {
+                    stringBuilder.append((char) currentChar);
+                }
+
+                JSONObject jsonObject = new JSONObject(stringBuilder.toString());
+                System.out.println("NU Explanations Precompute status " + jsonObject.get("status"));
+            } catch (Exception e) {
+                System.out.println("Error Unable to Precompute Explanations");
+                e.printStackTrace();
+            }
         }
 
         List<String> featureIdList = new ArrayList<String>(Arrays.asList(query.getFeatureIdList()));
