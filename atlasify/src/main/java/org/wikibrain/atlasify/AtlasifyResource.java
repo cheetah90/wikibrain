@@ -589,6 +589,12 @@ public class AtlasifyResource {
             }
         }
 
+        // update the trending articles data
+        if (query.getRefSystem().equals("timeline")) {
+            explanationsLoadingRefSys = "Timeline";
+        }
+        articleManager.viewedArticle(query.getKeyword(), FeatureArticleManager.refSysString(explanationsLoadingRefSys));
+
         List<String> featureIdList = new ArrayList<String>(Arrays.asList(query.getFeatureIdList()));
         List<String> featureNameList = new ArrayList<String>(Arrays.asList(query.getFeatureNameList()));
         String keyword = query.getKeyword();

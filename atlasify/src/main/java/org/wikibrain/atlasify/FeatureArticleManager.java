@@ -8,20 +8,19 @@ import com.google.gdata.client.spreadsheet.FeedURLFactory;
 import com.google.gdata.client.spreadsheet.CellQuery;
 
 import com.google.gdata.data.Feed;
-import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
-import com.google.gdata.data.spreadsheet.CellFeed;
+import com.google.gdata.data.TextConstruct;
+import com.google.gdata.data.spreadsheet.*;
 
 import com.google.gdata.data.Entry;
-import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
-import com.google.gdata.data.spreadsheet.WorksheetEntry;
-import com.google.gdata.data.spreadsheet.CellEntry;
 
-import com.google.gdata.data.spreadsheet.Cell;
+import com.google.gdata.util.common.xml.XmlWriter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.clapper.util.io.FileUtil;
 import org.jooq.util.derby.sys.Sys;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.opengis.filter.spatial.Equals;
 import org.openqa.selenium.*;
 import org.openqa.selenium.Dimension;
 import org.wikibrain.core.lang.LocalId;
@@ -93,7 +92,7 @@ public class FeatureArticleManager {
         }
     }
 
-    public ReferenceSystem refSysString(String s) {
+    public static ReferenceSystem refSysString(String s) {
         if (s == null) {
             return ReferenceSystem.Geography;
         }
@@ -108,7 +107,7 @@ public class FeatureArticleManager {
         }
         return ReferenceSystem.Geography;
     }
-    public ReferenceSystem refSysInt(int i) {
+    public static ReferenceSystem refSysInt(int i) {
         switch (i) {
             case 1:
                 return ReferenceSystem.Geography;
@@ -138,7 +137,7 @@ public class FeatureArticleManager {
                 try {
                     title = resolveToWikipediaArticle(title);
                 } catch (Exception e) {
-                    System.out.println("Unable to resolve " + value + "to wikipedia article");
+                    System.out.println("Unable to resolve " + value + " to wikipedia article");
                     //e.printStackTrace();
                 }
                 if (title.length() <= 0) {
@@ -170,6 +169,16 @@ public class FeatureArticleManager {
         @Override
         public String toString() {
             return getTitle() + ":" + getRefSys().toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Article) {
+                Article article = (Article)obj;
+                return this.title.equals(article.title) && this.refSys == article.refSys;
+            } else  {
+                return this.equals(obj);
+            }
         }
     }
 
@@ -215,6 +224,8 @@ public class FeatureArticleManager {
     private FeedURLFactory factory;
     private List<ArticleSection> articleData;
     private JSONObject articleJSON;
+    final private int MaximumNumberOfFeatureArticles = 10;
+    private PriorityQueue<TrendingArticle> trendingArticles;
 
     // This continually reload the data at the time specified in the date parameter, the day, month, year don't matter
     // It will also refresh the data upon calling the constructor
@@ -260,6 +271,7 @@ public class FeatureArticleManager {
         factory = FeedURLFactory.getDefault();
         service = new SpreadsheetService("gdata-sample-spreadhsheetindex");
         service.setUserCredentials(username, password);
+        trendingArticles = new PriorityQueue<TrendingArticle>();
     }
 
     public List<SpreadsheetEntry> getSpreadsheetEntries() throws Exception {
@@ -386,15 +398,9 @@ public class FeatureArticleManager {
             g.drawImage(newImage, 0, 0, imageWidth/2, imageHeight/2, null);
             g.dispose();
             ImageIO.write(lowResImage, "png", new File(filename + ".png"));
-
+        } finally {
             driver.close();
             p.destroy();
-        } catch (IOException e) {
-            // Make sure everything is close if an exception happens
-            driver.close();
-            p.destroy();
-
-            throw e;
         }
     }
 
@@ -426,6 +432,12 @@ public class FeatureArticleManager {
             articleDir.mkdir();
         }
 
+        syncTrendingData(worksheet);
+        Thread.sleep(10000);
+        syncFeaturedData(worksheet);
+    }
+
+    private void syncFeaturedData(WorksheetEntry worksheet) throws Exception {
         // Print out all the loaded data, generate the images if necessary
         System.out.println("BEGIN loading feature article data");
         List<ArticleSection> sections = getSheadsheetData(worksheet);
@@ -480,6 +492,142 @@ public class FeatureArticleManager {
         System.out.println("FINISHED loading feature article data");
     }
 
+    private void syncTrendingData(WorksheetEntry worksheet) throws Exception {
+        System.out.println("BEGIN Updating Trending Data");
+        ArticleSection currentTrendingData = getSheadsheetData(worksheet).get(0);
+        System.out.println(currentTrendingData);
+        TrendingArticle[] currentTrendingArticles = trendingArticles.toArray(new TrendingArticle[0]);
+        ArrayUtils.reverse(currentTrendingArticles);
+        trendingArticles = new PriorityQueue<TrendingArticle>();
+
+        URL trendingFeedUrl = worksheet.getCellFeedUrl();
+        CellQuery trendingQuery = new CellQuery(trendingFeedUrl);
+        CellFeed trendingFeed = service.query(trendingQuery, CellFeed.class);
+        int processedCells = 0;
+        for (CellEntry cellEntry : trendingFeed.getEntries()) {
+            Cell cell = cellEntry.getCell();
+            if (cell.getRow() != 2) {
+                // We only need to update the trending row
+                continue;
+            }
+            if (cell.getCol() == 1) {
+                // This should be the treading row
+                continue;
+            }
+
+            // Indexing Begins from 1
+            int index = cell.getCol() - 1;
+            if (index > MaximumNumberOfFeatureArticles) {
+                cellEntry.delete();
+                continue;
+            }
+
+            // Set the appropriate value
+            if (index <= currentTrendingArticles.length) {
+                Article article = currentTrendingArticles[index - 1].article;
+                cellEntry.changeInputValueLocal(article.title + ":" + article.getRefSys().toString());
+                System.out.println("\t" + article.title + ":" + article.getRefSys().toString());
+                cellEntry.update();
+                processedCells++;
+            } else {
+                index -= currentTrendingArticles.length;
+                // Make sure there is enough data
+                if (index > currentTrendingData.getArticles().size()) {
+                    cellEntry.delete();
+                    continue;
+                }
+
+                Article article = currentTrendingData.getArticles().get(index - 1);
+                cellEntry.changeInputValueLocal(article.title + ":" + article.getRefSys().toString());
+                System.out.println("\t" + article.title + ":" + article.getRefSys().toString());
+                cellEntry.update();
+                processedCells++;
+            }
+        }
+
+        int numberOfCellsWithData = currentTrendingArticles.length + currentTrendingData.getArticles().size();
+        while (processedCells < MaximumNumberOfFeatureArticles && processedCells < numberOfCellsWithData) {
+            // We should add more cells
+            int index = processedCells + 1; // +1 since each row begins with a header, +1 since the rows are indexed from 1
+            CellEntry cellEntry = new CellEntry(2, index + 1, "");
+            cellEntry = trendingFeed.insert(cellEntry);
+
+            // Set the appropriate value
+            if (index <= currentTrendingArticles.length) {
+                Article article = currentTrendingArticles[index - 1].article;
+                cellEntry.changeInputValueLocal(article.title + ":" + article.getRefSys().toString());
+                System.out.println("\t" + article.title + ":" + article.getRefSys().toString());
+                cellEntry.update();
+                processedCells++;
+            } else {
+                index -= currentTrendingArticles.length;
+                // Make sure there is enough data
+                if (index > currentTrendingData.getArticles().size()) {
+                    cellEntry.delete();
+                    continue;
+                }
+
+                Article article = currentTrendingData.getArticles().get(index - 1);
+                cellEntry.changeInputValueLocal(article.title + ":" + article.getRefSys().toString());
+                System.out.println("\t" + article.title + ":" + article.getRefSys().toString());
+                cellEntry.update();
+                processedCells++;
+            }
+        }
+
+        System.out.println("FINISH Updating Trending Data");
+    }
+
+    private class TrendingArticle implements Comparator<TrendingArticle>, Comparable<TrendingArticle> {
+        public TrendingArticle(Article article) {
+            this.article = article;
+            this.count = 0;
+        }
+        private Article article;
+        private int count;
+
+        public Article getArticle() {
+            return article;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void setCount(int count) {
+            this.count = count;
+        }
+
+        public int compareTo(TrendingArticle article){
+            return ((Integer)this.count).compareTo(article.count);
+        }
+
+        public int compare(TrendingArticle article1, TrendingArticle article2) {
+            return article1.compareTo(article2);
+        }
+    }
+    // Call this anytime a map is viewed to update the trending data
+    public void viewedArticle(String s, ReferenceSystem refSys) {
+        Article article = new Article(s, refSys);
+
+        TrendingArticle alreadyStoredArticle = null;
+        for (TrendingArticle storedArticles : trendingArticles) {
+            if (storedArticles.article.equals(article)) {
+                alreadyStoredArticle = storedArticles;
+                break;
+            }
+        }
+
+        if (alreadyStoredArticle != null) {
+            // Update the already stored article
+            trendingArticles.remove(alreadyStoredArticle);
+            alreadyStoredArticle.setCount(1 + alreadyStoredArticle.getCount());
+            trendingArticles.add(alreadyStoredArticle);
+        } else {
+            // Add the article
+            trendingArticles.add(new TrendingArticle(article));
+        }
+    }
     public JSONObject getArticleJSON() {
         return articleJSON;
     }
