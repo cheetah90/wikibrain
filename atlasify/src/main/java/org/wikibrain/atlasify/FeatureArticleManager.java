@@ -180,6 +180,11 @@ public class FeatureArticleManager {
                 return this.equals(obj);
             }
         }
+
+        @Override
+        public int hashCode() {
+            return title.hashCode() ^ refSys.hashCode();
+        }
     }
 
     private class ArticleSection {
@@ -225,7 +230,7 @@ public class FeatureArticleManager {
     private List<ArticleSection> articleData;
     private JSONObject articleJSON;
     final private int MaximumNumberOfFeatureArticles = 10;
-    private PriorityQueue<TrendingArticle> trendingArticles;
+    private List<TrendingArticle> trendingArticles;
 
     // This continually reload the data at the time specified in the date parameter, the day, month, year don't matter
     // It will also refresh the data upon calling the constructor
@@ -271,7 +276,7 @@ public class FeatureArticleManager {
         factory = FeedURLFactory.getDefault();
         service = new SpreadsheetService("gdata-sample-spreadhsheetindex");
         service.setUserCredentials(username, password);
-        trendingArticles = new PriorityQueue<TrendingArticle>();
+        trendingArticles = new ArrayList<TrendingArticle>();
     }
 
     public List<SpreadsheetEntry> getSpreadsheetEntries() throws Exception {
@@ -495,15 +500,19 @@ public class FeatureArticleManager {
     private void syncTrendingData(WorksheetEntry worksheet) throws Exception {
         System.out.println("BEGIN Updating Trending Data");
         ArticleSection currentTrendingData = getSheadsheetData(worksheet).get(0);
-        System.out.println(currentTrendingData);
+        Collections.sort(trendingArticles);
+        Collections.reverse(trendingArticles);
         TrendingArticle[] currentTrendingArticles = trendingArticles.toArray(new TrendingArticle[0]);
-        ArrayUtils.reverse(currentTrendingArticles);
-        trendingArticles = new PriorityQueue<TrendingArticle>();
+        Set<Article> currentlyStoredArticle = new HashSet<Article>();
+        trendingArticles = new ArrayList<TrendingArticle>();
 
         URL trendingFeedUrl = worksheet.getCellFeedUrl();
         CellQuery trendingQuery = new CellQuery(trendingFeedUrl);
         CellFeed trendingFeed = service.query(trendingQuery, CellFeed.class);
         int processedCells = 0;
+        // When we find a duplicate item, we then will delete all remaining cells
+        // And use the "fill" algorithm below
+        boolean foundDuplicateItem = false;
         for (CellEntry cellEntry : trendingFeed.getEntries()) {
             Cell cell = cellEntry.getCell();
             if (cell.getRow() != 2) {
@@ -517,7 +526,7 @@ public class FeatureArticleManager {
 
             // Indexing Begins from 1
             int index = cell.getCol() - 1;
-            if (index > MaximumNumberOfFeatureArticles) {
+            if (index > MaximumNumberOfFeatureArticles || foundDuplicateItem) {
                 cellEntry.delete();
                 continue;
             }
@@ -525,9 +534,11 @@ public class FeatureArticleManager {
             // Set the appropriate value
             if (index <= currentTrendingArticles.length) {
                 Article article = currentTrendingArticles[index - 1].article;
+                // The current trending articles should all be unique
                 cellEntry.changeInputValueLocal(article.title + ":" + article.getRefSys().toString());
                 System.out.println("\t" + article.title + ":" + article.getRefSys().toString());
                 cellEntry.update();
+                currentlyStoredArticle.add(article);
                 processedCells++;
             } else {
                 index -= currentTrendingArticles.length;
@@ -538,6 +549,12 @@ public class FeatureArticleManager {
                 }
 
                 Article article = currentTrendingData.getArticles().get(index - 1);
+                if (currentlyStoredArticle.contains(article)) {
+                    foundDuplicateItem = true;
+                    cellEntry.delete();
+                    continue;
+                }
+
                 cellEntry.changeInputValueLocal(article.title + ":" + article.getRefSys().toString());
                 System.out.println("\t" + article.title + ":" + article.getRefSys().toString());
                 cellEntry.update();
@@ -546,15 +563,18 @@ public class FeatureArticleManager {
         }
 
         int numberOfCellsWithData = currentTrendingArticles.length + currentTrendingData.getArticles().size();
-        while (processedCells < MaximumNumberOfFeatureArticles && processedCells < numberOfCellsWithData) {
+        int currentIndex = processedCells; // +1 since each row begins with a header, +1 since the rows are indexed from 1
+        while (processedCells < MaximumNumberOfFeatureArticles && currentIndex < numberOfCellsWithData) {
             // We should add more cells
-            int index = processedCells + 1; // +1 since each row begins with a header, +1 since the rows are indexed from 1
-            CellEntry cellEntry = new CellEntry(2, index + 1, "");
+            currentIndex++;
+            int index = currentIndex;
+            CellEntry cellEntry = new CellEntry(2, processedCells + 2, "");
             cellEntry = trendingFeed.insert(cellEntry);
 
             // Set the appropriate value
             if (index <= currentTrendingArticles.length) {
                 Article article = currentTrendingArticles[index - 1].article;
+                // The current trending articles should all be unique
                 cellEntry.changeInputValueLocal(article.title + ":" + article.getRefSys().toString());
                 System.out.println("\t" + article.title + ":" + article.getRefSys().toString());
                 cellEntry.update();
@@ -568,6 +588,10 @@ public class FeatureArticleManager {
                 }
 
                 Article article = currentTrendingData.getArticles().get(index - 1);
+                if (currentlyStoredArticle.contains(article)) {
+                    continue;
+                }
+
                 cellEntry.changeInputValueLocal(article.title + ":" + article.getRefSys().toString());
                 System.out.println("\t" + article.title + ":" + article.getRefSys().toString());
                 cellEntry.update();
@@ -605,10 +629,16 @@ public class FeatureArticleManager {
         public int compare(TrendingArticle article1, TrendingArticle article2) {
             return article1.compareTo(article2);
         }
+
+        @Override
+        public String toString() {
+            return "[" + count + "] " + article.toString();
+        }
     }
     // Call this anytime a map is viewed to update the trending data
     public void viewedArticle(String s, ReferenceSystem refSys) {
         Article article = new Article(s, refSys);
+        System.out.println("Adding trend: " + article.toString());
 
         TrendingArticle alreadyStoredArticle = null;
         for (TrendingArticle storedArticles : trendingArticles) {
