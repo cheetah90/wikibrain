@@ -19,12 +19,14 @@ public class SRBackgroundLoading implements Runnable {
     }
     public void run(){
         System.out.println("Starting SR Background loading for keyword " + query.getKeyword());
+        int count = 0;
         for (int i = 0; i < featureNameList.length; i++) {
             if(!srCacheDao.checkSRExist(query.getKeyword(), featureNameList[i])){
                 try {
                     double value = sr.similarity(query.getKeyword(), featureNameList[i], false).getScore();
-                    System.out.println("Saving SR for " + query.getKeyword() + " and " + featureNameList[i] + " is " + value);
+                    //System.out.println("Saving SR for " + query.getKeyword() + " and " + featureNameList[i] + " is " + value);
                     srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
+                    count++;
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -32,7 +34,7 @@ public class SRBackgroundLoading implements Runnable {
                 }
             }
         }
-        System.out.println("Finished SR Background loading for keyword " + query.getKeyword());
+        System.out.println("Finished SR Background loading for" + count + " pairs for keyword " + query.getKeyword());
 
     }
 }
