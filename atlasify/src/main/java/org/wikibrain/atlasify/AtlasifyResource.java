@@ -145,7 +145,7 @@ public class AtlasifyResource {
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static LuceneSearcher luceneSearcher;
     private static Map<Integer, Geometry> geometryMap = null;
-
+    private static SRCacheDao srCacheDao = null;
 
     // Game data
     private static RealMatrix gameCountryCorrelationMatrix;
@@ -205,6 +205,7 @@ public class AtlasifyResource {
                     .maximumWeightedCapacity(maximumExplanationsSize)
                     .initialCapacity(maximumExplanationsSize/10)
                     .build();
+            srCacheDao = new SRCacheDao();
             System.out.println("FINISHED LOADING CACHES");
 
             String defaultUsername = "atlasify@gmail.com";
@@ -810,7 +811,14 @@ public class AtlasifyResource {
             Double value = 0.0;
             try {
                 System.out.println("Calculating SR between " + query.getKeyword() + " and " + featureNameList[i]);
-                value = sr.similarity(query.getKeyword(), featureNameList[i], false).getScore();
+                if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList[i])){
+                    System.out.println("Found SR between " + query.getKeyword() + " and " + featureNameList[i] + " in cache");
+                    value = srCacheDao.getSR(query.getKeyword(), featureNameList[i]);
+                }
+                else{
+                    value = sr.similarity(query.getKeyword(), featureNameList[i], false).getScore();
+                    srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
+                }
                 System.out.println("SR Between " + query.getKeyword() + " and " + featureNameList[i].toString() + " is " + value);
             } catch (Exception e) {
                 //do nothing
