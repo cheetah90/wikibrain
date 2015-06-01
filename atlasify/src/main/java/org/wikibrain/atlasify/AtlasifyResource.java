@@ -647,6 +647,7 @@ public class AtlasifyResource {
                         }
                         //TODO: background loading wikibrain SR for all the keyword entered
                         //only need to load data from NU if any of the <keyword, feature> pair is not cached
+
                         if(srValueLoaded == false){
                             if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
                                 System.out.println("Loading spatial-only SR data for keyword " + query.getKeyword() + " from NU Server");
@@ -691,6 +692,16 @@ public class AtlasifyResource {
                     }
                     if(srValueLoaded == false){
                         System.out.println("All SR data for keyword " + query.getKeyword() + " is loaded from WikiBrain SR cache");
+                    }
+                    //if not all sr values are loaded from the wikibrain SR cache, we should calculate all the sr values again with wikibrain SR metric and store them in the cache
+                    else{
+                        try{
+                            Runnable srBackgroundLoader = new SRBackgroundLoading(query, featureNameList.toArray(new String[featureNameList.size()]), sr);
+                            new Thread(srBackgroundLoader).start();
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }
                     /*
                     // Find the top sr items to load
