@@ -602,7 +602,7 @@ public class AtlasifyResource {
             if (query.getRefSystem().equals("timeline")) {
                 explanationsLoadingRefSys = "Timeline";
             }
-            articleManager.viewedArticle(query.getKeyword(), FeatureArticleManager.refSysString(explanationsLoadingRefSys));
+            //articleManager.viewedArticle(query.getKeyword(), FeatureArticleManager.refSysString(explanationsLoadingRefSys));
         }
         catch (Exception e){
             System.out.println("Failed to load trending articles");
