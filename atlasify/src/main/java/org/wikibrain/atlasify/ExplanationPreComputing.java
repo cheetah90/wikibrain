@@ -14,12 +14,13 @@ import java.net.URLConnection;
 public class ExplanationPreComputing implements Runnable {
     AtlasifyResource.AtlasifyQuery query;
     String explanationsLoadingRefSys;
-    String url = "http://downey-n1.cs.northwestern.edu:3030/precompute?concept=" + query.getKeyword().replace(' ', '_') + "&reference=" + explanationsLoadingRefSys;
+    String url;
     int NorthwesternTimeout;
     public ExplanationPreComputing(AtlasifyResource.AtlasifyQuery query, String explanationsLoadingRefSys, int NorthwesternTimeout){
         this.query = query;
         this.explanationsLoadingRefSys = explanationsLoadingRefSys;
         this.NorthwesternTimeout = NorthwesternTimeout;
+        this.url = "http://downey-n1.cs.northwestern.edu:3030/precompute?concept=" + query.getKeyword().replace(' ', '_') + "&reference=" + explanationsLoadingRefSys;
     }
     public void run(){
         System.out.println("NU Explanations Precompute " + url);
