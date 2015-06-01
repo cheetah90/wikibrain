@@ -597,12 +597,18 @@ public class AtlasifyResource {
                 e.printStackTrace();
             }
         }
-
-        // update the trending articles data
-        if (query.getRefSystem().equals("timeline")) {
-            explanationsLoadingRefSys = "Timeline";
+        try{
+            // update the trending articles data
+            if (query.getRefSystem().equals("timeline")) {
+                explanationsLoadingRefSys = "Timeline";
+            }
+            articleManager.viewedArticle(query.getKeyword(), FeatureArticleManager.refSysString(explanationsLoadingRefSys));
         }
-        articleManager.viewedArticle(query.getKeyword(), FeatureArticleManager.refSysString(explanationsLoadingRefSys));
+        catch (Exception e){
+            System.out.println("Failed to load trending articles");
+            e.printStackTrace();
+        }
+
 
         List<String> featureIdList = new ArrayList<String>(Arrays.asList(query.getFeatureIdList()));
         List<String> featureNameList = new ArrayList<String>(Arrays.asList(query.getFeatureNameList()));
@@ -610,18 +616,25 @@ public class AtlasifyResource {
         Map<String, Double> srMap = new HashMap<String, Double>();
         System.out.println("Receive featureId size of " + featureIdList.size() + " and featureName size of " + featureNameList.size());
 
-        // Get values out of the cache
-        for (int i = 0; i < featureNameList.size(); i++) {
-            String pair = keyword + pairSeperator + featureNameList.get(i);
-            if (srCache.containsKey(pair)) {
-                srMap.put(featureNameList.get(i), srCache.get(pair));
-                featureNameList.remove(i);
-                featureIdList.remove(i);
-                i--;
+        try{
+            // Get values out of the cache
+            for (int i = 0; i < featureNameList.size(); i++) {
+                String pair = keyword + pairSeperator + featureNameList.get(i);
+                if (srCache.containsKey(pair)) {
+                    srMap.put(featureNameList.get(i), srCache.get(pair));
+                    featureNameList.remove(i);
+                    featureIdList.remove(i);
+                    i--;
+                }
             }
+        }
+        catch (Exception e){
+            System.out.println("Failed to get values out of cache");
+            e.printStackTrace();
         }
 
         boolean gotUsefulDataToCache = false;
+
         if (featureIdList.size() > 0) {
             if (useNorthWesternAPI) {
                 LocalId queryID = new LocalId(lang, 0);
