@@ -77,7 +77,9 @@ import java.util.concurrent.RunnableFuture;
 @Path("/wikibrain")
 public class AtlasifyResource {
 
-
+    /**
+     * Class used to transfer a atlasify query
+     */
     private static class AtlasifyQuery{
         private String keyword;
         private String refSystem;
@@ -210,6 +212,7 @@ public class AtlasifyResource {
             Date time = new Date(2000, 0, 0, 3, 0, 0); // 3 am
             articleManager = new FeatureArticleManager(defaultUsername, defaultPassword, time);
             System.out.println("FINISHED LOADING FEATURE ARTICLE MANAGER");
+
 
             if(loadWikibrainSR){
                 sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
@@ -493,6 +496,7 @@ public class AtlasifyResource {
     @Path("/helloworld")
     @Produces("text/plain")
     public Response helloWorld() throws Exception{
+        //Hello world function also used to test if the server is still alive
         return Response.ok("hello world").build();
     }
 
@@ -528,7 +532,7 @@ public class AtlasifyResource {
     */
 
 
-    static private boolean useNorthWesternAPI  = true;
+    static private boolean useNorthWesternAPI  = true; //switch between NU SR API and WikiBrain SR API
     static private int     NorthwesternTimeout = 100000; // in milliseconds
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
@@ -536,7 +540,11 @@ public class AtlasifyResource {
 
 
     /**
+<<<<<<< Updated upstream
      * return a <name, sr> map to the client
+=======
+     * return a <name, SR value> map to the client
+>>>>>>> Stashed changes
      * @param query AtlasifyQuery sent from the client
      * @return
      */
@@ -544,7 +552,6 @@ public class AtlasifyResource {
     @Path("/send")
     @Consumes("application/json")
     @Produces("text/plain")
-
     public Response consumeJSON (AtlasifyQuery query) {
         if(wikibrainLoadingInProcess == true){
             System.out.println("Waiting for Wikibrain Loading");
@@ -779,7 +786,6 @@ public class AtlasifyResource {
         for (int i = 0; i < featureNameList.length; i++) {
             Double value = 0.0;
             try {
-
                 value = sr.similarity(query.getKeyword(), featureNameList[i].toString(), false).getScore();
             } catch (Exception e) {
                 //do nothing
@@ -1316,6 +1322,7 @@ public class AtlasifyResource {
         List<Map.Entry<LocalId, Double>> resultList = new ArrayList<Map.Entry<LocalId, Double>>(srValues.entrySet());
         Collections.shuffle(resultList);
         Set<Integer> blackList = new HashSet<Integer>();
+        //mostly census related articles
         Integer[] blackListArray = new Integer[]{170584, 23893, 23814944, 19728, 128608, 23410163, 39736};
         blackList.addAll(Arrays.asList(blackListArray));
         int count = 0;
@@ -1326,7 +1333,7 @@ public class AtlasifyResource {
                 continue;
             try{
                 if(geometryMap.containsKey(upDao.getUnivPageId(lang, srEntry.getKey().getId())))
-                    continue;
+                    continue; //only return non-spatial articles as top related results
                 LocalPage localPage = lpDao.getById(srEntry.getKey());
                 if(localPage.getTitle().getCanonicalTitle().contains("Census"))
                     continue;
