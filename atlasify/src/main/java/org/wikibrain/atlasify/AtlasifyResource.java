@@ -799,10 +799,10 @@ public class AtlasifyResource {
      */
     private Map<String, Double> wikibrainSR(AtlasifyQuery query, String[] featureNameList) {
         Map<String, Double> srMap = new HashMap<String, Double>();
+        System.out.println("Using WikiBrain SR method to calculate SR between keyword " + query.getKeyword() + " and " + featureNameList.length + " features");
         for (int i = 0; i < featureNameList.length; i++) {
             Double value = 0.0;
             try {
-
                 value = sr.similarity(query.getKeyword(), featureNameList[i].toString(), false).getScore();
                 System.out.println("SR Between " + query.getKeyword() + " and " + featureNameList[i].toString() + " is " + value);
             } catch (Exception e) {
