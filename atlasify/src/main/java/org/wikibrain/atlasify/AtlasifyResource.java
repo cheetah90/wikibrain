@@ -764,7 +764,12 @@ public class AtlasifyResource {
                 }
             } else {
                 System.out.println("USE WIKIBRAIN SR METRIC");
-                srMap = wikibrainSR(query, (String[]) featureNameList.toArray());
+                try{
+                    srMap = wikibrainSR(query, (String[]) featureNameList.toArray());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
             }
 
             // Cache all of the retrieved results
