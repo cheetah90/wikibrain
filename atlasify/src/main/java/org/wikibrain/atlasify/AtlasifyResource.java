@@ -210,7 +210,12 @@ public class AtlasifyResource {
             String defaultUsername = "atlasify@gmail.com";
             String defaultPassword = "dfG-6Zh-Rzm-TzV";
             Date time = new Date(2000, 0, 0, 3, 0, 0); // 3 am
-            articleManager = new FeatureArticleManager(defaultUsername, defaultPassword, time);
+            try{
+                articleManager = new FeatureArticleManager(defaultUsername, defaultPassword, time);
+            }
+            catch (Exception e){
+                System.out.println("Error when loading feature article manager");
+            }
             System.out.println("FINISHED LOADING FEATURE ARTICLE MANAGER");
 
 
