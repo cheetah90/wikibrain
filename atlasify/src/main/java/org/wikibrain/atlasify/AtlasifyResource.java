@@ -539,7 +539,7 @@ public class AtlasifyResource {
 
 
 
-    static private boolean useNorthWesternAPI  = false;
+    static private boolean useNorthWesternAPI  = true;
     static private int     NorthwesternTimeout = 100000; // in milliseconds
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
@@ -658,6 +658,11 @@ public class AtlasifyResource {
 
 
                     for (int i = 0; i < featureIdList.size(); i++) {
+                        if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
+                            srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
+                            System.out.println("Got SR value for" + query.getKeyword() + " and " + featureNameList.get(i) + "in cached WikiBrain SR");
+                            continue;
+                        }
                         LocalId featureID = new LocalId(lang, 0);
 
                         try {
