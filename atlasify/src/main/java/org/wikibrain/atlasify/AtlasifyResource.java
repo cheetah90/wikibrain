@@ -798,6 +798,7 @@ public class AtlasifyResource {
      * @return
      */
     private Map<String, Double> wikibrainSR(AtlasifyQuery query, String[] featureNameList) {
+        System.out.println("Now in WikiBrain SR");
         Map<String, Double> srMap = new HashMap<String, Double>();
         System.out.println("Using WikiBrain SR method to calculate SR between keyword " + query.getKeyword() + " and " + featureNameList.length + " features");
         for (int i = 0; i < featureNameList.length; i++) {
