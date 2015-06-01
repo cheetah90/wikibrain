@@ -575,8 +575,13 @@ public class AtlasifyResource {
         }
 
         if (explanationsLoadingRefSys != null) {
-            Runnable explanationPreComputingRunner = new ExplanationPreComputing(query, explanationsLoadingRefSys, NorthwesternTimeout);
-            new Thread(explanationPreComputingRunner).start();
+            try{
+                Runnable explanationPreComputingRunner = new ExplanationPreComputing(query, explanationsLoadingRefSys, NorthwesternTimeout);
+                new Thread(explanationPreComputingRunner).start();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
         }
 
         try{
