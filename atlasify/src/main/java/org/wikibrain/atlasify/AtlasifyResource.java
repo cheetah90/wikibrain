@@ -573,7 +573,8 @@ public class AtlasifyResource {
         } else if (query.getRefSystem().equals("senate")) {
             explanationsLoadingRefSys = "Politics";
         }
-
+        /*
+        //TODO: make precomputing a separated thread
         if (explanationsLoadingRefSys != null) {
             String url = "http://downey-n1.cs.northwestern.edu:3030/precompute?concept=" + query.getKeyword().replace(' ', '_') + "&reference=" + explanationsLoadingRefSys;
             System.out.println("NU Explanations Precompute " + url);
@@ -598,6 +599,7 @@ public class AtlasifyResource {
                 e.printStackTrace();
             }
         }
+        */
         try{
             // update the trending articles data
             if (query.getRefSystem().equals("timeline")) {
