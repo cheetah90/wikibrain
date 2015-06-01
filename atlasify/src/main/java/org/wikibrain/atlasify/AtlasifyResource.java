@@ -80,7 +80,7 @@ public class AtlasifyResource {
     /**
      * Class used to transfer a atlasify query
      */
-    private static class AtlasifyQuery{
+    public static class AtlasifyQuery{
         private String keyword;
         private String refSystem;
         private String[] featureIdList;
@@ -573,33 +573,12 @@ public class AtlasifyResource {
         } else if (query.getRefSystem().equals("senate")) {
             explanationsLoadingRefSys = "Politics";
         }
-        /*
-        //TODO: make precomputing a separated thread
+
         if (explanationsLoadingRefSys != null) {
-            String url = "http://downey-n1.cs.northwestern.edu:3030/precompute?concept=" + query.getKeyword().replace(' ', '_') + "&reference=" + explanationsLoadingRefSys;
-            System.out.println("NU Explanations Precompute " + url);
-            try {
-                URLConnection urlConnection = new URL(url).openConnection();
-                urlConnection.setConnectTimeout(NorthwesternTimeout);
-                urlConnection.setReadTimeout(NorthwesternTimeout);
-
-                InputStream inputStream = urlConnection.getInputStream();
-
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                StringBuilder stringBuilder = new StringBuilder();
-                int currentChar;
-                while ((currentChar = bufferedReader.read()) != -1) {
-                    stringBuilder.append((char) currentChar);
-                }
-
-                JSONObject jsonObject = new JSONObject(stringBuilder.toString());
-                System.out.println("NU Explanations Precompute status " + jsonObject.get("status"));
-            } catch (Exception e) {
-                System.out.println("Error Unable to Precompute Explanations");
-                e.printStackTrace();
-            }
+            Runnable explanationPreComputingRunner = new ExplanationPreComputing(query, explanationsLoadingRefSys, NorthwesternTimeout);
+            new Thread(explanationPreComputingRunner).start();
         }
-        */
+
         try{
             // update the trending articles data
             if (query.getRefSystem().equals("timeline")) {
@@ -656,11 +635,12 @@ public class AtlasifyResource {
 
 
                     for (int i = 0; i < featureIdList.size(); i++) {
+
                         if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
                             srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
                             continue;
                         }
-
+                        //TODO: background loading wikibrain SR for all the keyword entered
                         //only need to load data from NU if any of the <keyword, feature> pair is not cached
                         if(srValueLoaded == false){
                             if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
