@@ -37,4 +37,8 @@ public class SRCacheDao {
         return srMatrix.containsKey(new AbstractMap.SimpleEntry<String, String>(keyword, feature));
     }
 
+    public void closeDao(){
+        db.close();
+    }
+
 }

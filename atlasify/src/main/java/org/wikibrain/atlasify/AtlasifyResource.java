@@ -648,21 +648,31 @@ public class AtlasifyResource {
                 // LocalId queryID = new LocalId(Language.EN, 19908980);
                 try {
                     Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
-                    if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
-                        srValues = accessNorthwesternAPI(queryID, -1, true);
-                    }
-                    else{
-                        srValues = accessNorthwesternAPI(queryID, -1, false);
-                    }
+                    boolean srValueLoaded = false;
+
                     System.out.println("Got NU SR data for keyworld " + query.getKeyword());
 
 
                     for (int i = 0; i < featureIdList.size(); i++) {
                         if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
                             srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
-                            System.out.println("Got SR value for" + query.getKeyword() + " and " + featureNameList.get(i) + "in cached WikiBrain SR");
                             continue;
                         }
+
+                        //only need to load data from NU if any of the <keyword, feature> pair is not cached
+                        if(srValueLoaded == false){
+                            if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
+                                System.out.println("Loading spatial-only SR data for keyword " + query.getKeyword() + " from NU Server");
+                                srValues = accessNorthwesternAPI(queryID, -1, true);
+                                srValueLoaded = true;
+                            }
+                            else{
+                                System.out.println("Loading SR data for keyword " + query.getKeyword() + " from NU Server");
+                                srValues = accessNorthwesternAPI(queryID, -1, false);
+                                srValueLoaded = true;
+                            }
+                        }
+
                         LocalId featureID = new LocalId(lang, 0);
 
                         try {
@@ -691,6 +701,9 @@ public class AtlasifyResource {
                             continue;
                             //do nothing
                         }
+                    }
+                    if(srValueLoaded == false){
+                        System.out.println("All SR data for keyword " + query.getKeyword() + " is loaded from WikiBrain SR cache");
                     }
                     /*
                     // Find the top sr items to load
