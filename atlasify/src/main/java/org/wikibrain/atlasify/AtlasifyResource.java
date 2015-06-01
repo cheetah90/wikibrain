@@ -77,7 +77,9 @@ import java.util.concurrent.RunnableFuture;
 @Path("/wikibrain")
 public class AtlasifyResource {
 
-
+    /**
+     * Class used to transfer a atlasify query
+     */
     private static class AtlasifyQuery{
         private String keyword;
         private String refSystem;
@@ -168,6 +170,8 @@ public class AtlasifyResource {
     private static ConcurrentLinkedHashMap<String, JSONObject> northwesternExplanationsCache;
     private static ConcurrentLinkedHashMap<String, List<Explanation>> dbpeidaExplanationsCache;
     private static String pairSeperator = "%";
+
+    private static FeatureArticleManager articleManager;
     //intialize all the DAOs we'll need to use
     private static void wikibrainSRinit(){
 
@@ -202,6 +206,13 @@ public class AtlasifyResource {
                     .initialCapacity(maximumExplanationsSize/10)
                     .build();
             System.out.println("FINISHED LOADING CACHES");
+
+            String defaultUsername = "atlasify@gmail.com";
+            String defaultPassword = "dfG-6Zh-Rzm-TzV";
+            Date time = new Date(2000, 0, 0, 3, 0, 0); // 3 am
+            articleManager = new FeatureArticleManager(defaultUsername, defaultPassword, time);
+            System.out.println("FINISHED LOADING FEATURE ARTICLE MANAGER");
+
 
             if(loadWikibrainSR){
                 sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
@@ -485,6 +496,7 @@ public class AtlasifyResource {
     @Path("/helloworld")
     @Produces("text/plain")
     public Response helloWorld() throws Exception{
+        //Hello world function also used to test if the server is still alive
         return Response.ok("hello world").build();
     }
 
@@ -520,6 +532,7 @@ public class AtlasifyResource {
     */
 
 
+
     static private boolean useNorthWesternAPI  = false;
     static private int     NorthwesternTimeout = 100000; // in milliseconds
     // The number of explanations to preemptively download and cache
@@ -528,7 +541,7 @@ public class AtlasifyResource {
 
 
     /**
-     * return a <name, color> map to the client
+     * return a <name, sr> map to the client
      * @param query AtlasifyQuery sent from the client
      * @return
      */
@@ -536,7 +549,6 @@ public class AtlasifyResource {
     @Path("/send")
     @Consumes("application/json")
     @Produces("text/plain")
-
     public Response consumeJSON (AtlasifyQuery query) {
         if(wikibrainLoadingInProcess == true){
             System.out.println("Waiting for Wikibrain Loading");
@@ -545,6 +557,47 @@ public class AtlasifyResource {
         if(lpDao == null ){
             wikibrainSRinit();
         }
+
+        // Call the new northwestern API to preload the explanations
+        String explanationsLoadingRefSys = null;
+        if (query.getRefSystem().equals("state") || query.getRefSystem().equals("country")) {
+            explanationsLoadingRefSys = "Geography";
+        } else if (query.getRefSystem().equals("periodicTable")) {
+            explanationsLoadingRefSys = "Chemistry";
+        } else if (query.getRefSystem().equals("senate")) {
+            explanationsLoadingRefSys = "Politics";
+        }
+
+        if (explanationsLoadingRefSys != null) {
+            String url = "http://downey-n1.cs.northwestern.edu:3030/precompute?concept=" + query.getKeyword().replace(' ', '_') + "&reference=" + explanationsLoadingRefSys;
+            System.out.println("NU Explanations Precompute " + url);
+            try {
+                URLConnection urlConnection = new URL(url).openConnection();
+                urlConnection.setConnectTimeout(NorthwesternTimeout);
+                urlConnection.setReadTimeout(NorthwesternTimeout);
+
+                InputStream inputStream = urlConnection.getInputStream();
+
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder stringBuilder = new StringBuilder();
+                int currentChar;
+                while ((currentChar = bufferedReader.read()) != -1) {
+                    stringBuilder.append((char) currentChar);
+                }
+
+                JSONObject jsonObject = new JSONObject(stringBuilder.toString());
+                System.out.println("NU Explanations Precompute status " + jsonObject.get("status"));
+            } catch (Exception e) {
+                System.out.println("Error Unable to Precompute Explanations");
+                e.printStackTrace();
+            }
+        }
+
+        // update the trending articles data
+        if (query.getRefSystem().equals("timeline")) {
+            explanationsLoadingRefSys = "Timeline";
+        }
+        articleManager.viewedArticle(query.getKeyword(), FeatureArticleManager.refSysString(explanationsLoadingRefSys));
 
         List<String> featureIdList = new ArrayList<String>(Arrays.asList(query.getFeatureIdList()));
         List<String> featureNameList = new ArrayList<String>(Arrays.asList(query.getFeatureNameList()));
@@ -730,7 +783,6 @@ public class AtlasifyResource {
         for (int i = 0; i < featureNameList.length; i++) {
             Double value = 0.0;
             try {
-
                 value = sr.similarity(query.getKeyword(), featureNameList[i].toString(), false).getScore();
             } catch (Exception e) {
                 //do nothing
@@ -908,6 +960,40 @@ public class AtlasifyResource {
                 }
             }
             */
+
+            /* WikiMedia API */
+            /*String wikiMediaQuery = query.getKeyword().trim().replace(' ', '_');
+            URL wikiMediaURL = new URL("http://en.wikipedia.org//w/api.php?action=query&list=search&format=json&srsearch=" + wikiMediaQuery + "&srwhat=text&srinfo=suggestion");
+
+            HttpURLConnection connection = (HttpURLConnection)wikiMediaURL.openConnection();
+            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+
+            String output;
+            StringBuilder sb = new StringBuilder();
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
+            }
+
+            JSONObject wikiMediaResponse = new JSONObject(sb.toString());
+            wikiMediaResponse = wikiMediaResponse.getJSONObject("query");
+            JSONArray wikiMediaResponses = wikiMediaResponse.getJSONArray("search");
+
+            for (int j = 0; j < wikiMediaResponses.length() && i < 10; j++) {
+                JSONObject response = wikiMediaResponses.getJSONObject(j);
+                String title = response.getString("title");
+                LocalPage page = new LocalPage(language, 0, "");
+                try {
+                    for (LocalId p : pa.resolve(language, title, 1).keySet()) {
+                        page = lpDao.getById(p);
+                    }
+                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
+                        autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
+                        i++;
+                    }
+                } catch (Exception e) {
+                    // There was an error, lets keep keep going
+                }
+            }*/
         } catch (Exception e) {
             autocompleteMap = new HashMap<String, String>();
         }
@@ -920,13 +1006,14 @@ public class AtlasifyResource {
         //System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
         return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
     }
-    public String getExplanation(String keyword, String feature) throws Exception{
+    public String getExplanation(String keyword, String feature, boolean useCaches) throws Exception{
         if (lpDao == null && wikibrainLoadingInProcess == false) {
             wikibrainSRinit();
         }
 
         JSONArray explanations = new JSONArray();
         JSONArray explanationSection = new JSONArray();
+        boolean hasNonCommonPageExplanations = false;
 
         System.out.println("Received query for explanation between " + keyword + " and " + feature);
         String keywordTitle;
@@ -1014,7 +1101,7 @@ public class AtlasifyResource {
             try{
                 List<Explanation> explanationList;
                 String pair = keywordTitle + pairSeperator + featureTitle;
-                if (dbpeidaExplanationsCache.containsKey(pair)) {
+                if (useCaches && dbpeidaExplanationsCache.containsKey(pair)) {
                     explanationList = dbpeidaExplanationsCache.get(pair);
                 } else {
                     explanationList = dbMetric.similarity(keywordPageId, featurePageId, true).getExplanations();
@@ -1040,6 +1127,7 @@ public class AtlasifyResource {
                         data.put("keyword", keyword);
                         data.put("feature", feature);
                         jsonExplanation.put("data", data);
+                        hasNonCommonPageExplanations = true;
 
                         explanationSection.put(explanationSection.length(), jsonExplanation);
                     } catch (Exception e) {
@@ -1061,7 +1149,7 @@ public class AtlasifyResource {
             // Check to see if the northwestern explanations are cached
             JSONObject northwesternExplanationResult;
             String northwesternPair = keywordTitle + pairSeperator + featureTitle;
-            if (northwesternExplanationsCache.containsKey(northwesternPair)) {
+            if (useCaches && northwesternExplanationsCache.containsKey(northwesternPair)) {
                 northwesternExplanationResult = northwesternExplanationsCache.get(northwesternPair);
             } else {
                 System.out.println("Querying NU server for explanation between " + keyword + " and " + feature);
@@ -1155,6 +1243,7 @@ public class AtlasifyResource {
                         data.put("title", title);
                         data.put("header-title", title);
                         jsonExplanation.put("data", data);
+                        hasNonCommonPageExplanations = true;
 
                         explanationSection.put(explanationSection.length(), jsonExplanation);
                     }
@@ -1200,7 +1289,7 @@ public class AtlasifyResource {
         result.put("explanations", explanations);
         result.put("keyword", keyword);
         result.put("feature", feature);
-
+        result.put("has-noncommon-page-results", hasNonCommonPageExplanations);
 
         System.out.println("REQUESTED explanation between " + keyword + " and " + feature + "\n\n" + explanations.toString());
 
@@ -1230,6 +1319,7 @@ public class AtlasifyResource {
         List<Map.Entry<LocalId, Double>> resultList = new ArrayList<Map.Entry<LocalId, Double>>(srValues.entrySet());
         Collections.shuffle(resultList);
         Set<Integer> blackList = new HashSet<Integer>();
+        //mostly census related articles
         Integer[] blackListArray = new Integer[]{170584, 23893, 23814944, 19728, 128608, 23410163, 39736};
         blackList.addAll(Arrays.asList(blackListArray));
         int count = 0;
@@ -1240,7 +1330,7 @@ public class AtlasifyResource {
                 continue;
             try{
                 if(geometryMap.containsKey(upDao.getUnivPageId(lang, srEntry.getKey().getId())))
-                    continue;
+                    continue; //only return non-spatial articles as top related results
                 LocalPage localPage = lpDao.getById(srEntry.getKey());
                 if(localPage.getTitle().getCanonicalTitle().contains("Census"))
                     continue;
@@ -1276,7 +1366,18 @@ public class AtlasifyResource {
     @Consumes("text/plain")
     @Produces("text/plain")
     public Response handleExplanation(@PathParam("keyword") String keyword, @PathParam("feature") String feature) throws  DaoException, MalformedURLException, IOException, Exception{
-        String result = getExplanation(keyword, feature);
+        String result = getExplanation(keyword, feature, false);
+        return Response.ok(result.toString()).build();
+    }
+
+    @GET
+    // The Java method will produce content identified by the MIME Media
+    // type "text/plain"
+    @Path("/SR/Explanation/keyword={keyword}&feature={feature}&useCache={cache}")
+    @Consumes("text/plain")
+    @Produces("text/plain")
+    public Response handleExplanation(@PathParam("keyword") String keyword, @PathParam("feature") String feature, @PathParam("cache") boolean cache) throws  DaoException, MalformedURLException, IOException, Exception{
+        String result = getExplanation(keyword, feature, cache);
         return Response.ok(result.toString()).build();
     }
 
@@ -1781,6 +1882,41 @@ public class AtlasifyResource {
         Map<String, String> result = new HashMap<String, String>();
         result.put("log", s);
 
-        return Response.ok(new JSONObject(result).toString()).header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok(new JSONObject(result).toString()).build();
+    }
+
+    @POST
+    @Path("/articles")
+    @Produces("application/json")
+
+    public Response getFeatureArticles() {
+        if (articleManager == null) {
+            wikibrainSRinit();
+        }
+
+        System.out.println("Received feature articles request");
+        return Response.ok(articleManager.getArticleJSON().toString()).build();
+    }
+
+    @POST
+    @Path("/game/article={title}&refsys={refsys}&resolution={resolution}")
+    @Consumes("text/plain")
+    @Produces("application/json")
+
+    public Response getArticleImage(@PathParam("title") String title, @PathParam("refsys") int refsys, @PathParam("resolution") int resolution) {
+        if (articleManager == null) {
+            wikibrainSRinit();
+        }
+
+        System.out.println("Received image request for " + title + " in ref sys " + refsys);
+        JSONObject image = new JSONObject();
+        try {
+            image.put("data", new String(articleManager.getImageFor(title, refsys, resolution)));
+        } catch (IOException e) {
+            System.out.println("Unable to load image for " + title + " in ref sys " + refsys);
+            e.printStackTrace();
+        }
+
+        return Response.ok(image.toString()).build();
     }
 }

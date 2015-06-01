@@ -49,6 +49,9 @@ customized.conf
 
 wb-java.sh.backup
 
+# Feature Articles
+featured-articles/
+
 # Explanation Logs
 explanation-logs/
 

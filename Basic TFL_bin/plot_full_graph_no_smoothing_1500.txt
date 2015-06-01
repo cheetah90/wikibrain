@@ -1,0 +1,634 @@
+
+R version 3.1.0 (2014-04-10) -- "Spring Dance"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.1.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[R.app GUI 1.63 (6734) x86_64-apple-darwin13.1.0]
+
+[Workspace restored from /Users/toby/.RData]
+[History restored from /Users/toby/.Rapp.history]
+
+> en<-read.csv("TFL-en_bin.csv")
+> ar<-read.csv("TFL-ar_bin.csv")
+> ca<-read.csv("TFL-ca_bin.csv")
+> ceb<-read.csv("TFL-ceb_bin.csv")
+> cs<-read.csv("TFL-cs_bin.csv")
+> de<-read.csv("TFL-de_bin.csv")
+> es<-read.csv("TFL-es_bin.csv")
+> fa<-read.csv("TFL-fa_bin.csv")
+> fi<-read.csv("TFL-fi_bin.csv")
+> fr<-read.csv("TFL-fr_bin.csv")
+> hu<-read.csv("TFL-hu_bin.csv")
+> id<-read.csv("TFL-id_bin.csv")
+> it<-read.csv("TFL-it_bin.csv")
+> ja<-read.csv("TFL-ja_bin.csv")
+> ko<-read.csv("TFL-ko_bin.csv")
+> nl<-read.csv("TFL-nl_bin.csv")
+> no<-read.csv("TFL-no_bin.csv")
+> pl<-read.csv("TFL-pl_bin.csv")
+> pt<-read.csv("TFL-pt_bin.csv")
+> ru<-read.csv("TFL-ru_bin.csv")
+> sv<-read.csv("TFL-sv_bin.csv")
+> uk<-read.csv("TFL-uk_bin.csv")
+> vi<-read.csv("TFL-vi_bin.csv")
+> war<-read.csv("TFL-war_bin.csv")
+> zh<-read.csv("TFL-zh_bin.csv")
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = “red”) + stat_summary(fun.y=mean, geom="line",data = ar, color = “chocolate”) + stat_summary(fun.y=mean, geom="line",data = ca, color = “aquamarine”)  + stat_summary(fun.y=mean, geom="line",data = cs, color = “cadet blue”) + stat_summary(fun.y=mean, geom="line",data = de, color = “blue”) + stat_summary(fun.y=mean, geom="line",data = es, color = “darkgreen”)  + stat_summary(fun.y=mean, geom="line",data = fi, color = “deepskyblue”) + stat_summary(fun.y=mean, geom="line",data = fr, color = “deep pink”) + stat_summary(fun.y=mean, geom="line",data = hu, color = “darkviolet”) + stat_summary(fun.y=mean, geom="line",data = it, color = 73) + stat_summary(fun.y=mean, geom="line",data = ja, color = “goldenrod”) + stat_summary(fun.y=mean, geom="line",data = ko, color = “hotpink”) + stat_summary(fun.y=mean, geom="line",data = nl, color = “indianred4”) + stat_summary(fun.y=mean, geom="line",data =no, color = “lightcoral”) + stat_summary(fun.y=mean, geom="line",data = pt, color = 99) + stat_summary(fun.y=mean, geom="line",data = ru, color = “mediumorchid”) + stat_summary(fun.y=mean, geom="line",data = sv, color = “magenta”)  + stat_summary(fun.y=mean, geom="line",data = vi, color = “navy”) +  stat_summary(fun.y=mean, geom="line",data = zh, color = “maroon1”) 
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color =“red”) + stat_summary(fun.y=mean, geom="line",data = ar, color = “chocolate”) + stat_summary(fun.y=mean, geom="line",data = ca, color = “aquamarine”)  + stat_summary(fun.y=mean, geom="line",data = cs, color = “cadet blue”) + stat_summary(fun.y=mean, geom="line",data = de, color = “blue”) + stat_summary(fun.y=mean, geom="line",data = es, color = “darkgreen”)  + stat_summary(fun.y=mean, geom="line",data = fi, color = “deepskyblue”) + stat_summary(fun.y=mean, geom="line",data = fr, color = “deep pink”) + stat_summary(fun.y=mean, geom="line",data = hu, color = “darkviolet”) + stat_summary(fun.y=mean, geom="line",data = it, color = 73) + stat_summary(fun.y=mean, geom="line",data = ja, color = “goldenrod”) + stat_summary(fun.y=mean, geom="line",data = ko, color = “hotpink”) + stat_summary(fun.y=mean, geom="line",data = nl, color = “indianred4”) + stat_summary(fun.y=mean, geom="line",data =no, color = “lightcoral”) + stat_summary(fun.y=mean, geom="line",data = pt, color = 99) + stat_summary(fun.y=mean, geom="line",data = ru, color = “mediumorchid”) + stat_summary(fun.y=mean, geom="line",data = sv, color = “magenta”)  + stat_summary(fun.y=mean, geom="line",data = vi, color = “navy”) +  stat_summary(fun.y=mean, geom="line",data = zh, color = “maroon1”)
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color =‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color = “chocolate”) + stat_summary(fun.y=mean, geom="line",data = ca, color = “aquamarine”)  + stat_summary(fun.y=mean, geom="line",data = cs, color = “cadet blue”) + stat_summary(fun.y=mean, geom="line",data = de, color = “blue”) + stat_summary(fun.y=mean, geom="line",data = es, color = “darkgreen”)  + stat_summary(fun.y=mean, geom="line",data = fi, color = “deepskyblue”) + stat_summary(fun.y=mean, geom="line",data = fr, color = “deep pink”) + stat_summary(fun.y=mean, geom="line",data = hu, color = “darkviolet”) + stat_summary(fun.y=mean, geom="line",data = it, color = 73) + stat_summary(fun.y=mean, geom="line",data = ja, color = “goldenrod”) + stat_summary(fun.y=mean, geom="line",data = ko, color = “hotpink”) + stat_summary(fun.y=mean, geom="line",data = nl, color = “indianred4”) + stat_summary(fun.y=mean, geom="line",data =no, color = “lightcoral”) + stat_summary(fun.y=mean, geom="line",data = pt, color = 99) + stat_summary(fun.y=mean, geom="line",data = ru, color = “mediumorchid”) + stat_summary(fun.y=mean, geom="line",data = sv, color = “magenta”)  + stat_summary(fun.y=mean, geom="line",data = vi, color = “navy”) +  stat_summary(fun.y=mean, geom="line",data = zh, color = “maroon1”)
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color = ‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘cadetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’) 
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color = ‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘cadetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’)
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color = ‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘cadetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’)
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color = ‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘ca zdetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’) 
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color = ‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘ca zdetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’)\
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color = ‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘ca zdetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’)\
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color = ‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘ca zdetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’)\
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color = ‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘ca zdetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’)
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color=‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘ca zdetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’) 
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’)
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red')
+Error: could not find function "ggplot"
+> library("ggplot2")
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red')
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color=‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘ca zdetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’) 
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‘red’) + stat_summary(fun.y=mean, geom="line",data = ar, color=‘chocolate’) + stat_summary(fun.y=mean, geom="line",data = ca, color = ‘aquamarine’)  + stat_summary(fun.y=mean, geom="line",data = cs, color = ‘ca zdetblue’) + stat_summary(fun.y=mean, geom="line",data = de, color = ‘blue’) + stat_summary(fun.y=mean, geom="line",data = es, color = ‘darkgreen’)  + stat_summary(fun.y=mean, geom="line",data = fi, color = ‘deepskyblue’) + stat_summary(fun.y=mean, geom="line",data = fr, color = ‘deep pink’) + stat_summary(fun.y=mean, geom="line",data = hu, color = ‘darkviolet’) + stat_summary(fun.y=mean, geom="line",data = it, color = ‘violet’) + stat_summary(fun.y=mean, geom="line",data = ja, color = ‘goldenrod’) + stat_summary(fun.y=mean, geom="line",data = ko, color = ‘hotpink’) + stat_summary(fun.y=mean, geom="line",data = nl, color = ‘indianred4’) + stat_summary(fun.y=mean, geom="line",data =no, color = ‘lightcoral’) + stat_summary(fun.y=mean, geom="line",data = pt, color = ‘yellow’) + stat_summary(fun.y=mean, geom="line",data = ru, color = ‘mediumorchid’) + stat_summary(fun.y=mean, geom="line",data = sv, color = ‘magenta’)  + stat_summary(fun.y=mean, geom="line",data = vi, color = ‘navy’) +  stat_summary(fun.y=mean, geom="line",data = zh, color = ‘maroon1’)
+Error: unexpected input in "ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = ‚"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red')
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'ca zdetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'magenta')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'maroon1') 
+Error: invalid color name 'ca zdetblue'
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'ca zdetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'magenta')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'maroon1')
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'magenta')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'maroon1') 
+
+
+> 
+> 
+> 
+> 
+> 
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue')
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+There were 19 warnings (use warnings() to see them)
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 2000)
+There were 19 warnings (use warnings() to see them)
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 1500)
+There were 19 warnings (use warnings() to see them)
+> scale_colour_manual(name = "Treatment & State",
++                       labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),
++                       values = c("blue", "red", "blue", "red")) 
+discrete_scale(aesthetics = aesthetic, scale_name = "manual", 
+    palette = pal, name = "Treatment & State", labels = ..2)
+> scale_colour_manual(name = "Treatment & State",
++                       labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),
++                       values = c("blue", "red", "blue", "red"))
+discrete_scale(aesthetics = aesthetic, scale_name = "manual", 
+    palette = pal, name = "Treatment & State", labels = ..2)
+> scale_colour_manual(name = "Treatment & State",
++                       labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),
++                       values = c("blue", "red", "blue", "red"))
+discrete_scale(aesthetics = aesthetic, scale_name = "manual", 
+    palette = pal, name = "Treatment & State", labels = ..2)
+> 
+> +scale_colour_manual(name = "Treatment & State",
++                       labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),
++                       values = c("blue", "red", "blue", "red"))
+Error in +scale_colour_manual(name = "Treatment & State", labels = c("Control, Non-F",  : 
+  invalid argument to unary operator
+> scale_colour_manual(name = "Treatment & State",
++                       labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),
++                       values = c("blue", "red", "blue", "red"))
+discrete_scale(aesthetics = aesthetic, scale_name = "manual", 
+    palette = pal, name = "Treatment & State", labels = ..2)
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 2000) scale_colour_manual(name = "Treatment & State",
+Error: unexpected symbol in "morchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data"
+> +                       labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),
+Error: unexpected ',' in "+                       labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),"
+> +                       values = c("blue", "red", "blue", "red"))
+Error: unexpected ')' in "+                       values = c("blue", "red", "blue", "red"))"
+> 
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 2000)+ scale_colour_manual(name = "Treatment & State",
++ +                       labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),
+Error: unexpected '=' in:
+"lor = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 2000)+ scale_colour_manu
++                       labels ="
+> +                       values = c("blue", "red", "blue", "red"))
+Error: unexpected ')' in "+                       values = c("blue", "red", "blue", "red"))"
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 2000)+ scale_colour_manual(name = "Treatment & State", labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),  values = c("blue", "red", "blue", "red"))
+
+There were 11 warnings (use warnings() to see them)
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') +  scale_colour_manual(name = "Treatment & State", labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),  values = c("blue", "red", "blue", "red"))
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') +  scale_colour_manual(name = "Treatment & State", labels = c("Control, Non-F", "Control, Flwr", "Exclosure, Non-F", "Exclosure, Flwr"),  values = c("blue", "red", "blue", "red"))
+> scale_colour_manual(values=c("red","blue","red","blue")) +   
++ scale_colour_manual(values=c("red","blue","red","blue")) +
++ ;
+Error: unexpected ';' in:
+"scale_colour_manual(values=c("red","blue","red","blue")) +
+;"
+> 
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') +  scale_colour_manual(values=c("red","blue","red","blue")) 
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> graph
+There were 19 warnings (use warnings() to see them)
+> graph + scale_colour_discrete(name = "Language")
+There were 19 warnings (use warnings() to see them)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') 
+> graph + scale_colour_discrete(name = "xxx", breaks = c("red"). labels=c("english"))
+Error: unexpected symbol in "graph + scale_colour_discrete(name = "xxx", breaks = c("red")."
+> graph + scale_colour_discrete(name = "xxx", breaks = c("red"). labels=c("english"))
+Error: unexpected symbol in "graph + scale_colour_discrete(name = "xxx", breaks = c("red")."
+> graph + scale_shape_manual("", values=c("mean"="x"))
+Error: Insufficient values in manual scale. 2 needed but only 1 provided.
+> graph + scale_shape_manual("", values=c("x"="x"))
+Error: Insufficient values in manual scale. 2 needed but only 1 provided.
+> graph + scale_shape_manual("", values=c(x="x"))
+Error: Insufficient values in manual scale. 2 needed but only 1 provided.
+> graph + scale_shape_manual("", values=c("x"="x", "x" = "y"))
+> graph + scale_shape_manual("", values=c("x"="x", "y" = "y"))
+> graph + scale_shape_manual("", values=c("x"="x", "y" = "y"))
+> scale_shape_manual("", values=c("x"="x", "y" = "y"))
+discrete_scale(aesthetics = aesthetic, scale_name = "manual", 
+    palette = pal, name = "")
+> graph + scale_colour_manual("Legend", values=c("mean"="red", "data"="black"))
+> graph + scale_colour_manual("Legend", values=c("mean"="red"))
+Error: Insufficient values in manual scale. 2 needed but only 1 provided.
+> graph + scale_colour_manual("Legend", values=c("mean"="red", "data"="black"))
+> graph + scale_colour_manual("Legend", values=c("mean"="red", "data"="black", "hh"="pink"))
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')   + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') +stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')   + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') +stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')   + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') +stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> graph
+Warning messages:
+1: Removed 5024 rows containing missing values (stat_summary). 
+2: Removed 3110 rows containing missing values (stat_summary). 
+3: Removed 2394 rows containing missing values (stat_summary). 
+4: Removed 2966 rows containing missing values (stat_summary). 
+5: Removed 3362 rows containing missing values (stat_summary). 
+6: Removed 1829 rows containing missing values (stat_summary). 
+7: Removed 7023 rows containing missing values (stat_summary). 
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_smooth(fun.y=mean, geom="line",data = en, color = 'red') + stat_smooth(fun.y=mean, geom="line",data = de, color = 'blue') + stat_smooth(fun.y=mean, geom="line",data = es, color = 'darkgreen')   + stat_smooth(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_smooth(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_smooth(fun.y=mean, geom="line",data = nl, color = 'indianred4') +stat_smooth(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> graph
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+Warning messages:
+1: Removed 5024 rows containing missing values (stat_smooth). 
+2: Removed 3110 rows containing missing values (stat_smooth). 
+3: Removed 2394 rows containing missing values (stat_smooth). 
+4: Removed 2966 rows containing missing values (stat_smooth). 
+5: Removed 3362 rows containing missing values (stat_smooth). 
+6: Removed 1829 rows containing missing values (stat_smooth). 
+7: Removed 7023 rows containing missing values (stat_smooth). 
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_smooth(fun.y=mean, geom="line",data = en, color = 'red') + stat_smooth(fun.y=mean, geom="line",data = de, color = 'blue') + stat_smooth(fun.y=mean, geom="line",data = es, color = 'darkgreen')   + stat_smooth(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_smooth(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_smooth(fun.y=mean, geom="line",data = nl, color = 'indianred4') +stat_smooth(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 20000)
+> graph
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+> data<-read.csv("TFL-en_multipleSR_new_7.csv")
+> 
+> ggplot(NULL, aes(x=SPATIAL_DISTANCE, y=SR)) + stat_summary(fun.y=mean, geom="line",data = data, color = "red", aes(y=SR_ensemble_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "blue", aes(y=SR_milnewitten_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "purple", aes(y=SR_inlink_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "green", aes(y=SR_outlink_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "orange", aes(y=SR_category_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "pink", aes(y=SR_ESA_Percentile))
+> 
+> ggplot(NULL, aes(x=SPATIAL_DISTANCE, y=SR)) + stat_summary(fun.y=mean, geom="line",data = data, color = "red", aes(y=SR_ensemble_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "blue", aes(y=SR_milnewitten_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "purple", aes(y=SR_inlink_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "green", aes(y=SR_outlink_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "orange", aes(y=SR_category_Percentile))+ stat_summary(fun.y=mean, geom="line",data = data, color = "pink", aes(y=SR_ESA_Percentile)) +xlim(0, 15000)
+Warning messages:
+1: Removed 69 rows containing missing values (stat_summary). 
+2: Removed 69 rows containing missing values (stat_summary). 
+3: Removed 69 rows containing missing values (stat_summary). 
+4: Removed 69 rows containing missing values (stat_summary). 
+5: Removed 69 rows containing missing values (stat_summary). 
+6: Removed 69 rows containing missing values (stat_summary). 
+> en<-read.csv("rank-en_new.csv")
+> ar<-read.csv("rank-ar_new.csv")
+> ca<-read.csv("rank-ca_new.csv")
+> ceb<-read.csv("rank-ceb_new.csv")
+> cs<-read.csv("rank-cs_new.csv")
+> de<-read.csv("rank-de_new.csv")
+> es<-read.csv("rank-es_new.csv")
+> fa<-read.csv("rank-fa_new.csv")
+> fi<-read.csv("rank-fi_new.csv")
+> fr<-read.csv("rank-fr_new.csv")
+> hu<-read.csv("rank-hu_new.csv")
+> id<-read.csv("rank-id_new.csv")
+> it<-read.csv("rank-it_new.csv")
+> ja<-read.csv("rank-ja_new.csv")
+> ko<-read.csv("rank-ko_new.csv")
+> nl<-read.csv("rank-nl_new.csv")
+> no<-read.csv("rank-no_new.csv")
+> pl<-read.csv("rank-pl_new.csv")
+> pt<-read.csv("rank-pt_new.csv")
+> ru<-read.csv("rank-ru_new.csv")
+> sv<-read.csv("rank-sv_new.csv")
+> uk<-read.csv("rank-uk_new.csv")
+> vi<-read.csv("rank-vi_new.csv")
+> war<-read.csv("rank-war_new.csv")
+> zh<-read.csv("rank-zh_new.csv")
+> 
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'magenta')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'maroon1') 
+Error in eval(expr, envir, enclos) : object 'DISTANCE_BIN' not found
+> ggplot(NULL, aes(x=Dist_Percentile, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'magenta')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'maroon1')
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> en<-read.csv("Topological_country_new_normalized_en.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_en.csv': No such file or directory
+> ar<-read.csv("Topological_country_new_normalized_ar.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_ar.csv': No such file or directory
+> ca<-read.csv("Topological_country_new_normalized_ca.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_ca.csv': No such file or directory
+> cs<-read.csv("Topological_country_new_normalized_cs.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_cs.csv': No such file or directory
+> de<-read.csv("Topological_country_new_normalized_de.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_de.csv': No such file or directory
+> es<-read.csv("Topological_country_new_normalized_es.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_es.csv': No such file or directory
+> fi<-read.csv("Topological_country_new_normalized_fi.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_fi.csv': No such file or directory
+> fr<-read.csv("Topological_country_new_normalized_fr.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_fr.csv': No such file or directory
+> hu<-read.csv("Topological_country_new_normalized_hu.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_hu.csv': No such file or directory
+> it<-read.csv("Topological_country_new_normalized_it.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_it.csv': No such file or directory
+> ja<-read.csv("Topological_country_new_normalized_ja.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_ja.csv': No such file or directory
+> ko<-read.csv("Topological_country_new_normalized_ko.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_ko.csv': No such file or directory
+> nl<-read.csv("Topological_country_new_normalized_nl.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_nl.csv': No such file or directory
+> no<-read.csv("Topological_country_new_normalized_no.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_no.csv': No such file or directory
+> pt<-read.csv("Topological_country_new_normalized_pt.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_pt.csv': No such file or directory
+> ru<-read.csv("Topological_country_new_normalized_ru.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_ru.csv': No such file or directory
+> sv<-read.csv("Topological_country_new_normalized_sv.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_sv.csv': No such file or directory
+> vi<-read.csv("Topological_country_new_normalized_vi.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_vi.csv': No such file or directory
+> zh<-read.csv("Topological_country_new_normalized_zh.csv")
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'Topological_country_new_normalized_zh.csv': No such file or directory
+> en<-read.csv("Topological_country_new_normalized_en.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> ar<-read.csv("Topological_country_new_normalized_ar.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> ca<-read.csv("Topological_country_new_normalized_ca.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> cs<-read.csv("Topological_country_new_normalized_cs.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> de<-read.csv("Topological_country_new_normalized_de.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> es<-read.csv("Topological_country_new_normalized_es.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> fi<-read.csv("Topological_country_new_normalized_fi.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> fr<-read.csv("Topological_country_new_normalized_fr.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> hu<-read.csv("Topological_country_new_normalized_hu.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> it<-read.csv("Topological_country_new_normalized_it.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> ja<-read.csv("Topological_country_new_normalized_ja.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> ko<-read.csv("Topological_country_new_normalized_ko.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> nl<-read.csv("Topological_country_new_normalized_nl.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> no<-read.csv("Topological_country_new_normalized_no.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> pt<-read.csv("Topological_country_new_normalized_pt.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> ru<-read.csv("Topological_country_new_normalized_ru.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> sv<-read.csv("Topological_country_new_normalized_sv.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> vi<-read.csv("Topological_country_new_normalized_vi.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> zh<-read.csv("Topological_country_new_normalized_zh.csv")
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
+  no lines available in input
+> en<-read.csv("Topological_country_new_normalized_en.csv")
+en<-read.csv("Topological_country_new_normalized_en.csv")
+ar<-read.csv("Topological_country_new_normalized_ar.csv")
+ca<-read.csv("Topological_country_new_normalized_ca.csv")
+cs<-read.csv("Topological_country_new_normalized_cs.csv")
+de<-read.csv("Topological_country_new_normalized_de.csv")
+es<-read.csv("Topological_country_new_normalized_es.csv")
+fi<-read.csv("Topological_country_new_normalized_fi.csv")
+fr<-read.csv("Topological_country_new_normalized_fr.csv")
+hu<-read.csv("Topological_country_new_normalized_hu.csv")
+it<-read.csv("Topological_country_new_normalized_it.csv")
+ja<-read.csv("Topological_country_new_normalized_ja.csv")
+ko<-read.csv("Topological_country_new_normalized_ko.csv")
+nl<-read.csv("Topological_country_new_normalized_nl.csv")
+no<-read.csv("Topological_country_new_normalized_no.csv")
+pt<-read.csv("Topological_country_new_normalized_pt.csv")
+ru<-read.csv("Topological_country_new_normalized_ru.csv")
+sv<-read.csv("Topological_country_new_normalized_sv.csv")
+vi<-read.csv("Topological_country_new_normalized_vi.csv")
+zh<-read.csv("Topological_country_new_normalized_zh.csv")
+> ar<-read.csv("Topological_country_new_normalized_ar.csv")
+
+> ca<-read.csv("Topological_country_new_normalized_ca.csv")
+> cs<-read.csv("Topological_country_new_normalized_cs.csv")
+> de<-read.csv("Topological_country_new_normalized_de.csv")
+> es<-read.csv("Topological_country_new_normalized_es.csv")
+> fi<-read.csv("Topological_country_new_normalized_fi.csv")
+> fr<-read.csv("Topological_country_new_normalized_fr.csv")
+> hu<-read.csv("Topological_country_new_normalized_hu.csv")
+> it<-read.csv("Topological_country_new_normalized_it.csv")
+> ja<-read.csv("Topological_country_new_normalized_ja.csv")
+Warning message:
+In scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  :
+  EOF within quoted string
+> ko<-read.csv("Topological_country_new_normalized_ko.csv")
+> nl<-read.csv("Topological_country_new_normalized_nl.csv")
+> no<-read.csv("Topological_country_new_normalized_no.csv")
+> pt<-read.csv("Topological_country_new_normalized_pt.csv")
+> ru<-read.csv("Topological_country_new_normalized_ru.csv")
+> sv<-read.csv("Topological_country_new_normalized_sv.csv")
+> vi<-read.csv("Topological_country_new_normalized_vi.csv")
+> zh<-read.csv("Topological_country_new_normalized_zh.csv")
+> 
+> en<-read.csv("Topological_country_new_normalized_en.csv")
+en<-read.csv("Topological_country_new_normalized_en.csv")
+ar<-read.csv("Topological_country_new_normalized_ar.csv")
+ca<-read.csv("Topological_country_new_normalized_ca.csv")
+cs<-read.csv("Topological_country_new_normalized_cs.csv")
+de<-read.csv("Topological_country_new_normalized_de.csv")
+es<-read.csv("Topological_country_new_normalized_es.csv")
+fi<-read.csv("Topological_country_new_normalized_fi.csv")
+fr<-read.csv("Topological_country_new_normalized_fr.csv")
+hu<-read.csv("Topological_country_new_normalized_hu.csv")
+it<-read.csv("Topological_country_new_normalized_it.csv")
+ja<-read.csv("Topological_country_new_normalized_ja.csv")
+ko<-read.csv("Topological_country_new_normalized_ko.csv")
+nl<-read.csv("Topological_country_new_normalized_nl.csv")
+no<-read.csv("Topological_country_new_normalized_no.csv")
+pt<-read.csv("Topological_country_new_normalized_pt.csv")
+ru<-read.csv("Topological_country_new_normalized_ru.csv")
+sv<-read.csv("Topological_country_new_normalized_sv.csv")
+vi<-read.csv("Topological_country_new_normalized_vi.csv")
+zh<-read.csv("Topological_country_new_normalized_zh.csv")
+> ar<-read.csv("Topological_country_new_normalized_ar.csv")
+> ca<-read.csv("Topological_country_new_normalized_ca.csv")
+> cs<-read.csv("Topological_country_new_normalized_cs.csv")
+> de<-read.csv("Topological_country_new_normalized_de.csv")
+> es<-read.csv("Topological_country_new_normalized_es.csv")
+> fi<-read.csv("Topological_country_new_normalized_fi.csv")
+> fr<-read.csv("Topological_country_new_normalized_fr.csv")
+> hu<-read.csv("Topological_country_new_normalized_hu.csv")
+> it<-read.csv("Topological_country_new_normalized_it.csv")
+> ja<-read.csv("Topological_country_new_normalized_ja.csv")
+> ko<-read.csv("Topological_country_new_normalized_ko.csv")
+> nl<-read.csv("Topological_country_new_normalized_nl.csv")
+> no<-read.csv("Topological_country_new_normalized_no.csv")
+> pt<-read.csv("Topological_country_new_normalized_pt.csv")
+> ru<-read.csv("Topological_country_new_normalized_ru.csv")
+> sv<-read.csv("Topological_country_new_normalized_sv.csv")
+> vi<-read.csv("Topological_country_new_normalized_vi.csv")
+> zh<-read.csv("Topological_country_new_normalized_zh.csv")
+> en<-read.csv("Topological_country_new_normalized_en.csv")
+> ar<-read.csv("Topological_country_new_normalized_ar.csv")
+> ca<-read.csv("Topological_country_new_normalized_ca.csv")
+> cs<-read.csv("Topological_country_new_normalized_cs.csv")
+> de<-read.csv("Topological_country_new_normalized_de.csv")
+> es<-read.csv("Topological_country_new_normalized_es.csv")
+> fi<-read.csv("Topological_country_new_normalized_fi.csv")
+> fr<-read.csv("Topological_country_new_normalized_fr.csv")
+> hu<-read.csv("Topological_country_new_normalized_hu.csv")
+> it<-read.csv("Topological_country_new_normalized_it.csv")
+> ja<-read.csv("Topological_country_new_normalized_ja.csv")
+> ko<-read.csv("Topological_country_new_normalized_ko.csv")
+> nl<-read.csv("Topological_country_new_normalized_nl.csv")
+> no<-read.csv("Topological_country_new_normalized_no.csv")
+> pt<-read.csv("Topological_country_new_normalized_pt.csv")
+> ru<-read.csv("Topological_country_new_normalized_ru.csv")
+> sv<-read.csv("Topological_country_new_normalized_sv.csv")
+> vi<-read.csv("Topological_country_new_normalized_vi.csv")
+> zh<-read.csv("Topological_country_new_normalized_zh.csv")
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> graph <- ggplot(NULL, aes(x=TOPO_DISTANCE, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15000)
+> graph
+There were 19 warnings (use warnings() to see them)
+> graph <- ggplot(NULL, aes(x=TOPO_DISTANCE, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') 
+> graph
+> graph <- ggplot(NULL, aes(x=TOPO_DISTANCE, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 15)
+> graph
+There were 19 warnings (use warnings() to see them)
+> graph <- ggplot(NULL, aes(x=TOPO_DISTANCE, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 10)
+> graph
+There were 19 warnings (use warnings() to see them)
+> en<-read.csv("Topological_country_new_normalized_en.csv")
+> ar<-read.csv("Topological_country_new_normalized_ar.csv")
+> ca<-read.csv("Topological_country_new_normalized_ca.csv")
+> cs<-read.csv("Topological_country_new_normalized_cs.csv")
+> de<-read.csv("Topological_country_new_normalized_de.csv")
+> es<-read.csv("Topological_country_new_normalized_es.csv")
+> fi<-read.csv("Topological_country_new_normalized_fi.csv")
+> fr<-read.csv("Topological_country_new_normalized_fr.csv")
+> hu<-read.csv("Topological_country_new_normalized_hu.csv")
+> it<-read.csv("Topological_country_new_normalized_it.csv")
+> ja<-read.csv("Topological_country_new_normalized_ja.csv")
+> ko<-read.csv("Topological_country_new_normalized_ko.csv")
+> nl<-read.csv("Topological_country_new_normalized_nl.csv")
+> no<-read.csv("Topological_country_new_normalized_no.csv")
+> pt<-read.csv("Topological_country_new_normalized_pt.csv")
+> ru<-read.csv("Topological_country_new_normalized_ru.csv")
+> sv<-read.csv("Topological_country_new_normalized_sv.csv")
+> vi<-read.csv("Topological_country_new_normalized_vi.csv")
+> zh<-read.csv("Topological_country_new_normalized_zh.csv")
+> graph <- ggplot(NULL, aes(x=Dist_Percentile, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 10)
+> graph <- ggplot(NULL, aes(x=Dist_Percentile, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 10)
+> graph
+Error in eval(expr, envir, enclos) : object 'SR_Percentile' not found
+> en<-read.csv("Topological_country_new_normalized_en.csv")
+> ar<-read.csv("Topological_country_new_normalized_ar.csv")
+> ca<-read.csv("Topological_country_new_normalized_ca.csv")
+> cs<-read.csv("Topological_country_new_normalized_cs.csv")
+> de<-read.csv("Topological_country_new_normalized_de.csv")
+> es<-read.csv("Topological_country_new_normalized_es.csv")
+> fi<-read.csv("Topological_country_new_normalized_fi.csv")
+> fr<-read.csv("Topological_country_new_normalized_fr.csv")
+> hu<-read.csv("Topological_country_new_normalized_hu.csv")
+> it<-read.csv("Topological_country_new_normalized_it.csv")
+> ja<-read.csv("Topological_country_new_normalized_ja.csv")
+> ko<-read.csv("Topological_country_new_normalized_ko.csv")
+> nl<-read.csv("Topological_country_new_normalized_nl.csv")
+> no<-read.csv("Topological_country_new_normalized_no.csv")
+> pt<-read.csv("Topological_country_new_normalized_pt.csv")
+> ru<-read.csv("Topological_country_new_normalized_ru.csv")
+> sv<-read.csv("Topological_country_new_normalized_sv.csv")
+> vi<-read.csv("Topological_country_new_normalized_vi.csv")
+> zh<-read.csv("Topological_country_new_normalized_zh.csv")
+> graph <- ggplot(NULL, aes(x=Dist_Percentile, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 10)
+> graph
+> graph <- ggplot(NULL, aes(x=Dist_Percentile, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 1)
+> graph
+> graph <- ggplot(NULL, aes(x=TOPO_DISTANCE, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate') + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine')  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue') + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue') + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen')  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue') + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink') + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet') + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet') + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod') + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink') + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4') + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral') + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow') + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid') + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen')  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy') +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue') + xlim(0, 10)
+> graph
+There were 19 warnings (use warnings() to see them)
+> ggplot(NULL, aes(x=TOPO_DISTANCE, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red') 
+> + xlim(0, 10)
+Error in +xlim(0, 10) : invalid argument to unary operator
+> kvalue<-read.csv("Kvalue.csv")
+> ggplot(NULL, aes(x=TOPO_DISTANCE, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red')
+> kvalue<-read.csv("Kvalue.csv")
+> ggplot(NULL, aes(x=Distance_Bin, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = kvalues, color = 'red')
+Error in do.call("layer", list(mapping = mapping, data = data, geom = geom,  : 
+  object 'kvalues' not found
+> ggplot(NULL, aes(x=Distance_Bin, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'red')
+> kvalue<-read.csv("Kvalue.csv")
+> ggplot(NULL, aes(x=Distance_Bin, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'red')
+Error in eval(expr, envir, enclos) : object 'Distance_Bin' not found
+> ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'red')
+> en<-read.csv("TFL-en_bin.csv")
+> ar<-read.csv("TFL-ar_bin.csv")
+> ca<-read.csv("TFL-ca_bin.csv")
+> ceb<-read.csv("TFL-ceb_bin.csv")
+> cs<-read.csv("TFL-cs_bin.csv")
+> de<-read.csv("TFL-de_bin.csv")
+> es<-read.csv("TFL-es_bin.csv")
+> fa<-read.csv("TFL-fa_bin.csv")
+> fi<-read.csv("TFL-fi_bin.csv")
+> fr<-read.csv("TFL-fr_bin.csv")
+> hu<-read.csv("TFL-hu_bin.csv")
+> id<-read.csv("TFL-id_bin.csv")
+> it<-read.csv("TFL-it_bin.csv")
+> ja<-read.csv("TFL-ja_bin.csv")
+> ko<-read.csv("TFL-ko_bin.csv")
+> nl<-read.csv("TFL-nl_bin.csv")
+> no<-read.csv("TFL-no_bin.csv")
+> pl<-read.csv("TFL-pl_bin.csv")
+> pt<-read.csv("TFL-pt_bin.csv")
+> ru<-read.csv("TFL-ru_bin.csv")
+> sv<-read.csv("TFL-sv_bin.csv")
+> uk<-read.csv("TFL-uk_bin.csv")
+> vi<-read.csv("TFL-vi_bin.csv")
+> war<-read.csv("TFL-war_bin.csv")
+> zh<-read.csv("TFL-zh_bin.csv")
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine', alpha = 0.2)  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen', alpha = 0.2)  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen', alpha = 0.2)  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy', alpha = 0.2) +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue', alpha = 0.2) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'red') + xlim(0, 15000)
+> graph
+There were 20 warnings (use warnings() to see them)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy', alpha = 0.3) +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'black') + xlim(0, 15000)
+> graph
+There were 20 warnings (use warnings() to see them)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy', alpha = 0.3) +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'black', size = 2) + xlim(0, 15000)
+> graph
+There were 20 warnings (use warnings() to see them)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy', alpha = 0.3) +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'blue', size = 1.5) + xlim(0, 15000)
+> graph
+There were 20 warnings (use warnings() to see them)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy', alpha = 0.3) +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'black', size = 1.0) + xlim(0, 15000)
+> graph
+There were 20 warnings (use warnings() to see them)
+> graph <- ggplot(NULL, aes(x=DISTANCE_BIN, y=SR_Percentile)) + stat_summary(fun.y=mean, geom="line",data = en, color = 'red', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ar, color='chocolate', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ca, color = 'aquamarine', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = cs, color = 'cadetblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = de, color = 'blue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = es, color = 'darkgreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = fi, color = 'deepskyblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = fr, color = 'deep pink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = hu, color = 'darkviolet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = it, color = 'violet', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ja, color = 'goldenrod', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ko, color = 'hotpink', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = nl, color = 'indianred4', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data =no, color = 'lightcoral', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = pt, color = 'yellow', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = ru, color = 'mediumorchid', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = sv, color = 'limegreen', alpha = 0.3)  + stat_summary(fun.y=mean, geom="line",data = vi, color = 'navy', alpha = 0.3) +  stat_summary(fun.y=mean, geom="line",data = zh, color = 'royalblue', alpha = 0.3) + stat_summary(fun.y=mean, geom="line",data = kvalue, color = 'black', size = 1.0) + xlim(0, 1500)
+> graph
+There were 20 warnings (use warnings() to see them)
+> 
