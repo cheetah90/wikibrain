@@ -696,7 +696,7 @@ public class AtlasifyResource {
                     //if not all sr values are loaded from the wikibrain SR cache, we should calculate all the sr values again with wikibrain SR metric and store them in the cache
                     else{
                         try{
-                            Runnable srBackgroundLoader = new SRBackgroundLoading(query, featureNameList.toArray(new String[featureNameList.size()]), sr);
+                            Runnable srBackgroundLoader = new SRBackgroundLoading(query, featureNameList.toArray(new String[featureNameList.size()]), sr, srCacheDao);
                             new Thread(srBackgroundLoader).start();
                         }
                         catch (Exception e){

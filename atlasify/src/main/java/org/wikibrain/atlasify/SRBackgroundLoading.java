@@ -9,12 +9,13 @@ public class SRBackgroundLoading implements Runnable {
     AtlasifyResource.AtlasifyQuery query;
     String[] featureNameList;
     SRMetric sr;
-    SRCacheDao srCacheDao = new SRCacheDao();
+    SRCacheDao srCacheDao;
 
-    public SRBackgroundLoading(AtlasifyResource.AtlasifyQuery query, String[] featureNameList, SRMetric sr){
+    public SRBackgroundLoading(AtlasifyResource.AtlasifyQuery query, String[] featureNameList, SRMetric sr, SRCacheDao srCacheDao){
         this.query = query;
         this.featureNameList = featureNameList;
         this.sr = sr;
+        this.srCacheDao = srCacheDao;
     }
     public void run(){
         System.out.println("Starting SR Background loading for keyword " + query.getKeyword());
@@ -22,6 +23,7 @@ public class SRBackgroundLoading implements Runnable {
             if(!srCacheDao.checkSRExist(query.getKeyword(), featureNameList[i])){
                 try {
                     double value = sr.similarity(query.getKeyword(), featureNameList[i], false).getScore();
+                    System.out.println("Saving SR for " + query.getKeyword() + " and " + featureNameList[i] + " is " + value);
                     srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
                 }
                 catch (Exception e){
