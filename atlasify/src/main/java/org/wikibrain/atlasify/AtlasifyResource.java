@@ -139,7 +139,7 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     public static SpatialDataDao sdDao = null;
-    private static boolean loadWikibrainSR = false;
+    private static boolean loadWikibrainSR = true;
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static LuceneSearcher luceneSearcher;
     private static Map<Integer, Geometry> geometryMap = null;
@@ -520,7 +520,7 @@ public class AtlasifyResource {
     */
 
 
-    static private boolean useNorthWesternAPI  = true;
+    static private boolean useNorthWesternAPI  = false;
     static private int     NorthwesternTimeout = 100000; // in milliseconds
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;

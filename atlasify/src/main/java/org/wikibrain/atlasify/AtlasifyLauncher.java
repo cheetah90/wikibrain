@@ -19,7 +19,7 @@ public class AtlasifyLauncher {
     public static final boolean useLocalHost = false;
     private static final Logger LOG = Logger.getLogger(AtlasifyLauncher.class.getName());
     private static CSVWriter serverLogWriter;
-    private static String baseURL = new String(useLocalHost ? "http://localhost/" : "http://spatialization.cs.umn.edu/");
+    private static String baseURL = new String(useLocalHost ? "http://localhost" : "http://0.0.0.0");
     private static int portNo = 8080;
     private static class checkAtlasifyStatus extends TimerTask{
         @Override
@@ -28,7 +28,7 @@ public class AtlasifyLauncher {
             int retryCounter = 0;
             while(retryCounter ++ < 5){
                 try{
-                    URL helloWorldUrl = new URL(baseURL + "/wikibrain/helloworld");
+                    URL helloWorldUrl = new URL(baseURL + ":8080/wikibrain/helloworld");
                     HttpURLConnection connection = (HttpURLConnection)helloWorldUrl.openConnection();
                     connection.setRequestMethod("GET");
                     BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
