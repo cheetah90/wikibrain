@@ -215,6 +215,7 @@ public class AtlasifyResource {
                 articleManager = new FeatureArticleManager(defaultUsername, defaultPassword, time);
             }
             catch (Exception e){
+                e.printStackTrace();
                 System.out.println("Error when loading feature article manager");
             }
             System.out.println("FINISHED LOADING FEATURE ARTICLE MANAGER");
