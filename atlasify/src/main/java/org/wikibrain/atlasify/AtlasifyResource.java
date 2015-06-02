@@ -1938,14 +1938,15 @@ public class AtlasifyResource {
 
         return Response.ok(new JSONObject(result).toString()).build();
     }
-
+//TODO: temp disable loading for article manager
     @POST
     @Path("/articles")
     @Produces("application/json")
 
     public Response getFeatureArticles() {
         if (articleManager == null) {
-            wikibrainSRinit();
+            return Response.ok().build();
+            //wikibrainSRinit();
         }
 
         System.out.println("Received feature articles request");
@@ -1959,7 +1960,8 @@ public class AtlasifyResource {
 
     public Response getArticleImage(@PathParam("title") String title, @PathParam("refsys") int refsys, @PathParam("resolution") int resolution) {
         if (articleManager == null) {
-            wikibrainSRinit();
+            return Response.ok().build();
+            //wikibrainSRinit();
         }
 
         System.out.println("Received image request for " + title + " in ref sys " + refsys);
