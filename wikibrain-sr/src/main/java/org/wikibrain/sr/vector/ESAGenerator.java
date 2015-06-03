@@ -6,7 +6,6 @@ import gnu.trove.map.hash.TIntFloatHashMap;
 import gnu.trove.set.TIntSet;
 import gnu.trove.set.hash.TIntHashSet;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.wikibrain.conf.Configuration;
 import org.wikibrain.conf.ConfigurationException;
@@ -19,7 +18,6 @@ import org.wikibrain.lucene.LuceneSearcher;
 import org.wikibrain.lucene.QueryBuilder;
 import org.wikibrain.lucene.WikiBrainScoreDoc;
 import org.wikibrain.lucene.WpIdFilter;
-import org.wikibrain.matrix.SparseMatrix;
 import org.wikibrain.sr.Explanation;
 import org.wikibrain.sr.SRResult;
 import org.wikibrain.sr.SRResultList;
@@ -30,15 +28,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Shilad Sen
  */
-public class ESAGenerator implements VectorGenerator {
+public class ESAGenerator implements SparseVectorGenerator {
 
-    private static final Logger LOG = Logger.getLogger(ESAGenerator.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(ESAGenerator.class);
 
     private final LuceneSearcher searcher;
     private final Language language;
@@ -81,7 +81,7 @@ public class ESAGenerator implements VectorGenerator {
     public TIntFloatMap getVector(int pageId) throws DaoException {
         int luceneId = searcher.getDocIdFromLocalId(pageId, language);
         if (luceneId < 0) {
-            LOG.warning("Unindexed document " + pageId + " in " + language.getEnLangName());
+            LOG.warn("Unindexed document " + pageId + " in " + language.getEnLangName());
             return new TIntFloatHashMap();
         }
         WikiBrainScoreDoc[] wikibrainScoreDocs =  getQueryBuilder()
@@ -100,7 +100,7 @@ public class ESAGenerator implements VectorGenerator {
             scoreDocs = SimUtils.pruneSimilar(scoreDocs);
             return SimUtils.normalizeVector(expandScores(scoreDocs));
         } else {
-            LOG.log(Level.WARNING, "Phrase cannot be parsed to get a query. "+phrase);
+            LOG.warn("Phrase cannot be parsed to get a query. "+phrase);
             return null;
         }
     }
@@ -108,7 +108,7 @@ public class ESAGenerator implements VectorGenerator {
     public void setConcepts(File file) throws IOException {
         conceptFilter = null;
         if (!file.isFile()) {
-            LOG.warning("concept path " + file + " not a file; defaulting to all concepts");
+            LOG.warn("concept path " + file + " not a file; defaulting to all concepts");
             return;
         }
         TIntSet ids = new TIntHashSet();
@@ -119,7 +119,7 @@ public class ESAGenerator implements VectorGenerator {
             }
         }
         conceptFilter = new WpIdFilter(ids.toArray());
-        LOG.warning("installed " + ids.size() + " concepts for " + language);
+        LOG.warn("installed " + ids.size() + " concepts for " + language);
     }
 
     private boolean isBlacklisted(int wpLocalIDNumb) {
@@ -140,7 +140,6 @@ public class ESAGenerator implements VectorGenerator {
         if (top.numDocs() == 0) {
             return Arrays.asList(new Explanation("? and ? share no links", page1, page2));
         }
-        top.sortDescending();
 
         List<Explanation> explanations = new ArrayList<Explanation>();
         for (int i = 0; i < top.numDocs(); i++) {
@@ -164,7 +163,6 @@ public class ESAGenerator implements VectorGenerator {
         if (top.numDocs() == 0) {
             return Arrays.asList(new Explanation("? and ? share no tags", phrase1, phrase2));
         }
-        top.sortDescending();
 
         List<Explanation> explanations = new ArrayList<Explanation>();
         for (int i = 0; i < top.numDocs(); i++) {
@@ -222,23 +220,23 @@ public class ESAGenerator implements VectorGenerator {
         return wikibrainScoreDocs;
     }
 
-    public static class Provider extends org.wikibrain.conf.Provider<VectorGenerator> {
+    public static class Provider extends org.wikibrain.conf.Provider<SparseVectorGenerator> {
         public Provider(Configurator configurator, Configuration config) throws ConfigurationException {
             super(configurator, config);
         }
 
         @Override
         public Class getType() {
-            return VectorGenerator.class;
+            return SparseVectorGenerator.class;
         }
 
         @Override
         public String getPath() {
-            return "sr.metric.generator";
+            return "sr.metric.sparsegenerator";
         }
 
         @Override
-        public VectorGenerator get(String name, Config config, Map<String, String> runtimeParams) throws ConfigurationException {
+        public SparseVectorGenerator get(String name, Config config, Map<String, String> runtimeParams) throws ConfigurationException {
             if (!config.getString("type").equals("esa")) {
                 return null;
             }

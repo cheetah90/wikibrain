@@ -21,16 +21,17 @@ import org.wikibrain.sr.utils.Leaderboard;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Generates an
  *
  * @author Shilad Sen
  */
-public class MostSimilarConceptsGenerator implements VectorGenerator {
+public class MostSimilarConceptsGenerator implements SparseVectorGenerator {
 
-    private static final Logger LOG = Logger.getLogger(MostSimilarConceptsGenerator.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(MostSimilarConceptsGenerator.class);
 
     private final Language language;
     private final LocalPageDao pageDao;
@@ -69,13 +70,13 @@ public class MostSimilarConceptsGenerator implements VectorGenerator {
     public void setConcepts(File file) throws IOException {
         conceptIds = new TIntHashSet();
         if (!file.isFile()) {
-            LOG.warning("concept path " + file + " not a file; defaulting to all concepts");
+            LOG.warn("concept path " + file + " not a file; defaulting to all concepts");
             return;
         }
         for (String wpId : FileUtils.readLines(file)) {
             conceptIds.add(Integer.valueOf(wpId));
         }
-        LOG.warning("installed " + conceptIds.size() + " concepts for " + language);
+        LOG.warn("installed " + conceptIds.size() + " concepts for " + language);
     }
 
     @Override
@@ -92,7 +93,6 @@ public class MostSimilarConceptsGenerator implements VectorGenerator {
         if (top.numDocs() == 0) {
             return Arrays.asList(new Explanation("? and ? share no similar pages", page1, page2));
         }
-        top.sortDescending();
 
         List<Explanation> explanations = new ArrayList<Explanation>();
         for (int i = 0; i < top.numDocs(); i++) {
@@ -104,23 +104,23 @@ public class MostSimilarConceptsGenerator implements VectorGenerator {
         return explanations;
     }
 
-    public static class Provider extends org.wikibrain.conf.Provider<VectorGenerator> {
+    public static class Provider extends org.wikibrain.conf.Provider<SparseVectorGenerator> {
         public Provider(Configurator configurator, Configuration config) throws ConfigurationException {
             super(configurator, config);
         }
 
         @Override
         public Class getType() {
-            return VectorGenerator.class;
+            return SparseVectorGenerator.class;
         }
 
         @Override
         public String getPath() {
-            return "sr.metric.generator";
+            return "sr.metric.sparsegenerator";
         }
 
         @Override
-        public VectorGenerator get(String name, Config config, Map<String, String> runtimeParams) throws ConfigurationException {
+        public SparseVectorGenerator get(String name, Config config, Map<String, String> runtimeParams) throws ConfigurationException {
             if (!config.getString("type").equals("mostsimilarconcepts")) {
                 return null;
             }

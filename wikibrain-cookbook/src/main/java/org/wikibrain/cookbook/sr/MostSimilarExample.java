@@ -19,14 +19,14 @@ import java.util.List;
 public class MostSimilarExample {
     public static void main(String[] args) throws Exception{
         // Initialize the WikiBrain environment and get the local page dao
-        Env env = new EnvBuilder().envFromArgs(args);
+        Env env = EnvBuilder.envFromArgs(args);
         Configurator conf = env.getConfigurator();
         LocalPageDao lpDao = conf.get(LocalPageDao.class);
         Language simple = Language.getByLangCode("simple");
 
-        // Retrieve the "ensemble" sr metric for simple english
+        // Retrieve the "milnewitten" sr metric for simple english
         SRMetric sr = conf.get(
-                SRMetric.class, "ensemble",
+                SRMetric.class, "milnewitten",
                 "language", simple.getLangCode());
 
         //Similarity between strings
