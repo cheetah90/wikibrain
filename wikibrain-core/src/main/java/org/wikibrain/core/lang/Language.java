@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A language associated with a language edition of Wikipedia.
@@ -20,7 +21,7 @@ import java.util.logging.Logger;
 public class Language implements Comparable<Language>, Serializable {
     private static final long serialVersionUID = 6331325313592646604l;
 
-    private static Logger LOG = Logger.getLogger(Language.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(Language.class);
     public static final String LANGUAGE_TSV = "languages.tsv";
 
     /**
@@ -90,6 +91,7 @@ public class Language implements Comparable<Language>, Serializable {
      * @throws IllegalArgumentException if langCode is unknown.
      */
     public static Language getByLangCode(String langCode) {
+        langCode = langCode.replace('_', '-').toLowerCase();
         if (WIKIDATA.getLangCode().equals(langCode)) {
             return WIKIDATA;
         }
@@ -102,6 +104,7 @@ public class Language implements Comparable<Language>, Serializable {
     }
 
     public static Language getByLangCodeLenient(String langCode) {
+        langCode = langCode.replace('_', '-').toLowerCase();
         List<String> flavors = new ArrayList<String>();
         flavors.add(langCode);
         if (langCode.contains("-")) {
@@ -127,6 +130,7 @@ public class Language implements Comparable<Language>, Serializable {
     }
 
     public static boolean hasLangCode(String langCode) {
+        langCode = langCode.replace('_', '-').toLowerCase();
         for (Language lang : LANGUAGES) {
             if (lang.langCode.equalsIgnoreCase(langCode)) {
                 return true;
@@ -174,6 +178,10 @@ public class Language implements Comparable<Language>, Serializable {
 
     public String getDomain() {
         return langCode + ".wikipedia.org";
+    }
+
+    public LanguageInfo getLanguageInfo() {
+        return LanguageInfo.getByLanguage(this);
     }
 
     @Override

@@ -16,7 +16,6 @@ import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.model.LocalLink;
 import org.wikibrain.core.model.LocalPage;
 import org.wikibrain.core.model.NameSpace;
-import org.wikibrain.core.model.UniversalPage;
 import org.wikibrain.sr.Explanation;
 import org.wikibrain.sr.SRResult;
 import org.wikibrain.sr.SRResultList;
@@ -25,7 +24,8 @@ import org.wikibrain.sr.utils.Leaderboard;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Generates a sparse vector containing a "1" for each inbound or outbound link
@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  *
  * @author Shilad Sen
  */
-public class LinkGenerator implements VectorGenerator {
+public class LinkGenerator implements SparseVectorGenerator {
 
     public static enum LinkType {
         IN,
@@ -41,7 +41,7 @@ public class LinkGenerator implements VectorGenerator {
         DIRECT
     }
 
-    private static final Logger LOG = Logger.getLogger(LinkGenerator.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(LinkGenerator.class);
     private boolean outLinks;
     private final LocalLinkDao linkDao;
     private final LocalPageDao pageDao;
@@ -176,7 +176,6 @@ public class LinkGenerator implements VectorGenerator {
         if (top.numDocs() == 0) {
             return Arrays.asList(new Explanation("? and ? share no links", page1, page2));
         }
-        top.sortDescending();
 
         List<Explanation> explanations = new ArrayList<Explanation>();
         for (int i = 0; i < top.numDocs(); i++) {
@@ -201,23 +200,23 @@ public class LinkGenerator implements VectorGenerator {
         this.logTransform = logTransform;
     }
 
-    public static class Provider extends org.wikibrain.conf.Provider<VectorGenerator> {
+    public static class Provider extends org.wikibrain.conf.Provider<SparseVectorGenerator> {
         public Provider(Configurator configurator, Configuration config) throws ConfigurationException {
             super(configurator, config);
         }
 
         @Override
         public Class getType() {
-            return VectorGenerator.class;
+            return SparseVectorGenerator.class;
         }
 
         @Override
         public String getPath() {
-            return "sr.metric.generator";
+            return "sr.metric.sparsegenerator";
         }
 
         @Override
-        public VectorGenerator get(String name, Config config, Map<String, String> runtimeParams) throws ConfigurationException {
+        public SparseVectorGenerator get(String name, Config config, Map<String, String> runtimeParams) throws ConfigurationException {
             if (!config.getString("type").equals("links")) {
                 return null;
             }

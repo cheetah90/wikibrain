@@ -20,18 +20,19 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Given a corpus of words and phrases, iteratively concatenates bigrams that are
  * likely to be more meaningful together than apart.
  *
- * ie "speed of light" => "speed_of light" (pass 1) -> "speed_of_light" (pass 2)
+ * ie "speed of light" =&gt; "speed_of light" (pass 1) -&gt; "speed_of_light" (pass 2)
  *
  * @author Shilad Sen
  */
 public class Word2Phrase {
-    private static final Logger LOG = Logger.getLogger(Word2Phrase.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(Word2Phrase.class);
     private final PhraseAnalyzerDao phraseDao;
     private final Language language;
 

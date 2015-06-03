@@ -14,6 +14,7 @@ import gnu.trove.set.hash.TLongHashSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.wikibrain.core.dao.DaoException;
 import org.wikibrain.core.dao.LocalPageDao;
 import org.wikibrain.core.lang.Language;
@@ -26,7 +27,8 @@ import org.wikibrain.utils.WpThreadUtils;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,7 +54,7 @@ public class Dictionary implements Closeable {
     public static final int MAX_DICTIONARY_SIZE = 20000000;   // 20M unigrams + bigrams by default.
     public static int PRUNE_INTERVAL = 10000;   // Consider pruning every PRUNE_INTERVAL increments
 
-    public static Logger LOG = Logger.getLogger(Dictionary.class.getName());
+    public static Logger LOG = LoggerFactory.getLogger(Dictionary.class);
 
     /**
      * Matches mentions like:
@@ -272,7 +274,7 @@ public class Dictionary implements Closeable {
      * Increments the count for a particular unigram.
      *
      * If this.countMentions is true, it scans for, counts,
-     * and removes any article mentions "foo:ID342234" => "foo"
+     * and removes any article mentions "foo:ID342234" -&gt; "foo"
      *
      * If rememberWords is true, and this word hasn't been seen before,
      * it remembers the word.
@@ -333,8 +335,9 @@ public class Dictionary implements Closeable {
                 word = m.group(1);
             }
         }
+        long h = getHash(word);
         synchronized (bigramCounts) {
-            bigramCounts.adjustOrPutValue(getHash(word), 1, 1);
+            bigramCounts.adjustOrPutValue(h, 1, 1);
         }
         if (totalBigrams.incrementAndGet() % PRUNE_INTERVAL == 0) {
             pruneIfNecessary();
@@ -361,7 +364,7 @@ public class Dictionary implements Closeable {
     public synchronized void pruneIfNecessary() {
         while (true) {
             int n1, n2;
-            synchronized (bigramCounts) {
+            synchronized (unigramCounts) {
                 n1 = unigramCounts.size();
             }
             synchronized (bigramCounts) {
@@ -544,7 +547,7 @@ public class Dictionary implements Closeable {
             } else if (tokens[0].equals("m")) {
                 mentionCounts.put(Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
             } else if (tokens[0].equals("t")) {
-                totalWords.set(Integer.valueOf(tokens[1]));
+                totalWords.set(Long.valueOf(tokens[1]));
             } else {
                 throw new IOException("unexpected line: " + line);
             }

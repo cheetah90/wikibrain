@@ -3,11 +3,14 @@ package org.wikibrain.matrix;
 import gnu.trove.map.TIntFloatMap;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.LinkedHashMap;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A single sparse matrix row backed by a byte buffer. The row contains:
@@ -20,7 +23,8 @@ import java.util.logging.Logger;
  * Newly created rows are reordered so that the columns appear in sorted order.
  */
 public final class SparseMatrixRow extends BaseMatrixRow implements MatrixRow {
-    Logger LOG = Logger.getLogger(SparseMatrixRow.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(SparseMatrixRow.class);
+
     public static final Float MIN_SCORE = -1.1f;
     public static final Float MAX_SCORE = 1.1f;
 
@@ -200,4 +204,6 @@ public final class SparseMatrixRow extends BaseMatrixRow implements MatrixRow {
     public ValueConf getValueConf() {
         return vconf;
     }
+
+
 }

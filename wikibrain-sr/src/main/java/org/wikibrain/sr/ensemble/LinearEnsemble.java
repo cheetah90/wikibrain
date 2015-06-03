@@ -13,20 +13,23 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *@author Matt Lesicko
  */
 public class LinearEnsemble implements Ensemble{
-    private static final Logger LOG = Logger.getLogger(LinearEnsemble.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(LinearEnsemble.class);
     final int numMetrics;
+    private final int numTrainingCandidateArticles;
     TDoubleArrayList simlarityCoefficients;
     TDoubleArrayList mostSimilarCoefficients;
     Interpolator similarityInterpolator;
     Interpolator mostSimilarInterpolator;
 
-    public LinearEnsemble(int numMetrics){
+    public LinearEnsemble(int numMetrics, int numTrainingCandidateArticles){
+        this.numTrainingCandidateArticles = numTrainingCandidateArticles;
         this.numMetrics = numMetrics;
         simlarityCoefficients = new TDoubleArrayList();
         simlarityCoefficients.add(0.0);
@@ -90,12 +93,14 @@ public class LinearEnsemble implements Ensemble{
         double[] Y = new double[pruned.size()];
         for (int i=0; i<pruned.size(); i++){
             Y[i]=pruned.get(i).knownSim.similarity;
-            EnsembleSim es = similarityInterpolator.interpolate(pruned.get(i));
+            EnsembleSim es = mostSimilarInterpolator.interpolate(pruned.get(i));
             for (int j=0; j<numMetrics; j++){
                 X[i][2*j]= es.getScores().get(j);
                 X[i][2*j+1]= Math.log(es.getRanks().get(j)+1);
             }
         }
+
+
         OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
         regression.newSampleData(Y,X);
 
@@ -122,8 +127,9 @@ public class LinearEnsemble implements Ensemble{
 
     }
 
+    public static boolean debug = false;
     @Override
-    public SRResultList predictMostSimilar(List<SRResultList> scores, int maxResults) {
+    public SRResultList predictMostSimilar(List<SRResultList> scores, int maxResults, TIntSet validIds) {
         if (2*scores.size()+1!= mostSimilarCoefficients.size()){
             throw new IllegalStateException();
         }
@@ -147,9 +153,20 @@ public class LinearEnsemble implements Ensemble{
             double c2 = mostSimilarCoefficients.get(i+1);   // rank coefficient
             if (resultList != null) {
                 for (int j = 0; j < resultList.numDocs(); j++) {
+                    int rank = j + 1;
+                    // expand or contract ranks proportionately
+                    if (validIds != null) {
+                        double k = 1.0 * numTrainingCandidateArticles / validIds.size();
+                        rank = (int) (rank * k);
+                    }
                     SRResult result = resultList.get(j);
                     unknownIds.remove(result.getId());
-                    double value = c1 * result.getScore() + c2 * Math.log(j+1);
+                    double value = c1 * result.getScore() + c2 * Math.log(rank);
+                    if (debug) {
+                        System.err.format("%s %d. %.3f (id=%d), computing %.3f * %.3f + %.3f * (log(%d) = %.3f)\n",
+                                "m" + i, j, value, result.getId(),
+                                c1, result.getScore(), c2, rank, Math.log(rank));
+                    }
                     scoreMap.adjustValue(result.getId(), value);
                 }
             }

@@ -30,14 +30,17 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Shilad Sen
  * Calculates the probability of a link
  */
 public class LinkProbabilityDao {
-    private static final Logger LOG = Logger.getLogger(LinkProbabilityDao.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(LinkProbabilityDao.class);
 
     private final File path;
     private final RawPageDao pageDao;
@@ -64,7 +67,7 @@ public class LinkProbabilityDao {
                 throw new DaoException(e);
             }
         } else {
-            LOG.warning("path " + path + " does not exist... wll not function until build() is called.");
+            LOG.warn("path " + path + " does not exist... LinkProbabilityDao will not work until build() is called.");
         }
     }
 
@@ -107,6 +110,11 @@ public class LinkProbabilityDao {
             throw new IllegalStateException("Dao has not yet been built. Call build()");
         }
         String normalizedMention = cleanString(language, mention, normalize);
+        if (cache != null && cache.size() > 0) {
+            long hash = hashCode(language, normalizedMention);
+            return cache.containsKey(hash) ? cache.get(hash) : 0.0;
+        }
+
         String key = language.getLangCode() + ":" + normalizedMention;
 
         Double d = null;
@@ -125,30 +133,52 @@ public class LinkProbabilityDao {
     }
 
     public synchronized void useCache(boolean useCache) {
-        if (useCache && db == null) {
+        if (!useCache) {
+            this.cache = null;
+            return;
+        } else if (db == null) {
             this.cache = new TLongFloatHashMap();   // build cache later
-        } else if (useCache) {
-            LOG.info("building cache...");
-            TLongFloatMap cache = new TLongFloatHashMap();
-            Iterator<Pair<String, Double>> iter = db.iterator();
-            TLongSet subgrams = new TLongHashSet();
-            while (iter.hasNext()) {
-                Pair<String, Double> entry = iter.next();
-                if (entry.getKey().startsWith(":s:")) {
-                    long hash = Long.valueOf(entry.getKey().substring(3));
-                    subgrams.add(hash);
-                } else {
-                    String tokens[] = entry.getKey().split(":", 2);
-                    Language lang = Language.getByLangCode(tokens[0]);
-                    long hash = hashCode(lang, entry.getKey());
-                    cache.put(hash, entry.getRight().floatValue());
-                }
+            return;
+        }
+
+
+        File fp = new File(path, "phrase-cache.bin");
+        File fsg = new File(path, "subgram-cache.bin");
+        long tstamp = WpIOUtils.getLastModifiedfromDir(path);
+        if (fp.isFile() && fp.lastModified() > tstamp
+        &&  fsg.isFile() && fsg.lastModified() > tstamp) {
+            try {
+                cache = (TLongFloatMap) WpIOUtils.readObjectFromFile(fp);
+                subGrams = (TLongSet) WpIOUtils.readObjectFromFile(fsg);
+                return;
+            } catch (IOException e) {
+                LOG.warn("Using link probability dao cache failed: ", e);
             }
-            this.cache = cache;
-            this.subGrams = subgrams;
-            LOG.info("created cache with " + cache.size() + " entries and " + subgrams.size() + " subgrams");
-        } else {
-            cache = null;
+        }
+        LOG.info("building cache...");
+        TLongFloatMap cache = new TLongFloatHashMap();
+        Iterator<Pair<String, Double>> iter = db.iterator();
+        TLongSet subgrams = new TLongHashSet();
+        while (iter.hasNext()) {
+            Pair<String, Double> entry = iter.next();
+            if (entry.getKey().startsWith(":s:")) {
+                long hash = Long.valueOf(entry.getKey().substring(3));
+                subgrams.add(hash);
+            } else {
+                String tokens[] = entry.getKey().split(":", 2);
+                Language lang = Language.getByLangCode(tokens[0]);
+                long hash = hashCode(lang, tokens[1]);
+                cache.put(hash, entry.getRight().floatValue());
+            }
+        }
+        this.cache = cache;
+        this.subGrams = subgrams;
+        LOG.info("created cache with " + cache.size() + " entries and " + subgrams.size() + " subgrams");
+        try {
+            WpIOUtils.writeObjectToFile(fp, cache);
+            WpIOUtils.writeObjectToFile(fsg, subgrams);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

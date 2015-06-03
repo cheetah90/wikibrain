@@ -89,6 +89,11 @@ public class EnvBuilder {
         return this;
     }
 
+    public EnvBuilder setReconfigureLogging(boolean reconfigure) {
+        params.put("reconfigureLogging", reconfigure);
+        return this;
+    }
+
     public EnvBuilder setTmpDir(String dir) {
         return setTmpDir(new File(dir));
     }
@@ -139,7 +144,6 @@ public class EnvBuilder {
 
     /**
      * Adds the standard command line options to an options argument.
-     * @param options
      */
     public static void addStandardOptions(Options options) {
         Option toAdd[] = new Option[] {

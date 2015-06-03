@@ -10,14 +10,16 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SparseMatrixWriter {
 
     public static final byte ROW_PADDING = Byte.MIN_VALUE;
 
-    private static final Logger LOG = Logger.getLogger(SparseMatrixWriter.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(SparseMatrixWriter.class);
 
     private File path;
     private TIntLongHashMap rowOffsets = new TIntLongHashMap();
@@ -99,7 +101,7 @@ public class SparseMatrixWriter {
     }
 
     private void info(String message) {
-        LOG.log(Level.INFO, "sparse matrix writer " + path + ": " + message);
+        LOG.info("sparse matrix writer " + path + ": " + message);
     }
 
     public static void write(File file, Iterator<SparseMatrixRow> rows) throws IOException {
@@ -126,5 +128,39 @@ public class SparseMatrixWriter {
     }
     private static byte[] floatToBytes(float f) {
         return ByteBuffer.allocate(4).putFloat(f).array();
+    }
+
+    /**
+     * Writes a matrix in sparse matrix format.
+     * If the matrix itself is a sparse matrix formatted matrix, this will be optimized.
+     *
+     * @param matrix
+     * @param output
+     * @throws IOException
+     */
+    public static void write(Matrix<? extends MatrixRow> matrix, File output) throws IOException {
+        ValueConf vconf = null;
+        if (matrix instanceof SparseMatrix) {
+            vconf = ((SparseMatrix)matrix).getValueConf();
+        } else {
+            float min = Float.MAX_VALUE;
+            float max = -Float.MAX_VALUE;
+            for (MatrixRow r : matrix) {
+                for (int i = 0; i < r.getNumCols(); i++) {
+                    min = Math.min(min, r.getColValue(i));
+                    max = Math.max(max, r.getColValue(i));
+                }
+            }
+            vconf = new ValueConf(min, max);
+        }
+        SparseMatrixWriter writer = new SparseMatrixWriter(output, vconf);
+        for (MatrixRow r : matrix) {
+            if (r instanceof SparseMatrixRow) {
+                writer.writeRow((SparseMatrixRow) r);
+            } else {
+                writer.writeRow(new SparseMatrixRow(vconf, r.getRowIndex(), r.asTroveMap()));
+            }
+        }
+        writer.finish();
     }
 }
