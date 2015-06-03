@@ -123,7 +123,7 @@ public class LocalPageAutocompleteSqlDao extends AbstractSqlDao<LocalPage> imple
                     try {
                         return buildLocalPage(r, daoFilter);
                     } catch (DaoException e) {
-                        LOG.log(Level.WARNING, e.getMessage(), e);
+                        LOG.info(e.getMessage(), e);
                         return null;
                     }
                 }
