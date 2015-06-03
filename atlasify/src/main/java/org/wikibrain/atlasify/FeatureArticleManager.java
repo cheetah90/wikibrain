@@ -1,6 +1,15 @@
 package org.wikibrain.atlasify;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.apache.ApacheHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.testing.json.MockJsonFactory;
+import com.google.gdata.client.ClientLoginAccountType;
 import com.google.gdata.data.Person;
+import com.google.api.client.json.jackson.JacksonFactory;
 
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.client.spreadsheet.FeedURLFactory;
@@ -9,6 +18,7 @@ import com.google.gdata.client.spreadsheet.CellQuery;
 
 import com.google.gdata.data.Feed;
 import com.google.gdata.data.TextConstruct;
+import com.google.gdata.data.extensions.Im;
 import com.google.gdata.data.spreadsheet.*;
 
 import com.google.gdata.data.Entry;
@@ -32,9 +42,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -234,8 +247,8 @@ public class FeatureArticleManager {
 
     // This continually reload the data at the time specified in the date parameter, the day, month, year don't matter
     // It will also refresh the data upon calling the constructor
-    public FeatureArticleManager(String username, String password, Date date) throws Exception {
-        this(username, password);
+    public FeatureArticleManager(Date date) throws Exception {
+        this();
 
         final String masterSpreadsheetName = "Atlasify Featured Maps";
         // Load the data in 5 min, this is hopefully enough time for the server to load
@@ -272,10 +285,22 @@ public class FeatureArticleManager {
             }
         }, (date.getTime() - current.getTime())/1000, 24*60*60, TimeUnit.SECONDS);
     }
-    private FeatureArticleManager(String username, String password) throws Exception {
+    private FeatureArticleManager() throws Exception {
+        // This is using a development account part of atlasify@gmail.com
+        String emailAddress = "152281337822-njvo1usnct105ce311asssgvpelfs6ck@developer.gserviceaccount.com";
+        JsonFactory JSON_FACTORY = new JacksonFactory();
+        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        Collection<String> scope = Arrays.asList("http://spreadsheets.google.com/feeds/");
+        GoogleCredential credential = new GoogleCredential.Builder()
+                .setTransport(httpTransport)
+                .setJsonFactory(JSON_FACTORY)
+                .setServiceAccountId(emailAddress)
+                .setServiceAccountPrivateKeyFromP12File(new File("atlasify/Atlasify-UMN-6e5cbb645a7f.p12"))
+                .setServiceAccountScopes(scope)
+                .build();
         factory = FeedURLFactory.getDefault();
         service = new SpreadsheetService("gdata-sample-spreadhsheetindex");
-        service.setUserCredentials(username, password);
+        service.setOAuth2Credentials(credential);
         trendingArticles = new ArrayList<TrendingArticle>();
     }
 

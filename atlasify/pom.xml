@@ -114,6 +114,12 @@
         </dependency>
         
         <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-jackson</artifactId>
+            <version>1.18.0-rc</version>
+        </dependency>
+        
+        <dependency>
             <groupId>com.google.gdata</groupId>
             <artifactId>core</artifactId>
             <version>1.47.1</version>

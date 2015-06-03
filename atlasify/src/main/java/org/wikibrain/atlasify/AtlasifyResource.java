@@ -205,10 +205,10 @@ public class AtlasifyResource {
                     .build();
             System.out.println("FINISHED LOADING CACHES");
 
-            String defaultUsername = "atlasify@gmail.com";
-            String defaultPassword = "dfG-6Zh-Rzm-TzV";
+            /*String defaultUsername = "atlasify@gmail.com";
+            String defaultPassword = "dfG-6Zh-Rzm-TzV";*/
             Date time = new Date(2000, 0, 0, 3, 0, 0); // 3 am
-            articleManager = new FeatureArticleManager(defaultUsername, defaultPassword, time);
+            articleManager = new FeatureArticleManager(time);
             System.out.println("FINISHED LOADING FEATURE ARTICLE MANAGER");
 
             if(loadWikibrainSR){
