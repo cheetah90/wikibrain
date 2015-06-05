@@ -55,13 +55,19 @@ public class AtlasifyLogger {
         private String centroid;
         private String browser;
         private String language;
+        private String ip;
+        private String iplat;
+        private String iplon;
+        private String iporg;
+        private String ipcountry;
+        private String ipcity;
 
 
         public logQuery(){
 
         }
 
-        public logQuery(String userId, String type, String keyword, String refSys, String centroid, String browser, String language){
+        public logQuery(String userId, String type, String keyword, String refSys, String centroid, String browser, String language, String ip, String iplat, String iplon, String iporg, String ipcountry, String ipcity){
             this.userId = userId;
             this.type = type;
             this.keyword = keyword;
@@ -69,6 +75,12 @@ public class AtlasifyLogger {
             this.centroid = centroid;
             this.browser = browser;
             this.language = language;
+            this.ip = ip;
+            this.iplat = iplat;
+            this.iplon = iplon;
+            this.iporg = iporg;
+            this.ipcountry = ipcountry;
+            this.ipcity = ipcity;
         }
 
         public String getUserId(){
@@ -185,7 +197,7 @@ public class AtlasifyLogger {
     }
 
     public void QueryLogger(logQuery data, String ip) throws IOException{
-        String[] row = new String[10];
+        String[] row = new String[15];
         row[0] = data.userId;
         row[1] = data.centroid;
         row[2] = data.refSys;
@@ -193,9 +205,14 @@ public class AtlasifyLogger {
         row[5] = data.type;
         row[6] = data.browser;
         row[7] = data.language;
-        row[8] = ip;
+        row[8] = data.ip;
         row[9] = (new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss.SSS")).format(new Date());
-        System.out.println((new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss.SSS")).format(new Date()));
+        row[10] = data.ipcountry;
+        row[11] = data.ipcity;
+        row[12] = data.iplat;
+        row[13] = data.iplon;
+        row[14] = data.iporg;
+        //System.out.println((new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss.SSS")).format(new Date()));
         logQueryWriter.writeNext(row);
         logQueryWriter.flush();
     }
