@@ -608,7 +608,14 @@ public class AtlasifyResource {
             // Get values out of the cache
             for (int i = 0; i < featureNameList.size(); i++) {
                 String pair = keyword + pairSeperator + featureNameList.get(i);
-                if (srCache.containsKey(pair)) {
+                if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
+                    srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
+                    featureNameList.remove(i);
+                    featureIdList.remove(i);
+                    i--;
+                    continue;
+                }
+                else if (srCache.containsKey(pair)) {
                     srMap.put(featureNameList.get(i), srCache.get(pair));
                     featureNameList.remove(i);
                     featureIdList.remove(i);
