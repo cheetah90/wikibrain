@@ -895,18 +895,30 @@ public class AtlasifyResource {
 
     }
 
+    @GET
+    @Path("logIP/cookieID={cookieID}")
+    @Produces("text/plain")
+    public Response processLogIP(@PathParam("cookieID") String cookieID, @Context HttpServletRequest request){
+        try {
+            atlasifyLogger.LoginLogger(new AtlasifyLogger.logLogin(cookieID, "", request.getLocale().getLanguage()), request.getRemoteAddr());
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return Response.ok("received").build();
+    }
+
     @POST
     @Path("logQuery")
     @Consumes("application/json")
     @Produces("text/plain")
-    public Response processLogQuery(AtlasifyLogger.logQuery query, @Context HttpServletRequest request) throws Exception{
+    public Response processLogQuery(AtlasifyLogger.logQuery query) throws Exception{
 
         try{
-            atlasifyLogger.QueryLogger(query, request.getRemoteAddr());
+            atlasifyLogger.QueryLogger(query, "");
         }
         catch (Exception e){
             e.printStackTrace();
-            System.out.println("\n\n" + "GOT REQUEST:" + request.toString() + "\n\n");
         }
         System.out.println("QUERY LOGGED " + query.toString());
         return Response.ok("received").build();
