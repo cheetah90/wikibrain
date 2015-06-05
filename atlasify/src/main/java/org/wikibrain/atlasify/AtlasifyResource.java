@@ -1,6 +1,8 @@
 package org.wikibrain.atlasify;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.Response;
 
@@ -895,9 +897,9 @@ public class AtlasifyResource {
     @Path("logQuery")
     @Consumes("application/json")
     @Produces("text/plain")
-    public Response processLogQuery(AtlasifyLogger.logQuery query) throws Exception{
+    public Response processLogQuery(AtlasifyLogger.logQuery query, @Context HttpServletRequest request) throws Exception{
 
-        atlasifyLogger.QueryLogger(query, "");
+        atlasifyLogger.QueryLogger(query, request.getRemoteAddr());
         System.out.println("QUERY LOGGED " + query.toString());
         return Response.ok("received").build();
     }
