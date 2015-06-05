@@ -899,6 +899,10 @@ public class AtlasifyResource {
     @Path("logIP/cookieID={cookieID}")
     @Produces("text/plain")
     public Response processLogIP(@PathParam("cookieID") String cookieID, @Context HttpServletRequest request){
+        if(request == null){
+            System.out.println("REQUEST IS NULL");
+        }
+        System.out.println("\n\nGOT REQUEST: " + request.toString() + "\n\n");
         try {
             atlasifyLogger.LoginLogger(new AtlasifyLogger.logLogin(cookieID, "", request.getLocale().getLanguage()), request.getRemoteAddr());
         }
