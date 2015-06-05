@@ -78,7 +78,7 @@ import java.util.concurrent.RunnableFuture;
 // The Java class will be hosted at the URI path "/helloworld"
 @Path("/wikibrain")
 public class AtlasifyResource {
-    @Context HttpServletRequest request;
+    private @Context HttpServletRequest request;
     /**
      * Class used to transfer a atlasify query
      */
@@ -899,12 +899,12 @@ public class AtlasifyResource {
     @Path("logIP/cookieID={cookieID}")
     @Produces("text/plain")
     public Response processLogIP(@PathParam("cookieID") String cookieID){
-        if(request == null){
+        if(this.request == null){
             System.out.println("REQUEST IS NULL");
         }
-        System.out.println("\n\nGOT REQUEST: " + request.toString() + "\n\n");
+        System.out.println("\n\nGOT REQUEST: " + this.request.toString() + "\n\n");
         try {
-            atlasifyLogger.LoginLogger(new AtlasifyLogger.logLogin(cookieID, "", request.getLocale().getLanguage()), request.getRemoteAddr());
+            atlasifyLogger.LoginLogger(new AtlasifyLogger.logLogin(cookieID, "", this.request.getLocale().getLanguage()), this.request.getRemoteAddr());
         }
         catch (Exception e){
             e.printStackTrace();
