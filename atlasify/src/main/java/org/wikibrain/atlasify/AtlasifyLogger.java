@@ -179,7 +179,7 @@ public class AtlasifyLogger {
         row[1] = data.language;
         row[2] = data.browser;
         row[3] = ip;
-        row[4] = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+        row[4] = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")).format(new Date());
         logLoginWriter.writeNext(row);
         logLoginWriter.flush();
     }
@@ -194,7 +194,7 @@ public class AtlasifyLogger {
         row[6] = data.browser;
         row[7] = data.language;
         row[8] = ip;
-        row[9] = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+        row[9] = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")).format(new Date());
         logQueryWriter.writeNext(row);
         logQueryWriter.flush();
     }
@@ -206,7 +206,7 @@ public class AtlasifyLogger {
         row[2] = data.srValue;
         row[3] = data.explanation;
         row[4] = ip;
-        row[5] = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+        row[5] = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")).format(new Date());
         logCrowdSourceDataWriter.writeNext(row);
         logCrowdSourceDataWriter.flush();
     }
@@ -223,7 +223,7 @@ public class AtlasifyLogger {
         }
 
         row[4 + data.explanationData.size()] = ip;
-        row[5 + data.explanationData.size()] = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+        row[5 + data.explanationData.size()] = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")).format(new Date());
         logExplanationsDataWriter.writeNext(row);
         logExplanationsDataWriter.flush();
     }
