@@ -1,9 +1,12 @@
 package org.wikibrain.atlasify;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Feature;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -78,8 +81,7 @@ import java.util.concurrent.RunnableFuture;
 // The Java class will be hosted at the URI path "/helloworld"
 @Path("/wikibrain")
 public class AtlasifyResource {
-    @Context
-    private java.lang.ThreadLocal<org.glassfish.grizzly.http.server.Request> grizzlyRequest;
+
     /**
      * Class used to transfer a atlasify query
      */
@@ -896,27 +898,7 @@ public class AtlasifyResource {
 
     }
 
-    @GET
-    @Path("logIP/cookieID={cookieID}")
-    @Produces("text/plain")
-    public Response processLogIP(@PathParam("cookieID") String cookieID){
 
-        if(grizzlyRequest == null){
-            System.out.println("REQUEST IS NULL");
-        }
-        if(grizzlyRequest.get() == null){
-            System.out.println("REQUEST.GET IS NULL");
-        }
-
-        System.out.println("\n\nGOT REQUEST: " + grizzlyRequest.get().getRemoteAddr() + "\n\n");
-        try {
-            atlasifyLogger.LoginLogger(new AtlasifyLogger.logLogin(cookieID, "", grizzlyRequest.get().getLocale().getLanguage()), grizzlyRequest.get().getRemoteAddr());
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        return Response.ok("received").build();
-    }
 
     @POST
     @Path("logQuery")
