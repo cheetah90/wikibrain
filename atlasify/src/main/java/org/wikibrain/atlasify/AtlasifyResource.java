@@ -901,7 +901,13 @@ public class AtlasifyResource {
     @Produces("text/plain")
     public Response processLogQuery(AtlasifyLogger.logQuery query, @Context HttpServletRequest request) throws Exception{
 
-        atlasifyLogger.QueryLogger(query, request.getRemoteAddr());
+        try{
+            atlasifyLogger.QueryLogger(query, request.getRemoteAddr());
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            System.out.println("\n\n" + "GOT REQUEST:" + request.toString() + "\n\n");
+        }
         System.out.println("QUERY LOGGED " + query.toString());
         return Response.ok("received").build();
     }
