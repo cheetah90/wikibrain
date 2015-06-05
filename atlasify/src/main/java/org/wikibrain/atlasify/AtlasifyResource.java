@@ -143,7 +143,7 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     public static SpatialDataDao sdDao = null;
-    private static boolean loadWikibrainSR = true;
+    private static boolean loadWikibrainSR = false;
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static LuceneSearcher luceneSearcher;
     private static Map<Integer, Geometry> geometryMap = null;
