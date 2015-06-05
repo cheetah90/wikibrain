@@ -78,7 +78,8 @@ import java.util.concurrent.RunnableFuture;
 // The Java class will be hosted at the URI path "/helloworld"
 @Path("/wikibrain")
 public class AtlasifyResource {
-    private @Context HttpServletRequest request;
+    @Context
+    private java.lang.ThreadLocal<org.glassfish.grizzly.http.server.Request> grizzlyRequest;
     /**
      * Class used to transfer a atlasify query
      */
@@ -899,12 +900,17 @@ public class AtlasifyResource {
     @Path("logIP/cookieID={cookieID}")
     @Produces("text/plain")
     public Response processLogIP(@PathParam("cookieID") String cookieID){
-        if(this.request == null){
+
+        if(grizzlyRequest == null){
             System.out.println("REQUEST IS NULL");
         }
-        System.out.println("\n\nGOT REQUEST: " + this.request.toString() + "\n\n");
+        if(grizzlyRequest.get() == null){
+            System.out.println("REQUEST.GET IS NULL");
+        }
+
+        System.out.println("\n\nGOT REQUEST: " + grizzlyRequest.get().getRemoteAddr() + "\n\n");
         try {
-            atlasifyLogger.LoginLogger(new AtlasifyLogger.logLogin(cookieID, "", this.request.getLocale().getLanguage()), this.request.getRemoteAddr());
+            atlasifyLogger.LoginLogger(new AtlasifyLogger.logLogin(cookieID, "", grizzlyRequest.get().getLocale().getLanguage()), grizzlyRequest.get().getRemoteAddr());
         }
         catch (Exception e){
             e.printStackTrace();

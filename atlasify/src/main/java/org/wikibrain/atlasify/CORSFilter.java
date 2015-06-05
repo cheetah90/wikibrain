@@ -10,13 +10,9 @@ import javax.ws.rs.core.Response;
 
 public class CORSFilter implements ContainerResponseFilter {
 
-    @Context
-    private HttpServletRequest request;
 
     @Override
-    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
-        throws IOException {
-        System.out.println("\n IP:" + request.getRemoteAddr());
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         responseContext.getHeaders().add("Access-Control-Allow-Origin", "*");
         responseContext.getHeaders().add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 
