@@ -143,7 +143,7 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     public static SpatialDataDao sdDao = null;
-    private static boolean loadWikibrainSR = true;
+    private static boolean loadWikibrainSR = false;
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static LuceneSearcher luceneSearcher;
     private static Map<Integer, Geometry> geometryMap = null;
@@ -705,12 +705,14 @@ public class AtlasifyResource {
                     }
                     //if not all sr values are loaded from the wikibrain SR cache, we should calculate all the sr values again with wikibrain SR metric and store them in the cache
                     else{
-                        try{
-                            Runnable srBackgroundLoader = new SRBackgroundLoading(query, featureNameList.toArray(new String[featureNameList.size()]), sr, srCacheDao);
-                            new Thread(srBackgroundLoader).start();
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
+                        if(loadWikibrainSR){
+                            try{
+                                Runnable srBackgroundLoader = new SRBackgroundLoading(query, featureNameList.toArray(new String[featureNameList.size()]), sr, srCacheDao);
+                                new Thread(srBackgroundLoader).start();
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
                         }
                     }
                     /*
