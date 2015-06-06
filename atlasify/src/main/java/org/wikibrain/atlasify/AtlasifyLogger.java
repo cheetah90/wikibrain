@@ -55,7 +55,7 @@ public class AtlasifyLogger {
         private String centroid;
         private String browser;
         private String language;
-        private String ipAddr;
+        private String ipAddress;
         private String ipLat;
         private String ipLon;
         private String ipOrg;
@@ -67,7 +67,7 @@ public class AtlasifyLogger {
 
         }
 
-        public logQuery(String userId, String type, String keyword, String refSys, String centroid, String browser, String language, String ipAddr, String ipLat, String ipLon, String ipOrg, String ipCountry, String ipCity){
+        public logQuery(String userId, String type, String keyword, String refSys, String centroid, String browser, String language, String ipAddress, String ipLat, String ipLon, String ipOrg, String ipCountry, String ipCity){
             this.userId = userId;
             this.type = type;
             this.keyword = keyword;
@@ -75,7 +75,7 @@ public class AtlasifyLogger {
             this.centroid = centroid;
             this.browser = browser;
             this.language = language;
-            this.ipAddr = ipAddr;
+            this.ipAddress = ipAddress;
             this.ipLat = ipLat;
             this.ipLon = ipLon;
             this.ipOrg = ipOrg;
@@ -111,17 +111,17 @@ public class AtlasifyLogger {
             return language;
         }
 
-        public String getIp() {return ipAddr;}
+        public String getIpAddress() {return ipAddress;}
 
-        public String getIplat() {return ipLat;}
+        public String getIpLat() {return ipLat;}
 
-        public String getIplon() {return ipLon;}
+        public String getIpLon() {return ipLon;}
 
-        public String getIporg() {return ipOrg;}
+        public String getIpOrg() {return ipOrg;}
 
-        public String getIpcountry() {return ipCountry;}
+        public String getIpCountry() {return ipCountry;}
 
-        public String getIpcity() {return ipCity;}
+        public String getIpCity() {return ipCity;}
 
     }
 
@@ -217,13 +217,13 @@ public class AtlasifyLogger {
         row[5] = data.getType();
         row[6] = data.getBrowser();
         row[7] = data.getLanguage();
-        row[8] = data.getIp();
+        row[8] = data.getIpAddress();
         row[9] = (new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss.SSS")).format(new Date());
-        row[10] = data.getIpcountry();
-        row[11] = data.getIpcity();
-        row[12] = data.getIplat();
-        row[13] = data.getIplon();
-        row[14] = data.getIporg();
+        row[10] = data.getIpCountry();
+        row[11] = data.getIpCity();
+        row[12] = data.getIpLat();
+        row[13] = data.getIpLon();
+        row[14] = data.getIpOrg();
         //System.out.println((new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss.SSS")).format(new Date()));
         logQueryWriter.writeNext(row);
         logQueryWriter.flush();
