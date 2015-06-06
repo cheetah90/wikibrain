@@ -905,14 +905,13 @@ public class AtlasifyResource {
     @Consumes("application/json")
     @Produces("text/plain")
     public Response processLogQuery(AtlasifyLogger.logQuery query) throws Exception{
-
+        System.out.println("QUERY LOGGED " + query.toString());
         try{
             atlasifyLogger.QueryLogger(query, "");
         }
         catch (Exception e){
             //e.printStackTrace();
         }
-        System.out.println("QUERY LOGGED " + query.toString());
         return Response.ok("received").build();
     }
 
