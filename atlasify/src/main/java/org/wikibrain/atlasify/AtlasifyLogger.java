@@ -55,12 +55,12 @@ public class AtlasifyLogger {
         private String centroid;
         private String browser;
         private String language;
-        private String ip;
-        private String iplat;
-        private String iplon;
-        private String iporg;
-        private String ipcountry;
-        private String ipcity;
+        private String ipAddr;
+        private String ipLat;
+        private String ipLon;
+        private String ipOrg;
+        private String ipCountry;
+        private String ipCity;
 
 
         public logQuery(){
@@ -75,12 +75,12 @@ public class AtlasifyLogger {
             this.centroid = centroid;
             this.browser = browser;
             this.language = language;
-            this.ip = ip;
-            this.iplat = iplat;
-            this.iplon = iplon;
-            this.iporg = iporg;
-            this.ipcountry = ipcountry;
-            this.ipcity = ipcity;
+            this.ipAddr = ip;
+            this.ipLat = iplat;
+            this.ipLon = iplon;
+            this.ipOrg = iporg;
+            this.ipCountry = ipcountry;
+            this.ipCity = ipcity;
         }
 
         public String getUserId(){
@@ -110,6 +110,18 @@ public class AtlasifyLogger {
         public String getLanguage(){
             return language;
         }
+
+        public String getIp() {return ipAddr;}
+
+        public String getIplat() {return ipLat;}
+
+        public String getIplon() {return ipLon;}
+
+        public String getIporg() {return ipOrg;}
+
+        public String getIpcountry() {return ipCountry;}
+
+        public String getIpcity() {return ipCity;}
 
     }
 
@@ -198,20 +210,20 @@ public class AtlasifyLogger {
 
     public void QueryLogger(logQuery data, String ip) throws IOException{
         String[] row = new String[15];
-        row[0] = data.userId;
-        row[1] = data.centroid;
-        row[2] = data.refSys;
-        row[4] = data.keyword;
-        row[5] = data.type;
-        row[6] = data.browser;
-        row[7] = data.language;
-        row[8] = data.ip;
+        row[0] = data.getUserId();
+        row[1] = data.getCentroid();
+        row[2] = data.getRefSys();
+        row[4] = data.getKeyword();
+        row[5] = data.getType();
+        row[6] = data.getBrowser();
+        row[7] = data.getLanguage();
+        row[8] = data.getIp();
         row[9] = (new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss.SSS")).format(new Date());
-        row[10] = data.ipcountry;
-        row[11] = data.ipcity;
-        row[12] = data.iplat;
-        row[13] = data.iplon;
-        row[14] = data.iporg;
+        row[10] = data.getIpcountry();
+        row[11] = data.getIpcity();
+        row[12] = data.getIplat();
+        row[13] = data.getIplon();
+        row[14] = data.getIporg();
         //System.out.println((new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss.SSS")).format(new Date()));
         logQueryWriter.writeNext(row);
         logQueryWriter.flush();
@@ -219,10 +231,10 @@ public class AtlasifyLogger {
 
     public void CrowdSourceDataLogger(crowdSourceData data, String ip) throws IOException {
         String[] row = new String[6];
-        row[0] = data.keyword;
-        row[1] = data.feature;
-        row[2] = data.srValue;
-        row[3] = data.explanation;
+        row[0] = data.getKeyword();
+        row[1] = data.getFeature();
+        row[2] = data.getSrValue();
+        row[3] = data.getExplanation();
         row[4] = ip;
         row[5] = (new SimpleDateFormat("yyyy-MM-dd_HHmm:ss.SSS")).format(new Date());
         logCrowdSourceDataWriter.writeNext(row);
