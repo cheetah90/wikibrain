@@ -67,7 +67,7 @@ public class AtlasifyLogger {
 
         }
 
-        public logQuery(String userId, String type, String keyword, String refSys, String centroid, String browser, String language, String ip, String iplat, String iplon, String iporg, String ipcountry, String ipcity){
+        public logQuery(String userId, String type, String keyword, String refSys, String centroid, String browser, String language, String ipAddr, String ipLat, String ipLon, String ipOrg, String ipCountry, String ipCity){
             this.userId = userId;
             this.type = type;
             this.keyword = keyword;
@@ -75,12 +75,12 @@ public class AtlasifyLogger {
             this.centroid = centroid;
             this.browser = browser;
             this.language = language;
-            this.ipAddr = ip;
-            this.ipLat = iplat;
-            this.ipLon = iplon;
-            this.ipOrg = iporg;
-            this.ipCountry = ipcountry;
-            this.ipCity = ipcity;
+            this.ipAddr = ipAddr;
+            this.ipLat = ipLat;
+            this.ipLon = ipLon;
+            this.ipOrg = ipOrg;
+            this.ipCountry = ipCountry;
+            this.ipCity = ipCity;
         }
 
         public String getUserId(){
