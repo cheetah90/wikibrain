@@ -1965,12 +1965,18 @@ public class AtlasifyResource {
 
     public Response getFeatureArticles() {
         if (articleManager == null) {
-            return Response.ok().build();
+            return Response.ok("error getting article manager").header("Access-Control-Allow-Origin", "*").build();
             //wikibrainSRinit();
         }
 
         System.out.println("Received feature articles request");
-        return Response.ok(articleManager.getArticleJSON().toString()).header("Access-Control-Allow-Origin", "*").build();
+        try{
+            return Response.ok(articleManager.getArticleJSON().toString()).header("Access-Control-Allow-Origin", "*").build();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return Response.ok("error getting featured articles").header("Access-Control-Allow-Origin", "*").build();
+        }
     }
 
     @POST
