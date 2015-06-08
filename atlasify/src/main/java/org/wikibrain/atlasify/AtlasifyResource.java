@@ -1612,7 +1612,7 @@ public class AtlasifyResource {
         AtlasifyLogger.explanationsData data = new AtlasifyLogger.explanationsData(keyword, feature, Integer.toString(id), interactionData);
         atlasifyLogger.ExplanationsDataLogger(data, "");
 
-        return Response.ok("").header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok("").build();
     }
 
     @POST
