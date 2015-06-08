@@ -227,7 +227,7 @@ public class AtlasifyResource {
 
 
             if(loadWikibrainSR){
-                sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
+                sr = conf.get(SRMetric.class, "milnewitten", "language", lang.getLangCode());
                 System.out.println("FINISHED LOADING SR");
             }
             if(loadWikibrainSR == false && useNorthWesternAPI == false){
