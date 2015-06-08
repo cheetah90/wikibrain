@@ -391,7 +391,7 @@ public class FeatureArticleManager {
                 // This should allow for the webpage to load
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
-
+                e.printStackTrace();
             }
 
             try {
@@ -429,10 +429,16 @@ public class FeatureArticleManager {
                 g.drawImage(newImage, 0, 0, imageWidth/2, imageHeight/2, null);
                 g.dispose();
                 ImageIO.write(lowResImage, "png", new File(filename + ".png"));
-            } finally {
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            finally
+            {
                 driver.close();
                 p.destroy();
             }
+
         }
         catch (Exception e){
             e.printStackTrace();
