@@ -545,7 +545,7 @@ public class AtlasifyResource {
 
 
 
-    static private boolean useNorthWesternAPI  = true;
+    static private boolean useNorthWesternAPI  = false;
     static private int     NorthwesternTimeout = 100000; // in milliseconds
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
