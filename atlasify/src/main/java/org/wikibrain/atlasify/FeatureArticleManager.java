@@ -473,52 +473,56 @@ public class FeatureArticleManager {
         List<ArticleSection> sections = getSheadsheetData(worksheet);
         System.out.println("Received spreadsheet data from Google sheets");
         System.out.println("Generating images");
-
-        for (ArticleSection section : sections) {
-            System.out.println("\t" + section);
-            for (Article article : section.getArticles()) {
-                String filename = featureArticleFolder + article.toString();
-                File image = new File(filename  + ".png");
-                if (image.exists() && image.isFile()) {
-                    System.out.println("\t\tFound image for article " + article.toString());
-                } else {
-                    // No file, we should generate it
-                    try {
-                        createImageForArticle(article, filename);
-                        image = new File(filename  + ".png");
-                        assert image.exists() : image.isFile();
-                        System.out.println("\t\tSuccessfully generated image for article " + article.toString());
-                    } catch (Exception e) {
-                        System.out.println("\t\tUnable to generate image for article " + article.toString());
-                        e.printStackTrace();
-                        continue;
+        try{
+            for (ArticleSection section : sections) {
+                System.out.println("\t" + section);
+                for (Article article : section.getArticles()) {
+                    String filename = featureArticleFolder + article.toString();
+                    File image = new File(filename  + ".png");
+                    if (image.exists() && image.isFile()) {
+                        System.out.println("\t\tFound image for article " + article.toString());
+                    } else {
+                        // No file, we should generate it
+                        try {
+                            createImageForArticle(article, filename);
+                            image = new File(filename  + ".png");
+                            assert image.exists() : image.isFile();
+                            System.out.println("\t\tSuccessfully generated image for article " + article.toString());
+                        } catch (Exception e) {
+                            System.out.println("\t\tUnable to generate image for article " + article.toString());
+                            e.printStackTrace();
+                            continue;
+                        }
                     }
                 }
             }
-        }
 
-        JSONObject json = new JSONObject();
-        JSONArray jsonSections = new JSONArray();
-        for (ArticleSection section : sections) {
-            JSONObject jsonSection = new JSONObject();
-            jsonSection.put("title", section.getTitle());
-            JSONArray jsonArticles = new JSONArray();
+            JSONObject json = new JSONObject();
+            JSONArray jsonSections = new JSONArray();
+            for (ArticleSection section : sections) {
+                JSONObject jsonSection = new JSONObject();
+                jsonSection.put("title", section.getTitle());
+                JSONArray jsonArticles = new JSONArray();
 
-            for (Article article : section.getArticles()) {
-                JSONObject jsonArticle = new JSONObject();
-                jsonArticle.put("title", article.getTitle());
-                jsonArticle.put("refSys", article.getRefSys().toInt());
-                jsonArticles.put(jsonArticle);
+                for (Article article : section.getArticles()) {
+                    JSONObject jsonArticle = new JSONObject();
+                    jsonArticle.put("title", article.getTitle());
+                    jsonArticle.put("refSys", article.getRefSys().toInt());
+                    jsonArticles.put(jsonArticle);
+                }
+
+                jsonSection.put("articles", jsonArticles);
+                jsonSections.put(jsonSection);
             }
 
-            jsonSection.put("articles", jsonArticles);
-            jsonSections.put(jsonSection);
+            json.put("results", jsonSections);
+
+            articleData = sections;
+            articleJSON = json;
         }
-
-        json.put("results", jsonSections);
-
-        articleData = sections;
-        articleJSON = json;
+        catch (Exception e){
+            e.printStackTrace();
+        }
         System.out.println("FINISHED loading feature article data");
     }
 
