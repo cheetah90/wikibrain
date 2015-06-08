@@ -358,79 +358,84 @@ public class FeatureArticleManager {
     // Filename should not include extension in the filename, we will automatically
     // make it a .png (We are making images that are HDPI and will name them appropriately)
     private void createImageForArticle(Article article, String filename) throws IOException {
-        int      DISPLAY_NUMBER  = 99;
-        String   XVFB            = "Xvfb";
-        String   XVFB_COMMAND    = XVFB + " :" + DISPLAY_NUMBER;
-        String   URL             = AtlasifyLauncher.webURL + "?query=" + URLEncoder.encode(article.getTitle()).replace("+", "%20") + "&category=" + article.getRefSys().toInt();
+        try{
+            int      DISPLAY_NUMBER  = 99;
+            String   XVFB            = "Xvfb";
+            String   XVFB_COMMAND    = XVFB + " :" + DISPLAY_NUMBER;
+            String   URL             = AtlasifyLauncher.webURL + "?query=" + URLEncoder.encode(article.getTitle()).replace("+", "%20") + "&category=" + article.getRefSys().toInt();
 
-        Process p = Runtime.getRuntime().exec(XVFB_COMMAND);
-        FirefoxBinary firefox = new FirefoxBinary();
-        firefox.setEnvironmentProperty("DISPLAY", ":" + DISPLAY_NUMBER);
-        FirefoxDriver driver = new FirefoxDriver(firefox, null);
-        // Would be nice to increase size for hdpi devices
-        int imageWidth  = 2 * 125;
-        int imageHeight = 2 * 85;
-        int cropTop = 50;
-        int cropBottom = 55;
-        int cropLeft = 45;
-        int cropRight = cropLeft;
+            Process p = Runtime.getRuntime().exec(XVFB_COMMAND);
+            FirefoxBinary firefox = new FirefoxBinary();
+            firefox.setEnvironmentProperty("DISPLAY", ":" + DISPLAY_NUMBER);
+            FirefoxDriver driver = new FirefoxDriver(firefox, null);
+            // Would be nice to increase size for hdpi devices
+            int imageWidth  = 2 * 125;
+            int imageHeight = 2 * 85;
+            int cropTop = 50;
+            int cropBottom = 55;
+            int cropLeft = 45;
+            int cropRight = cropLeft;
 
-        // Set window size
-        int windowWidth = 4 * imageWidth + cropLeft + cropRight;
-        int windowHeight = 4 * imageHeight + cropTop + cropBottom;
-        driver.manage().window().setSize(new Dimension(windowWidth, windowHeight));
-        driver.get(URL);
+            // Set window size
+            int windowWidth = 4 * imageWidth + cropLeft + cropRight;
+            int windowHeight = 4 * imageHeight + cropTop + cropBottom;
+            driver.manage().window().setSize(new Dimension(windowWidth, windowHeight));
+            driver.get(URL);
 
-        // Clean up the page to make sure nothing will
-        driver.executeScript("if (showingAutocompleteOverlay) hideAutocompleteOverlay();" +
-                "if (!legendHidden) toggleLegend();" +
-                "if (currentlyShowingExplanationsInfoPopover) removeExplanationsInfoPopover();" +
-                "if (currentlyShowingRefSysPopover) hideRefSysInfoPopover();");
-        try {
-            // This should allow for the webpage to load
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
+            // Clean up the page to make sure nothing will
+            driver.executeScript("if (showingAutocompleteOverlay) hideAutocompleteOverlay();" +
+                    "if (!legendHidden) toggleLegend();" +
+                    "if (currentlyShowingExplanationsInfoPopover) removeExplanationsInfoPopover();" +
+                    "if (currentlyShowingRefSysPopover) hideRefSysInfoPopover();");
+            try {
+                // This should allow for the webpage to load
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
 
-        }
-
-        try {
-            File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            BufferedImage image = ImageIO.read(scrFile);
-
-            // Crop out UI
-            image = image.getSubimage(cropLeft, cropTop, image.getWidth() - cropLeft - cropRight, image.getHeight() - cropTop - cropBottom);
-
-            // Crop to correct aspect ratio
-            if ((double)imageWidth / (double)imageHeight < (double)image.getWidth() / (double)image.getHeight()) {
-                // The image is wider than it needs to be
-                int scaledImageWidth = image.getHeight() * imageWidth / imageHeight ;
-                int widthOffset = (image.getWidth() - scaledImageWidth) / 2;
-                image = image.getSubimage(widthOffset, 0, scaledImageWidth, image.getHeight());
-            } else {
-                // The image is taller than it needs to be
-                int scaledImageHeight = image.getWidth() * imageHeight / imageWidth;
-                int heightOffset = (image.getHeight() - scaledImageHeight) / 2;
-                image = image.getSubimage(0, heightOffset, image.getWidth(), scaledImageHeight);
             }
 
-            // Scale to correct size
-            BufferedImage newImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_USHORT_565_RGB);
-            Graphics2D g = newImage.createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g.drawImage(image, 0, 0, imageWidth, imageHeight, null);
-            g.dispose();
-            ImageIO.write(newImage, "png", new File(filename + "@2x.png"));
+            try {
+                File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+                BufferedImage image = ImageIO.read(scrFile);
 
-            // Create low resolution image
-            BufferedImage lowResImage = new BufferedImage(imageWidth/2, imageHeight/2, newImage.getType());
-            g = lowResImage.createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g.drawImage(newImage, 0, 0, imageWidth/2, imageHeight/2, null);
-            g.dispose();
-            ImageIO.write(lowResImage, "png", new File(filename + ".png"));
-        } finally {
-            driver.close();
-            p.destroy();
+                // Crop out UI
+                image = image.getSubimage(cropLeft, cropTop, image.getWidth() - cropLeft - cropRight, image.getHeight() - cropTop - cropBottom);
+
+                // Crop to correct aspect ratio
+                if ((double)imageWidth / (double)imageHeight < (double)image.getWidth() / (double)image.getHeight()) {
+                    // The image is wider than it needs to be
+                    int scaledImageWidth = image.getHeight() * imageWidth / imageHeight ;
+                    int widthOffset = (image.getWidth() - scaledImageWidth) / 2;
+                    image = image.getSubimage(widthOffset, 0, scaledImageWidth, image.getHeight());
+                } else {
+                    // The image is taller than it needs to be
+                    int scaledImageHeight = image.getWidth() * imageHeight / imageWidth;
+                    int heightOffset = (image.getHeight() - scaledImageHeight) / 2;
+                    image = image.getSubimage(0, heightOffset, image.getWidth(), scaledImageHeight);
+                }
+
+                // Scale to correct size
+                BufferedImage newImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_USHORT_565_RGB);
+                Graphics2D g = newImage.createGraphics();
+                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g.drawImage(image, 0, 0, imageWidth, imageHeight, null);
+                g.dispose();
+                ImageIO.write(newImage, "png", new File(filename + "@2x.png"));
+
+                // Create low resolution image
+                BufferedImage lowResImage = new BufferedImage(imageWidth/2, imageHeight/2, newImage.getType());
+                g = lowResImage.createGraphics();
+                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g.drawImage(newImage, 0, 0, imageWidth/2, imageHeight/2, null);
+                g.dispose();
+                ImageIO.write(lowResImage, "png", new File(filename + ".png"));
+            } finally {
+                driver.close();
+                p.destroy();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -484,6 +489,7 @@ public class FeatureArticleManager {
                     } else {
                         // No file, we should generate it
                         try {
+                            System.out.println("Generating image for article" + article.toString());
                             createImageForArticle(article, filename);
                             image = new File(filename  + ".png");
                             assert image.exists() : image.isFile();
