@@ -361,7 +361,7 @@ public class FeatureArticleManager {
         int      DISPLAY_NUMBER  = 99;
         String   XVFB            = "Xvfb";
         String   XVFB_COMMAND    = XVFB + " :" + DISPLAY_NUMBER;
-        String   URL             = AtlasifyLauncher.externalURL + "?query=" + URLEncoder.encode(article.getTitle()).replace("+", "%20") + "&category=" + article.getRefSys().toInt();
+        String   URL             = AtlasifyLauncher.webURL + "?query=" + URLEncoder.encode(article.getTitle()).replace("+", "%20") + "&category=" + article.getRefSys().toInt();
 
         Process p = Runtime.getRuntime().exec(XVFB_COMMAND);
         FirefoxBinary firefox = new FirefoxBinary();
