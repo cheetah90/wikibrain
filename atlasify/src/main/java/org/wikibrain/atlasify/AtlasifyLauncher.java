@@ -21,6 +21,7 @@ public class AtlasifyLauncher {
     private static CSVWriter serverLogWriter;
     private static String baseURL = new String(useLocalHost ? "http://localhost" : "http://0.0.0.0");
     public static String externalURL = "http://52.24.135.253:8080/";
+    public static String webURL = "http://spatialization.cs.umn.edu/";
     private static int portNo = 8080;
     private static class checkAtlasifyStatus extends TimerTask{
         @Override

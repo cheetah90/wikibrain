@@ -227,7 +227,7 @@ public class AtlasifyResource {
 
 
             if(loadWikibrainSR){
-                sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
+                sr = conf.get(SRMetric.class, "inlink", "language", lang.getLangCode());
                 System.out.println("FINISHED LOADING SR");
             }
             if(loadWikibrainSR == false && useNorthWesternAPI == false){
@@ -608,7 +608,8 @@ public class AtlasifyResource {
         String keyword = query.getKeyword();
         Map<String, Double> srMap = new HashMap<String, Double>();
         System.out.println("Receive featureId size of " + featureIdList.size() + " and featureName size of " + featureNameList.size());
-
+        int frontCacheCount = 0;
+        int wikibrainSRCacheCount = 0;
         try{
             // Get values out of the cache
             for (int i = 0; i < featureNameList.size(); i++) {
@@ -618,6 +619,7 @@ public class AtlasifyResource {
                     featureNameList.remove(i);
                     featureIdList.remove(i);
                     i--;
+                    wikibrainSRCacheCount ++;
                     continue;
                 }
                 else if (srCache.containsKey(pair)) {
@@ -625,8 +627,12 @@ public class AtlasifyResource {
                     featureNameList.remove(i);
                     featureIdList.remove(i);
                     i--;
+                    frontCacheCount ++;
                 }
             }
+            System.out.println("Got " + frontCacheCount + " SR results from the session cache");
+            System.out.println("Got " + wikibrainSRCacheCount + " SR results from the pre-computed WikiBrain SR results");
+
         }
         catch (Exception e){
             System.out.println("Failed to get values out of cache");
@@ -1612,7 +1618,7 @@ public class AtlasifyResource {
         AtlasifyLogger.explanationsData data = new AtlasifyLogger.explanationsData(keyword, feature, Integer.toString(id), interactionData);
         atlasifyLogger.ExplanationsDataLogger(data, "");
 
-        return Response.ok("").header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok("").build();
     }
 
     @POST
@@ -1965,12 +1971,21 @@ public class AtlasifyResource {
 
     public Response getFeatureArticles() {
         if (articleManager == null) {
-            return Response.ok().build();
+            return Response.ok("error getting article manager").build();
             //wikibrainSRinit();
         }
 
         System.out.println("Received feature articles request");
-        return Response.ok(articleManager.getArticleJSON().toString()).build();
+        try{
+            if(articleManager.getArticleJSON() == null)
+                return Response.ok("null feature article json").build();
+            else
+                return Response.ok(articleManager.getArticleJSON().toString()).build();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return Response.ok("error getting featured articles").build();
+        }
     }
 
     @POST
