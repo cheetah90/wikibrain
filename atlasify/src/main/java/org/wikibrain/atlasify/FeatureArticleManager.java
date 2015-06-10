@@ -381,6 +381,7 @@ public class FeatureArticleManager {
             int windowHeight = 4 * imageHeight + cropTop + cropBottom;
             driver.manage().window().setSize(new Dimension(windowWidth, windowHeight));
             driver.get(URL);
+            System.out.println("Trying to get from URL:" + URL);
 
             // Clean up the page to make sure nothing will
             driver.executeScript("if (showingAutocompleteOverlay) hideAutocompleteOverlay();" +
