@@ -545,7 +545,7 @@ public class AtlasifyResource {
 
 
 
-    static private boolean useNorthWesternAPI  = false;
+    static private boolean useNorthWesternAPI  = true;
     static private int     NorthwesternTimeout = 100000; // in milliseconds
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
@@ -608,7 +608,8 @@ public class AtlasifyResource {
         String keyword = query.getKeyword();
         Map<String, Double> srMap = new HashMap<String, Double>();
         System.out.println("Receive featureId size of " + featureIdList.size() + " and featureName size of " + featureNameList.size());
-
+        int frontCacheCount = 0;
+        int wikibrainSRCacheCount = 0;
         try{
             // Get values out of the cache
             for (int i = 0; i < featureNameList.size(); i++) {
@@ -618,6 +619,7 @@ public class AtlasifyResource {
                     featureNameList.remove(i);
                     featureIdList.remove(i);
                     i--;
+                    wikibrainSRCacheCount ++;
                     continue;
                 }
                 else if (srCache.containsKey(pair)) {
@@ -625,8 +627,12 @@ public class AtlasifyResource {
                     featureNameList.remove(i);
                     featureIdList.remove(i);
                     i--;
+                    frontCacheCount ++;
                 }
             }
+            System.out.println("Got " + frontCacheCount + " SR results from the session cache");
+            System.out.println("Got " + wikibrainSRCacheCount + " SR results from the pre-computed WikiBrain SR results");
+
         }
         catch (Exception e){
             System.out.println("Failed to get values out of cache");
