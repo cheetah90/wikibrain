@@ -227,7 +227,7 @@ public class AtlasifyResource {
 
 
             if(loadWikibrainSR){
-                sr = conf.get(SRMetric.class, "inlink", "language", lang.getLangCode());
+                sr = conf.get(SRMetric.class, "milnewitten", "language", lang.getLangCode());
                 System.out.println("FINISHED LOADING SR");
             }
             if(loadWikibrainSR == false && useNorthWesternAPI == false){
@@ -853,7 +853,7 @@ public class AtlasifyResource {
                     value = srCacheDao.getSR(query.getKeyword(), featureNameList[i]);
                 }
                 else{
-                    value = sr.similarity(query.getKeyword(), featureNameList[i], false).getScore();
+                    value = sr.similarity(query.getKeyword(), featureNameList[i], true).getScore();
                     srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
                 }
                 System.out.println("SR Between " + query.getKeyword() + " and " + featureNameList[i].toString() + " is " + value);
