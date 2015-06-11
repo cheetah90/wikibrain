@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class SimpleToblersLawEvaluator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleToblersLawEvaluator.class);
-    private static int NUM_SAMPLES = 1000000;
+    private static int NUM_SAMPLES = 100000;
 
     private Random random = new Random();
 
@@ -54,7 +54,8 @@ public class SimpleToblersLawEvaluator {
 
     public SimpleToblersLawEvaluator(Env env) throws ConfigurationException {
         this.env = env;
-        this.langs = new ArrayList<Language>(env.getLanguages().getLanguages());
+        this.langs = new ArrayList<Language>();
+        langs.add(Language.EN);
 
         // Get data access objects
         Configurator c = env.getConfigurator();
@@ -65,7 +66,7 @@ public class SimpleToblersLawEvaluator {
         // build SR metrics
         this.metrics = new HashMap<Language, SRMetric>();
         for(Language lang : langs){
-            SRMetric m = c.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
+            SRMetric m = c.get(SRMetric.class, "milnewitten", "language", lang.getLangCode());
             metrics.put(lang, m);
         }
     }

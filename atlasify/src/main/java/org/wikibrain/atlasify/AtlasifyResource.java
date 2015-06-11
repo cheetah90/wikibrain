@@ -227,7 +227,7 @@ public class AtlasifyResource {
 
 
             if(loadWikibrainSR){
-                sr = conf.get(SRMetric.class, "inlink", "language", lang.getLangCode());
+                sr = conf.get(SRMetric.class, "milnewitten", "language", lang.getLangCode());
                 System.out.println("FINISHED LOADING SR");
             }
             if(loadWikibrainSR == false && useNorthWesternAPI == false){
@@ -853,7 +853,7 @@ public class AtlasifyResource {
                     value = srCacheDao.getSR(query.getKeyword(), featureNameList[i]);
                 }
                 else{
-                    value = sr.similarity(query.getKeyword(), featureNameList[i], false).getScore();
+                    value = sr.similarity(query.getKeyword(), featureNameList[i], true).getScore();
                     srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
                 }
                 System.out.println("SR Between " + query.getKeyword() + " and " + featureNameList[i].toString() + " is " + value);
@@ -1176,55 +1176,7 @@ public class AtlasifyResource {
                 e.printStackTrace();
             }
             */
-            // Get DBPedia Explanations using the disambiguator
-            System.out.println("Querying DBPedia server for explanation between " + keyword + " and " + feature);
-            try{
-                List<Explanation> explanationList;
-                String pair = keywordTitle + pairSeperator + featureTitle;
-                if (useCaches && dbpeidaExplanationsCache.containsKey(pair)) {
-                    explanationList = dbpeidaExplanationsCache.get(pair);
-                } else {
-                    explanationList = dbMetric.similarity(keywordPageId, featurePageId, true).getExplanations();
-                    // Cache them
-                    if (explanationList.size() > 0) {
-                        dbpeidaExplanationsCache.put(pair, explanationList);
-                    }
-                }
 
-                for (Explanation exp : explanationList) {
-                    try {
-                        String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
-                        if (containsExplanation(explanationSection, explanationString)) {
-                            continue;
-                        }
-
-                        JSONObject jsonExplanation = new JSONObject();
-                        jsonExplanation.put("explanation", explanationString);
-
-                        JSONObject data = new JSONObject();
-                        data.put("algorithm", "dbpedia");
-                        data.put("page-finder", "disambiguator");
-                        data.put("keyword", keyword);
-                        data.put("feature", feature);
-                        jsonExplanation.put("data", data);
-                        hasNonCommonPageExplanations = true;
-
-                        explanationSection.put(explanationSection.length(), jsonExplanation);
-                    } catch (Exception e) {
-                        System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
-                        e.printStackTrace();
-                    }
-                }
-            }
-            catch (Exception e){
-                System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
-                e.printStackTrace();
-            }
-            System.out.println("Finished querying DBPedia server for explanation between " + keyword + " and " + feature);
-
-            shuffleJSONArray(explanationSection);
-            addElementesToArray(explanations, explanationSection);
-            explanationSection = new JSONArray();
 
             // Check to see if the northwestern explanations are cached
             JSONObject northwesternExplanationResult;
@@ -1334,6 +1286,56 @@ public class AtlasifyResource {
                 e.printStackTrace();
             }
 
+            addElementesToArray(explanations, explanationSection);
+            explanationSection = new JSONArray();
+
+            // Get DBPedia Explanations using the disambiguator
+            System.out.println("Querying DBPedia server for explanation between " + keyword + " and " + feature);
+            try{
+                List<Explanation> explanationList;
+                String pair = keywordTitle + pairSeperator + featureTitle;
+                if (useCaches && dbpeidaExplanationsCache.containsKey(pair)) {
+                    explanationList = dbpeidaExplanationsCache.get(pair);
+                } else {
+                    explanationList = dbMetric.similarity(keywordPageId, featurePageId, true).getExplanations();
+                    // Cache them
+                    if (explanationList.size() > 0) {
+                        dbpeidaExplanationsCache.put(pair, explanationList);
+                    }
+                }
+
+                for (Explanation exp : explanationList) {
+                    try {
+                        String explanationString = String.format(exp.getFormat(), exp.getInformation().toArray());
+                        if (containsExplanation(explanationSection, explanationString)) {
+                            continue;
+                        }
+
+                        JSONObject jsonExplanation = new JSONObject();
+                        jsonExplanation.put("explanation", explanationString);
+
+                        JSONObject data = new JSONObject();
+                        data.put("algorithm", "dbpedia");
+                        data.put("page-finder", "disambiguator");
+                        data.put("keyword", keyword);
+                        data.put("feature", feature);
+                        jsonExplanation.put("data", data);
+                        hasNonCommonPageExplanations = true;
+
+                        explanationSection.put(explanationSection.length(), jsonExplanation);
+                    } catch (Exception e) {
+                        System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
+                        e.printStackTrace();
+                    }
+                }
+            }
+            catch (Exception e){
+                System.out.println("ERROR: failed to get DBPedia Explanations using the disambiguator for "+ keyword + " and " + feature + "\n");
+                e.printStackTrace();
+            }
+            System.out.println("Finished querying DBPedia server for explanation between " + keyword + " and " + feature);
+
+            shuffleJSONArray(explanationSection);
             addElementesToArray(explanations, explanationSection);
             explanationSection = new JSONArray();
 
