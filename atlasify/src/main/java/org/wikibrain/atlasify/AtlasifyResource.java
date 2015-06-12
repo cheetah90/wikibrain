@@ -889,34 +889,6 @@ public class AtlasifyResource {
         System.out.println("Receive featureId size of " + featureIdList.size() + " and featureName size of " + featureNameList.size());
         int frontCacheCount = 0;
         int wikibrainSRCacheCount = 0;
-        try{
-            // Get values out of the cache
-            for (int i = 0; i < featureNameList.size(); i++) {
-                String pair = keyword + pairSeperator + featureNameList.get(i);
-                if(useMapDBCache && srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
-                    srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
-                    featureNameList.remove(i);
-                    featureIdList.remove(i);
-                    i--;
-                    wikibrainSRCacheCount ++;
-                    continue;
-                }
-                else if (srCache.containsKey(pair)) {
-                    srMap.put(featureNameList.get(i), srCache.get(pair));
-                    featureNameList.remove(i);
-                    featureIdList.remove(i);
-                    i--;
-                    frontCacheCount ++;
-                }
-            }
-            System.out.println("Got " + frontCacheCount + " SR results from the session cache");
-            System.out.println("Got " + wikibrainSRCacheCount + " SR results from the pre-computed WikiBrain SR results");
-
-        }
-        catch (Exception e){
-            System.out.println("Failed to get values out of cache");
-            e.printStackTrace();
-        }
 
         boolean gotUsefulDataToCache = false;
 
@@ -931,13 +903,7 @@ public class AtlasifyResource {
 
             }
 
-            // Cache all of the retrieved results
-            if (gotUsefulDataToCache) {
-                for (int i = 0; i < featureNameList.size(); i++) {
-                    String feature = featureNameList.get(i);
-                    srCache.put(keyword + pairSeperator + feature, srMap.get(feature));
-                }
-            }
+
         }
 
         return Response.ok(new JSONObject(srMap).toString()).build();
