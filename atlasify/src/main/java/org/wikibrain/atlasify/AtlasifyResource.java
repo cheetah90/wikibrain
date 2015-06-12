@@ -933,7 +933,7 @@ public class AtlasifyResource {
                     value = srCacheDao.getSR(query.getKeyword(), featureNameList[i]);
                 }
                 else{
-                    value = sr.similarity(query.getKeyword(), featureNameList[i], true).getScore();
+                    value = sr.similarity(query.getKeyword(), featureNameList[i], false).getScore();
                     if(useMapDBCache)
                         srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
                 }
