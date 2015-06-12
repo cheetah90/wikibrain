@@ -792,13 +792,13 @@ public class AtlasifyResource {
                     // Switch to wikibrain based SR when NU API fails
                     if (loadWikibrainSR) {
                         System.out.println("Defaulting to Wikibrain SR");
-                        srMap = wikibrainSR(query, (String[]) featureNameList.toArray());
+                        srMap = wikibrainSR(query, featureIdList.toArray(new String[featureNameList.size()]), featureNameList.toArray(new String[featureIdList.size()]));
                     }
                 }
             } else {
                 System.out.println("USE WIKIBRAIN SR METRIC");
                 try{
-                    srMap = wikibrainSR(query, featureNameList.toArray(new String[featureNameList.size()]));
+                    srMap = wikibrainSR(query, featureIdList.toArray(new String[featureNameList.size()]), featureNameList.toArray(new String[featureIdList.size()]));
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -896,7 +896,7 @@ public class AtlasifyResource {
 
                 System.out.println("USE WIKIBRAIN SR METRIC");
                 try{
-                    srMap = wikibrainSR(query, featureNameList.toArray(new String[featureNameList.size()]));
+                    srMap = wikibrainSR(query, featureIdList.toArray(new String[featureNameList.size()]), featureNameList.toArray(new String[featureIdList.size()]));
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -918,7 +918,7 @@ public class AtlasifyResource {
      * @param featureNameList
      * @return
      */
-    private Map<String, Double> wikibrainSR(AtlasifyQuery query, String[] featureNameList) {
+    private Map<String, Double> wikibrainSR(AtlasifyQuery query, String[] featureNameList, String[] featureIdList) {
         System.out.println("Now in WikiBrain SR");
         Map<String, Double> srMap = new HashMap<String, Double>();
         System.out.println("Using WikiBrain SR method to calculate SR between keyword " + query.getKeyword() + " and " + featureNameList.length + " features");
