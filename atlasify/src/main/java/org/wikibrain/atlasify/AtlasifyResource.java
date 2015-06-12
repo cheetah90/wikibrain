@@ -612,6 +612,7 @@ public class AtlasifyResource {
             // Get values out of the cache
             for (int i = 0; i < featureNameList.size(); i++) {
                 String pair = keyword + pairSeperator + featureNameList.get(i);
+                //map db cache
                 if(useMapDBCache && srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
                     srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
                     featureNameList.remove(i);
@@ -620,6 +621,7 @@ public class AtlasifyResource {
                     wikibrainSRCacheCount ++;
                     continue;
                 }
+                //session cache
                 else if (srCache.containsKey(pair)) {
                     srMap.put(featureNameList.get(i), srCache.get(pair));
                     featureNameList.remove(i);
@@ -653,7 +655,6 @@ public class AtlasifyResource {
                     Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
                     boolean srValueLoaded = false;
 
-                    System.out.println("Got NU SR data for keyworld " + query.getKeyword());
 
 
                     for (int i = 0; i < featureIdList.size(); i++) {
@@ -672,9 +673,10 @@ public class AtlasifyResource {
                                 System.out.println("Loading SR data for keyword " + query.getKeyword() + " from NU Server");
                                 srValues = accessNorthwesternAPI(queryID, -1, false);
                                 srValueLoaded = true;
-                            }
-                        }
 
+                            }
+                            System.out.println("Got NU SR data for keyworld " + query.getKeyword());
+                        }
                         LocalId featureID = new LocalId(lang, 0);
 
                         try {
@@ -709,7 +711,7 @@ public class AtlasifyResource {
                     }
                     //if not all sr values are loaded from the wikibrain SR cache, we should calculate all the sr values again with wikibrain SR metric and store them in the cache
                     else{
-                        if(loadWikibrainSR){
+                        if(loadWikibrainSR && useMapDBCache){
                             try{
                                 Runnable srBackgroundLoader = new SRBackgroundLoading(query, featureNameList.toArray(new String[featureNameList.size()]), sr, srCacheDao);
                                 new Thread(srBackgroundLoader).start();
@@ -792,13 +794,13 @@ public class AtlasifyResource {
                     // Switch to wikibrain based SR when NU API fails
                     if (loadWikibrainSR) {
                         System.out.println("Defaulting to Wikibrain SR");
-                        srMap = wikibrainSR(query, featureIdList.toArray(new String[featureNameList.size()]), featureNameList.toArray(new String[featureIdList.size()]));
+                        srMap = wikibrainSR(query, featureIdList.toArray(new String[featureNameList.size()]));
                     }
                 }
             } else {
                 System.out.println("USE WIKIBRAIN SR METRIC");
                 try{
-                    srMap = wikibrainSR(query, featureIdList.toArray(new String[featureNameList.size()]), featureNameList.toArray(new String[featureIdList.size()]));
+                    srMap = wikibrainSR(query, featureNameList.toArray(new String[featureNameList.size()]));
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -896,7 +898,7 @@ public class AtlasifyResource {
 
                 System.out.println("USE WIKIBRAIN SR METRIC");
                 try{
-                    srMap = wikibrainSR(query, featureIdList.toArray(new String[featureNameList.size()]), featureNameList.toArray(new String[featureIdList.size()]));
+                    srMap = wikibrainSR(query, featureNameList.toArray(new String[featureNameList.size()]));
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -918,7 +920,7 @@ public class AtlasifyResource {
      * @param featureNameList
      * @return
      */
-    private Map<String, Double> wikibrainSR(AtlasifyQuery query, String[] featureNameList, String[] featureIdList) {
+    private Map<String, Double> wikibrainSR(AtlasifyQuery query, String[] featureNameList) {
         System.out.println("Now in WikiBrain SR");
         Map<String, Double> srMap = new HashMap<String, Double>();
         System.out.println("Using WikiBrain SR method to calculate SR between keyword " + query.getKeyword() + " and " + featureNameList.length + " features");
