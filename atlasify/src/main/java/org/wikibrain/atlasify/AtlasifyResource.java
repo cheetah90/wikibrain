@@ -547,11 +547,9 @@ public class AtlasifyResource {
 
     static private boolean useNorthWesternAPI  = true;
     static private int     NorthwesternTimeout = 100000; // in milliseconds
+    static private boolean useMapDBCache = false;
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
-
-
-
     /**
      * return a <name, sr> map to the client
      * @param query AtlasifyQuery sent from the client
@@ -614,7 +612,7 @@ public class AtlasifyResource {
             // Get values out of the cache
             for (int i = 0; i < featureNameList.size(); i++) {
                 String pair = keyword + pairSeperator + featureNameList.get(i);
-                if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
+                if(useMapDBCache && srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
                     srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
                     featureNameList.remove(i);
                     featureIdList.remove(i);
@@ -660,10 +658,7 @@ public class AtlasifyResource {
 
                     for (int i = 0; i < featureIdList.size(); i++) {
 
-                        if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
-                            srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
-                            continue;
-                        }
+
                         //TODO: background loading wikibrain SR for all the keyword entered
                         //only need to load data from NU if any of the <keyword, feature> pair is not cached
 
@@ -834,6 +829,123 @@ public class AtlasifyResource {
         return ((Double)brightness1).compareTo(brightness2);
     }
 
+
+
+    /**
+     * return a <name, sr> map to the client with WikiBrain SR
+     * @param query AtlasifyQuery sent from the client
+     * @return
+     */
+    @POST
+    @Path("/sendWikiBrainSR")
+    @Consumes("application/json")
+    @Produces("text/plain")
+    public Response consumeJSONWikiBrain (AtlasifyQuery query) {
+        if(wikibrainLoadingInProcess == true){
+            System.out.println("Waiting for Wikibrain Loading");
+            return Response.serverError().entity("Wikibrain not ready").build();
+        }
+        if(lpDao == null ){
+            wikibrainSRinit();
+        }
+
+        // Call the new northwestern API to preload the explanations
+        String explanationsLoadingRefSys = null;
+        if (query.getRefSystem().equals("state") || query.getRefSystem().equals("country")) {
+            explanationsLoadingRefSys = "Geography";
+        } else if (query.getRefSystem().equals("periodicTable")) {
+            explanationsLoadingRefSys = "Chemistry";
+        } else if (query.getRefSystem().equals("senate")) {
+            explanationsLoadingRefSys = "Politics";
+        }
+
+        if (explanationsLoadingRefSys != null) {
+            try{
+                Runnable explanationPreComputingRunner = new ExplanationPreComputing(query, explanationsLoadingRefSys, NorthwesternTimeout);
+                new Thread(explanationPreComputingRunner).start();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        try{
+            // update the trending articles data
+            if (query.getRefSystem().equals("timeline")) {
+                explanationsLoadingRefSys = "Timeline";
+            }
+            //articleManager.viewedArticle(query.getKeyword(), FeatureArticleManager.refSysString(explanationsLoadingRefSys));
+        }
+        catch (Exception e){
+            System.out.println("Failed to load trending articles");
+            e.printStackTrace();
+        }
+
+
+        List<String> featureIdList = new ArrayList<String>(Arrays.asList(query.getFeatureIdList()));
+        List<String> featureNameList = new ArrayList<String>(Arrays.asList(query.getFeatureNameList()));
+        String keyword = query.getKeyword();
+        Map<String, Double> srMap = new HashMap<String, Double>();
+        System.out.println("Receive featureId size of " + featureIdList.size() + " and featureName size of " + featureNameList.size());
+        int frontCacheCount = 0;
+        int wikibrainSRCacheCount = 0;
+        try{
+            // Get values out of the cache
+            for (int i = 0; i < featureNameList.size(); i++) {
+                String pair = keyword + pairSeperator + featureNameList.get(i);
+                if(useMapDBCache && srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
+                    srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
+                    featureNameList.remove(i);
+                    featureIdList.remove(i);
+                    i--;
+                    wikibrainSRCacheCount ++;
+                    continue;
+                }
+                else if (srCache.containsKey(pair)) {
+                    srMap.put(featureNameList.get(i), srCache.get(pair));
+                    featureNameList.remove(i);
+                    featureIdList.remove(i);
+                    i--;
+                    frontCacheCount ++;
+                }
+            }
+            System.out.println("Got " + frontCacheCount + " SR results from the session cache");
+            System.out.println("Got " + wikibrainSRCacheCount + " SR results from the pre-computed WikiBrain SR results");
+
+        }
+        catch (Exception e){
+            System.out.println("Failed to get values out of cache");
+            e.printStackTrace();
+        }
+
+        boolean gotUsefulDataToCache = false;
+
+        if (featureIdList.size() > 0) {
+
+                System.out.println("USE WIKIBRAIN SR METRIC");
+                try{
+                    srMap = wikibrainSR(query, featureNameList.toArray(new String[featureNameList.size()]));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+
+            }
+
+            // Cache all of the retrieved results
+            if (gotUsefulDataToCache) {
+                for (int i = 0; i < featureNameList.size(); i++) {
+                    String feature = featureNameList.get(i);
+                    srCache.put(keyword + pairSeperator + feature, srMap.get(feature));
+                }
+            }
+        }
+
+        return Response.ok(new JSONObject(srMap).toString()).build();
+    }
+
+
+
+
     /**
      * return a <name, color> map to the client with WikiBrain SR
      * @param query
@@ -848,13 +960,14 @@ public class AtlasifyResource {
             Double value = 0.0;
             try {
                 System.out.println("Calculating SR between " + query.getKeyword() + " and " + featureNameList[i]);
-                if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList[i])){
+                if(useMapDBCache && srCacheDao.checkSRExist(query.getKeyword(), featureNameList[i])){
                     System.out.println("Found SR between " + query.getKeyword() + " and " + featureNameList[i] + " in cache");
                     value = srCacheDao.getSR(query.getKeyword(), featureNameList[i]);
                 }
                 else{
                     value = sr.similarity(query.getKeyword(), featureNameList[i], true).getScore();
-                    srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
+                    if(useMapDBCache)
+                        srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
                 }
                 System.out.println("SR Between " + query.getKeyword() + " and " + featureNameList[i].toString() + " is " + value);
             } catch (Exception e) {
