@@ -426,6 +426,7 @@ public class AtlasifyResource {
      * @throws Exception
      */
     public static LocalId wikibrainPhaseResolution(String title) throws Exception {
+
         if(wikibrainLoadingInProcess == true){
             System.out.println("Waiting for Wikibrain Loading");
         }

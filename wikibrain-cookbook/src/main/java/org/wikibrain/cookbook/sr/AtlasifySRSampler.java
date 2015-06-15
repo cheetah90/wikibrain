@@ -90,6 +90,8 @@ public class AtlasifySRSampler {
                         row[0] = mapFeaturesArray[i];
                         row[1] = keyword;
                         row[2] = srValues.get(featureID).toString();
+                        writer.writeNext(row);
+                        writer.close();
 
                     } catch (Exception e) {
                         //put white for anything not present in the SR map
