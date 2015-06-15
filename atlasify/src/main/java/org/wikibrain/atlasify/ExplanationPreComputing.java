@@ -12,15 +12,15 @@ import java.net.URLConnection;
  * Created by toby on 6/1/15.
  */
 public class ExplanationPreComputing implements Runnable {
-    AtlasifyResource.AtlasifyQuery query;
+    int localId;
     String explanationsLoadingRefSys;
     String url;
     int NorthwesternTimeout;
-    public ExplanationPreComputing(AtlasifyResource.AtlasifyQuery query, String explanationsLoadingRefSys, int NorthwesternTimeout){
-        this.query = query;
+    public ExplanationPreComputing(int localId, String explanationsLoadingRefSys, int NorthwesternTimeout){
+        this.localId = localId;
         this.explanationsLoadingRefSys = explanationsLoadingRefSys;
         this.NorthwesternTimeout = NorthwesternTimeout;
-        this.url = "http://downey-n1.cs.northwestern.edu:3030/precompute?concept=" + query.getKeyword().replace(' ', '_') + "&reference=" + explanationsLoadingRefSys;
+        this.url = "http://downey-n1.cs.northwestern.edu:3030/precompute?concept=" + localId + "&reference=" + explanationsLoadingRefSys;
     }
     public void run(){
         System.out.println("NU Explanations Precompute " + url);

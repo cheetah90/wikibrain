@@ -863,7 +863,7 @@ public class AtlasifyResource {
 
         if (explanationsLoadingRefSys != null) {
             try{
-                Runnable explanationPreComputingRunner = new ExplanationPreComputing(query, explanationsLoadingRefSys, NorthwesternTimeout);
+                Runnable explanationPreComputingRunner = new ExplanationPreComputing(wikibrainPhaseResolution(query.getKeyword()).getId(), explanationsLoadingRefSys, NorthwesternTimeout);
                 new Thread(explanationPreComputingRunner).start();
             }
             catch (Exception e){
@@ -1265,8 +1265,8 @@ public class AtlasifyResource {
             if (useCaches && northwesternExplanationsCache.containsKey(northwesternPair)) {
                 northwesternExplanationResult = northwesternExplanationsCache.get(northwesternPair);
             } else {
-                System.out.println("Querying NU server for explanation between " + keyword + " and " + feature);
-                String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
+                System.out.println("Querying NU server for explanation between " + keywordTitle + " and " + featureTitle);
+                String url = "http://downey-n1.cs.northwestern.edu:3030/api2?concept1=" + keywordPageId + "&concept2=" + featurePageId;
                 StringBuilder stringBuilder = new StringBuilder();
                 try {
                     URLConnection urlConnection = new URL(url).openConnection();
