@@ -47,6 +47,11 @@
             <version>0.7.0</version>
         </dependency>
         <dependency>
+            <groupId>org.wikibrainapi</groupId>
+            <artifactId>atlasify</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.sun.corba</groupId>
             <artifactId>glassfish-corba-idlj</artifactId>
             <version>1.0</version>
