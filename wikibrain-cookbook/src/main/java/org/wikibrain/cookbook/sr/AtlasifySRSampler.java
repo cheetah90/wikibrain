@@ -65,9 +65,10 @@ public class AtlasifySRSampler {
                     //TODO: background loading wikibrain SR for all the keyword entered
                     //only need to load data from NU if any of the <keyword, feature> pair is not cached
 
-                            if(srValueLoaded == false)
+                            if(srValueLoaded == false){
                                 srValues = atlasifyResource.accessNorthwesternAPI(queryID, -1, false);
-                            srValueLoaded = true;
+                                srValueLoaded = true;
+                            }
 
 
                         System.out.println("Got NU SR data for keyworld " + keyword);
@@ -76,6 +77,7 @@ public class AtlasifySRSampler {
 
                     try {
                         featureID = AtlasifyResource.wikibrainPhaseResolution(mapFeaturesArray[i]);
+                        System.out.println("Feature ID for " + mapFeaturesArray[i] + " is " + featureID.getId());
                     } catch (Exception e) {
                         e.printStackTrace();
                         System.out.println("Failed to resolve " + mapFeaturesArray[i]);
@@ -92,8 +94,10 @@ public class AtlasifySRSampler {
                         row[0] = mapFeaturesArray[i];
                         row[1] = keyword;
                         row[2] = srValues.get(featureID).toString();
+                        System.out.println("get sr " + row[2]);
                         writer.writeNext(row);
-                        writer.close();
+
+                        writer.flush();
 
                     } catch (Exception e) {
                        e.printStackTrace();
