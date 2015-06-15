@@ -85,7 +85,9 @@ public class AtlasifySRSampler {
 
                     try {
                         if((!srValues.containsKey(featureID) || srValues.get(featureID) == null)){
+                            System.out.println("can't get SR value for" + featureID);
                             throw new Exception("can't get SR value for " + featureID);
+
                         }
                         row[0] = mapFeaturesArray[i];
                         row[1] = keyword;
@@ -94,13 +96,7 @@ public class AtlasifySRSampler {
                         writer.close();
 
                     } catch (Exception e) {
-                        //put white for anything not present in the SR map
-                        try {
-                            //System.out.println("NO SR Between " + lpDao.getById(queryID).getTitle().getCanonicalTitle() + " and " + lpDao.getById(featureID).getTitle().getCanonicalTitle());
-                        } catch (Exception e1) {
-                            System.out.println("Failed to get SR");
-                        }
-                        //srMap.put(featureNameList.get(i).toString(), 0.0);
+                       e.printStackTrace();
                         continue;
                         //do nothing
                     }
