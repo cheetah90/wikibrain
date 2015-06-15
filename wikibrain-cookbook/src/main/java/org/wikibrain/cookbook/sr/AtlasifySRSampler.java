@@ -77,6 +77,7 @@ public class AtlasifySRSampler {
                     try {
                         featureID = AtlasifyResource.wikibrainPhaseResolution(mapFeaturesArray[i]);
                     } catch (Exception e) {
+                        e.printStackTrace();
                         System.out.println("Failed to resolve " + mapFeaturesArray[i]);
                         continue;
                         //do nothing
