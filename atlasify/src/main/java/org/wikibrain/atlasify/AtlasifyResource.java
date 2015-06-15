@@ -426,6 +426,12 @@ public class AtlasifyResource {
      * @throws Exception
      */
     public static LocalId wikibrainPhaseResolution(String title) throws Exception {
+        if(wikibrainLoadingInProcess == true){
+            System.out.println("Waiting for Wikibrain Loading");
+        }
+        if(pa == null){
+            wikibrainSRinit();
+        }
         Language language = lang;
         LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, title, 1);
         for (LocalId p : resolution.keySet()) {
