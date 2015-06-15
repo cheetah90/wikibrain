@@ -580,7 +580,7 @@ public class AtlasifyResource {
 
         if (explanationsLoadingRefSys != null) {
             try{
-                Runnable explanationPreComputingRunner = new ExplanationPreComputing(query, explanationsLoadingRefSys, NorthwesternTimeout);
+                Runnable explanationPreComputingRunner = new ExplanationPreComputing(wikibrainPhaseResolution(query.getKeyword()).getId(), explanationsLoadingRefSys, NorthwesternTimeout);
                 new Thread(explanationPreComputingRunner).start();
             }
             catch (Exception e){
