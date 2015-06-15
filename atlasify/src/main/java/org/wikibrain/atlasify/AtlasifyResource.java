@@ -426,7 +426,7 @@ public class AtlasifyResource {
      * @throws Exception
      */
     public static LocalId wikibrainPhaseResolution(String title) throws Exception {
-        /*Language language = lang;
+        Language language = lang;
         LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, title, 1);
         for (LocalId p : resolution.keySet()) {
             return p;
@@ -442,7 +442,9 @@ public class AtlasifyResource {
         }
         throw new Exception("failed to resolve"); */
 
-        return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
+
+        //temp
+        //return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
     }
 
     /**
