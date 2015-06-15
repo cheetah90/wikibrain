@@ -426,7 +426,7 @@ public class AtlasifyResource {
      * @throws Exception
      */
     public static LocalId wikibrainPhaseResolution(String title) throws Exception {
-
+/*
         if(wikibrainLoadingInProcess == true){
             System.out.println("Waiting for Wikibrain Loading");
         }
@@ -451,7 +451,7 @@ public class AtlasifyResource {
 
 
         //temp
-        //return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
+        return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
     }
 
     /**
