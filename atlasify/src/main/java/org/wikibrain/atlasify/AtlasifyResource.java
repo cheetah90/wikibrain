@@ -673,7 +673,9 @@ public class AtlasifyResource {
                         //only need to load data from NU if any of the <keyword, feature> pair is not cached
 
                         if(srValueLoaded == false){
-                            if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
+                            //if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
+                            //switch every query to "spatial-only" api
+                            if(true){
                                 System.out.println("Loading spatial-only SR data for keyword " + query.getKeyword() + " from NU Server");
                                 srValues = accessNorthwesternAPI(queryID, -1, true);
                                 srValueLoaded = true;
