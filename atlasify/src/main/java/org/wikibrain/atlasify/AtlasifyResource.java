@@ -146,7 +146,7 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     public static SpatialDataDao sdDao = null;
-    private static boolean loadWikibrainSR = false;
+    private static boolean loadWikibrainSR = true;
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static LuceneSearcher luceneSearcher;
     private static Map<Integer, Geometry> geometryMap = null;
@@ -426,7 +426,14 @@ public class AtlasifyResource {
      * @throws Exception
      */
     public static LocalId wikibrainPhaseResolution(String title) throws Exception {
-        /*Language language = lang;
+/*
+        if(wikibrainLoadingInProcess == true){
+            System.out.println("Waiting for Wikibrain Loading");
+        }
+        if(pa == null){
+            wikibrainSRinit();
+        }
+        Language language = lang;
         LinkedHashMap<LocalId, Float> resolution = pa.resolve(language, title, 1);
         for (LocalId p : resolution.keySet()) {
             return p;
@@ -442,6 +449,8 @@ public class AtlasifyResource {
         }
         throw new Exception("failed to resolve"); */
 
+
+        //temp
         return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
     }
 
@@ -547,11 +556,9 @@ public class AtlasifyResource {
 
     static private boolean useNorthWesternAPI  = true;
     static private int     NorthwesternTimeout = 100000; // in milliseconds
+    static private boolean useMapDBCache = false;
     // The number of explanations to preemptively download and cache
     static private int     numberOfExplanationsToLoad = 10;
-
-
-
     /**
      * return a <name, sr> map to the client
      * @param query AtlasifyQuery sent from the client
@@ -582,7 +589,7 @@ public class AtlasifyResource {
 
         if (explanationsLoadingRefSys != null) {
             try{
-                Runnable explanationPreComputingRunner = new ExplanationPreComputing(query, explanationsLoadingRefSys, NorthwesternTimeout);
+                Runnable explanationPreComputingRunner = new ExplanationPreComputing(wikibrainPhaseResolution(query.getKeyword()).getId(), explanationsLoadingRefSys, NorthwesternTimeout);
                 new Thread(explanationPreComputingRunner).start();
             }
             catch (Exception e){
@@ -614,7 +621,8 @@ public class AtlasifyResource {
             // Get values out of the cache
             for (int i = 0; i < featureNameList.size(); i++) {
                 String pair = keyword + pairSeperator + featureNameList.get(i);
-                if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
+                //map db cache
+                if(useMapDBCache && srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
                     srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
                     featureNameList.remove(i);
                     featureIdList.remove(i);
@@ -622,6 +630,7 @@ public class AtlasifyResource {
                     wikibrainSRCacheCount ++;
                     continue;
                 }
+                //session cache
                 else if (srCache.containsKey(pair)) {
                     srMap.put(featureNameList.get(i), srCache.get(pair));
                     featureNameList.remove(i);
@@ -655,20 +664,18 @@ public class AtlasifyResource {
                     Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
                     boolean srValueLoaded = false;
 
-                    System.out.println("Got NU SR data for keyworld " + query.getKeyword());
 
 
                     for (int i = 0; i < featureIdList.size(); i++) {
 
-                        if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))){
-                            srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
-                            continue;
-                        }
+
                         //TODO: background loading wikibrain SR for all the keyword entered
                         //only need to load data from NU if any of the <keyword, feature> pair is not cached
 
                         if(srValueLoaded == false){
-                            if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
+                            //if(query.refSystem.contentEquals("state") || query.refSystem.contentEquals("country")){
+                            //switch every query to "spatial-only" api
+                            if(true){
                                 System.out.println("Loading spatial-only SR data for keyword " + query.getKeyword() + " from NU Server");
                                 srValues = accessNorthwesternAPI(queryID, -1, true);
                                 srValueLoaded = true;
@@ -677,9 +684,10 @@ public class AtlasifyResource {
                                 System.out.println("Loading SR data for keyword " + query.getKeyword() + " from NU Server");
                                 srValues = accessNorthwesternAPI(queryID, -1, false);
                                 srValueLoaded = true;
-                            }
-                        }
 
+                            }
+                            System.out.println("Got NU SR data for keyworld " + query.getKeyword());
+                        }
                         LocalId featureID = new LocalId(lang, 0);
 
                         try {
@@ -714,7 +722,7 @@ public class AtlasifyResource {
                     }
                     //if not all sr values are loaded from the wikibrain SR cache, we should calculate all the sr values again with wikibrain SR metric and store them in the cache
                     else{
-                        if(loadWikibrainSR){
+                        if(loadWikibrainSR && useMapDBCache){
                             try{
                                 Runnable srBackgroundLoader = new SRBackgroundLoading(query, featureNameList.toArray(new String[featureNameList.size()]), sr, srCacheDao);
                                 new Thread(srBackgroundLoader).start();
@@ -797,7 +805,7 @@ public class AtlasifyResource {
                     // Switch to wikibrain based SR when NU API fails
                     if (loadWikibrainSR) {
                         System.out.println("Defaulting to Wikibrain SR");
-                        srMap = wikibrainSR(query, (String[]) featureNameList.toArray());
+                        srMap = wikibrainSR(query, featureIdList.toArray(new String[featureNameList.size()]));
                     }
                 }
             } else {
@@ -834,6 +842,89 @@ public class AtlasifyResource {
         return ((Double)brightness1).compareTo(brightness2);
     }
 
+
+
+    /**
+     * return a <name, sr> map to the client with WikiBrain SR
+     * @param query AtlasifyQuery sent from the client
+     * @return
+     */
+    @POST
+    @Path("/sendWikiBrainSR")
+    @Consumes("application/json")
+    @Produces("text/plain")
+    public Response consumeJSONWikiBrain (AtlasifyQuery query) {
+        if(wikibrainLoadingInProcess == true){
+            System.out.println("Waiting for Wikibrain Loading");
+            return Response.serverError().entity("Wikibrain not ready").build();
+        }
+        if(lpDao == null ){
+            wikibrainSRinit();
+        }
+
+        // Call the new northwestern API to preload the explanations
+        String explanationsLoadingRefSys = null;
+        if (query.getRefSystem().equals("state") || query.getRefSystem().equals("country")) {
+            explanationsLoadingRefSys = "Geography";
+        } else if (query.getRefSystem().equals("periodicTable")) {
+            explanationsLoadingRefSys = "Chemistry";
+        } else if (query.getRefSystem().equals("senate")) {
+            explanationsLoadingRefSys = "Politics";
+        }
+
+        if (explanationsLoadingRefSys != null) {
+            try{
+                Runnable explanationPreComputingRunner = new ExplanationPreComputing(wikibrainPhaseResolution(query.getKeyword()).getId(), explanationsLoadingRefSys, NorthwesternTimeout);
+                new Thread(explanationPreComputingRunner).start();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        try{
+            // update the trending articles data
+            if (query.getRefSystem().equals("timeline")) {
+                explanationsLoadingRefSys = "Timeline";
+            }
+            //articleManager.viewedArticle(query.getKeyword(), FeatureArticleManager.refSysString(explanationsLoadingRefSys));
+        }
+        catch (Exception e){
+            System.out.println("Failed to load trending articles");
+            e.printStackTrace();
+        }
+
+
+        List<String> featureIdList = new ArrayList<String>(Arrays.asList(query.getFeatureIdList()));
+        List<String> featureNameList = new ArrayList<String>(Arrays.asList(query.getFeatureNameList()));
+        String keyword = query.getKeyword();
+        Map<String, Double> srMap = new HashMap<String, Double>();
+        System.out.println("Receive featureId size of " + featureIdList.size() + " and featureName size of " + featureNameList.size());
+        int frontCacheCount = 0;
+        int wikibrainSRCacheCount = 0;
+
+        boolean gotUsefulDataToCache = false;
+
+        if (featureIdList.size() > 0) {
+
+                System.out.println("USE WIKIBRAIN SR METRIC");
+                try{
+                    srMap = wikibrainSR(query, featureNameList.toArray(new String[featureNameList.size()]));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+
+            }
+
+
+        }
+
+        return Response.ok(new JSONObject(srMap).toString()).build();
+    }
+
+
+
+
     /**
      * return a <name, color> map to the client with WikiBrain SR
      * @param query
@@ -848,13 +939,14 @@ public class AtlasifyResource {
             Double value = 0.0;
             try {
                 System.out.println("Calculating SR between " + query.getKeyword() + " and " + featureNameList[i]);
-                if(srCacheDao.checkSRExist(query.getKeyword(), featureNameList[i])){
+                if(useMapDBCache && srCacheDao.checkSRExist(query.getKeyword(), featureNameList[i])){
                     System.out.println("Found SR between " + query.getKeyword() + " and " + featureNameList[i] + " in cache");
                     value = srCacheDao.getSR(query.getKeyword(), featureNameList[i]);
                 }
                 else{
-                    value = sr.similarity(query.getKeyword(), featureNameList[i], true).getScore();
-                    srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
+                    value = sr.similarity(query.getKeyword(), featureNameList[i], false).getScore();
+                    if(useMapDBCache)
+                        srCacheDao.saveSR(query.getKeyword(), featureNameList[i], value);
                 }
                 System.out.println("SR Between " + query.getKeyword() + " and " + featureNameList[i].toString() + " is " + value);
             } catch (Exception e) {
@@ -978,12 +1070,12 @@ public class AtlasifyResource {
             } */
 
             /* Bing */
-            String bingAccountKey = "Y+KqEsFSCzEzNB85dTXJXnWc7U4cSUduZsUJ3pKrQfs";
+            String bingAccountKey = "gpLKu1VxcX0yo0Vbkyr6BZHwFiJjZR2Y6t7qiMsnD0s=";
             byte[] bingAccountKeyBytes = Base64.encodeBase64((bingAccountKey + ":" + bingAccountKey).getBytes());
             String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
 
             String bingQuery = query.getKeyword();
-            URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/SearchWeb/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
+            URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/Search/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
 
             HttpURLConnection connection = (HttpURLConnection)bingQueryurl.openConnection();
             connection.setRequestMethod("GET");
@@ -996,6 +1088,7 @@ public class AtlasifyResource {
             while ((output = br.readLine()) != null) {
                 sb.append(output);
             }
+            //System.out.println(sb.toString());
 
             JSONObject bingResponse = new JSONObject(sb.toString());
             bingResponse = bingResponse.getJSONObject("d");
@@ -1017,6 +1110,9 @@ public class AtlasifyResource {
                         i++;
                     }
                 } catch (Exception e) {
+                    System.out.println("Error when getting auto-completion result for " + query.getKeyword());
+                    //e.printStackTrace();
+
                     // There was an error, lets keep keep going
                 }
             }
@@ -1075,6 +1171,8 @@ public class AtlasifyResource {
                 }
             }*/
         } catch (Exception e) {
+            System.out.println("Error when getting auto-completion result for " + query.getKeyword());
+            //e.printStackTrace();
             autocompleteMap = new HashMap<String, String>();
         }
 
@@ -1184,8 +1282,8 @@ public class AtlasifyResource {
             if (useCaches && northwesternExplanationsCache.containsKey(northwesternPair)) {
                 northwesternExplanationResult = northwesternExplanationsCache.get(northwesternPair);
             } else {
-                System.out.println("Querying NU server for explanation between " + keyword + " and " + feature);
-                String url = "http://downey-n1.cs.northwestern.edu:3030/api?concept1=" + keywordTitle + "&concept2=" + featureTitle;
+                System.out.println("Querying NU server for explanation between " + keywordTitle + " and " + featureTitle);
+                String url = "http://downey-n1.cs.northwestern.edu:3030/api2?concept1=" + keywordPageId + "&concept2=" + featurePageId;
                 StringBuilder stringBuilder = new StringBuilder();
                 try {
                     URLConnection urlConnection = new URL(url).openConnection();
