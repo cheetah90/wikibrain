@@ -1111,7 +1111,7 @@ public class AtlasifyResource {
                     }
                 } catch (Exception e) {
                     System.out.println("Error when getting auto-completion result for " + query.getKeyword());
-                    e.printStackTrace();
+                    //e.printStackTrace();
 
                     // There was an error, lets keep keep going
                 }
@@ -1172,7 +1172,7 @@ public class AtlasifyResource {
             }*/
         } catch (Exception e) {
             System.out.println("Error when getting auto-completion result for " + query.getKeyword());
-            e.printStackTrace();
+            //e.printStackTrace();
             autocompleteMap = new HashMap<String, String>();
         }
 
