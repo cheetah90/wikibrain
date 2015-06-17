@@ -1088,6 +1088,7 @@ public class AtlasifyResource {
             while ((output = br.readLine()) != null) {
                 sb.append(output);
             }
+            System.out.println(sb.toString());
 
             JSONObject bingResponse = new JSONObject(sb.toString());
             bingResponse = bingResponse.getJSONObject("d");
@@ -1109,6 +1110,7 @@ public class AtlasifyResource {
                         i++;
                     }
                 } catch (Exception e) {
+
                     // There was an error, lets keep keep going
                 }
             }
