@@ -1075,7 +1075,7 @@ public class AtlasifyResource {
             String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
 
             String bingQuery = query.getKeyword();
-            URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/SearchWeb/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
+            URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/Search/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
 
             HttpURLConnection connection = (HttpURLConnection)bingQueryurl.openConnection();
             connection.setRequestMethod("GET");
