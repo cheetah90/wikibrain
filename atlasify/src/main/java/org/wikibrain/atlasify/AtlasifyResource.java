@@ -1110,6 +1110,8 @@ public class AtlasifyResource {
                         i++;
                     }
                 } catch (Exception e) {
+                    System.out.println("Error when getting auto-completion result for " + query.getKeyword());
+                    e.printStackTrace();
 
                     // There was an error, lets keep keep going
                 }
