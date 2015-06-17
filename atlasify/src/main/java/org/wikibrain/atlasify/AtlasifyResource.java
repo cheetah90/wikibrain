@@ -1070,7 +1070,7 @@ public class AtlasifyResource {
             } */
 
             /* Bing */
-            String bingAccountKey = "qe8udhnGIOmt7tBb6uLXEBfdfykn7OnMssQW1HXlYKo";
+            String bingAccountKey = "gpLKu1VxcX0yo0Vbkyr6BZHwFiJjZR2Y6t7qiMsnD0s=";
             byte[] bingAccountKeyBytes = Base64.encodeBase64((bingAccountKey + ":" + bingAccountKey).getBytes());
             String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
 
