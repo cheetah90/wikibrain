@@ -1171,6 +1171,8 @@ public class AtlasifyResource {
                 }
             }*/
         } catch (Exception e) {
+            System.out.println("Error when getting auto-completion result for " + query.getKeyword());
+            e.printStackTrace();
             autocompleteMap = new HashMap<String, String>();
         }
 
