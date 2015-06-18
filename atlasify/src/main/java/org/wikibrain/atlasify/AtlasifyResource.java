@@ -1132,13 +1132,13 @@ public class AtlasifyResource {
 
 
             JSONArray wikipediaResponse = new JSONArray(sb.toString());
-            System.out.println("got wikipedia response: " + wikipediaResponse);
+            //System.out.println("got wikipedia response: " + wikipediaResponse);
             JSONArray autoCompleteResults = wikipediaResponse.getJSONArray(1);
-            System.out.println("got wikipedia auto complete results: " + autoCompleteResults);
+            //System.out.println("got wikipedia auto complete results: " + autoCompleteResults);
             for(int j = 0; j < autoCompleteResults.length() && j < 10; j++){
 
                 String title = autoCompleteResults.getString(j);
-                System.out.println("got auto complete result " + title);
+                //System.out.println("got auto complete result " + title);
                 LocalPage page = new LocalPage(language, 0, "");
                 try{
                     page = lpDao.getById(wikibrainPhaseResolution(title));
@@ -1149,7 +1149,7 @@ public class AtlasifyResource {
                 }
                 catch (Exception e) {
                     System.out.println("Error when getting auto-completion result for " + query.getKeyword());
-                    e.printStackTrace();
+                    //e.printStackTrace();
 
                     // There was an error, lets keep keep going
                 }
@@ -1213,7 +1213,7 @@ public class AtlasifyResource {
             }*/
         } catch (Exception e) {
             System.out.println("Error when getting auto-completion result for " + query.getKeyword());
-            e.printStackTrace();
+            //e.printStackTrace();
             autocompleteMap = new HashMap<String, String>();
         }
 
