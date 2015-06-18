@@ -1141,9 +1141,7 @@ public class AtlasifyResource {
                 System.out.println("got auto complete result " + title);
                 LocalPage page = new LocalPage(language, 0, "");
                 try{
-                    for(LocalId p : pa.resolve(language, title, 1).keySet()) {
-                        page = lpDao.getById(p);
-                    }
+                    page = lpDao.getById(wikibrainPhaseResolution(title));
                     if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
                         autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
                         i++;
