@@ -1120,7 +1120,7 @@ public class AtlasifyResource {
             */
 
             /* Wikimedia */
-            URL wikipediaQueryUrl = new URL("https://en.wikipedia.org/w/api.php?action=opensearch&search=" + query.getKeyword());
+            URL wikipediaQueryUrl = new URL("https://en.wikipedia.org/w/api.php?action=opensearch&search=" + query.getKeyword().replace(" ", "_"));
             HttpURLConnection connection = (HttpURLConnection)wikipediaQueryUrl.openConnection();
             connection.setRequestMethod("GET");
             BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
