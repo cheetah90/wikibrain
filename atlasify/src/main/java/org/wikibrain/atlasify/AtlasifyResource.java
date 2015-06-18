@@ -146,7 +146,7 @@ public class AtlasifyResource {
     private static AtlasifyLogger atlasifyLogger;
     private static boolean wikibrainLoadingInProcess = false;
     public static SpatialDataDao sdDao = null;
-    private static boolean loadWikibrainSR = true;
+    private static boolean loadWikibrainSR = false;
     public static Set<Integer> GADM01Concepts = new HashSet<Integer>();
     private static LuceneSearcher luceneSearcher;
     private static Map<Integer, Geometry> geometryMap = null;
@@ -1132,9 +1132,13 @@ public class AtlasifyResource {
 
 
             JSONArray wikipediaResponse = new JSONArray(sb.toString());
+            System.out.println("got wikipedia response: " + wikipediaResponse);
             JSONArray autoCompleteResults = wikipediaResponse.getJSONArray(1);
+            System.out.println("got wikipedia auto complete results: " + autoCompleteResults);
             for(int j = 0; j < autoCompleteResults.length() && j < 10; j++){
+
                 String title = autoCompleteResults.getString(j);
+                System.out.println("got auto complete result " + title);
                 LocalPage page = new LocalPage(language, 0, "");
                 try{
                     for(LocalId p : pa.resolve(language, title, 1).keySet()) {
