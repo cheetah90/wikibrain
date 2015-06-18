@@ -1070,6 +1070,7 @@ public class AtlasifyResource {
             } */
 
             /* Bing */
+            /*
             String bingAccountKey = "w7BfCNSWaTSs+txYDpUfIFOAlM6MRbJmZxv0Fz/z0tI=";
             byte[] bingAccountKeyBytes = Base64.encodeBase64((bingAccountKey + ":" + bingAccountKey).getBytes());
             String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
@@ -1116,6 +1117,44 @@ public class AtlasifyResource {
                     // There was an error, lets keep keep going
                 }
             }
+            */
+
+            /* Wikimedia */
+            URL wikipediaQueryUrl = new URL("https://en.wikipedia.org/w/api.php?action=opensearch&search=" + query.getKeyword());
+            HttpURLConnection connection = (HttpURLConnection)wikipediaQueryUrl.openConnection();
+            connection.setRequestMethod("GET");
+            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+            String output;
+            StringBuilder sb = new StringBuilder();
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
+            }
+
+
+            JSONArray wikipediaResponse = new JSONArray(sb.toString());
+            JSONArray autoCompleteResults = wikipediaResponse.getJSONArray(1);
+            for(int j = 0; j < autoCompleteResults.length() && j < 10; j++){
+                String title = autoCompleteResults.getString(j);
+                LocalPage page = new LocalPage(language, 0, "");
+                try{
+                    for(LocalId p : pa.resolve(language, title, 1).keySet()) {
+                        page = lpDao.getById(p);
+                    }
+                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
+                        autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
+                        i++;
+                    }
+                }
+                catch (Exception e) {
+                    System.out.println("Error when getting auto-completion result for " + query.getKeyword());
+                    //e.printStackTrace();
+
+                    // There was an error, lets keep keep going
+                }
+
+            }
+
+
 
             /* Lucene */
             /*
