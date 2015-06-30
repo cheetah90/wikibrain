@@ -470,13 +470,13 @@ public class AtlasifyResource {
         Language language = lang;
         String url = "";
         if(topN == -1 && spatialOnly){
-            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/sID/" + id.getId() + "/langID/" + language.getId() + "/spatial/true";
+            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId() + "&spatial=true";
         }
         else if (topN == -1){
-            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/sID/" + id.getId() + "/langID/" + language.getId();
+            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId();
         }
         else {
-            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/sID/" + id.getId() + "/langID/" + language.getId()+ "/top/" + topN.toString();
+            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId()+ "&top=" + topN.toString();
         }
         System.out.println("NU QUERY " + url);
 
