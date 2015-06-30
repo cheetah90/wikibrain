@@ -494,15 +494,14 @@ public class AtlasifyResource {
         }
 
         JSONObject jsonObject = new JSONObject(stringBuilder.toString());
-        JSONArray jsonArray = jsonObject.getJSONArray("result");
+        Iterator<String> nameItr = jsonObject.keys();
         Map<LocalId, Double> result = new HashMap<LocalId, Double>();
-        int length = jsonArray.length();
 
-        for (int i = 0; i < length; i++) {
+        while(nameItr.hasNext()) {
             try{
-                JSONObject pageSRPair = jsonArray.getJSONObject(i);
-                LocalId page = new LocalId(language, pageSRPair.getInt("wikiPageId"));
-                Double sr = new Double(pageSRPair.getDouble("srMeasure"));
+                String name = nameItr.next();
+                LocalId page = new LocalId(language, Integer.parseInt(name));
+                Double sr = new Double(jsonObject.getDouble(name));
                 result.put(page, sr);
             }
             catch (Exception e){
