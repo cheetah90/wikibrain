@@ -15,14 +15,18 @@ public class AtlasifyGeoRecord {
     private static String country;
     private static String city;
     private static String provider;
+    private static String browser;
+    private static String language;
     private static Point geometry;
     private static Double lat;
     private static Double lon;
 
-    public AtlasifyGeoRecord(String country, String city, String provider, Double lat, Double lon){
+    public AtlasifyGeoRecord(String country, String city, String provider, String browser, String language, Double lat, Double lon){
         this.country = country;
         this.city = city;
         this.provider = provider;
+        this.browser = browser;
+        this.language = language;
         this.lat = lat;
         this.lon = lon;
         this.geometry = new GeometryFactory().createPoint(new Coordinate(lat, lon));
@@ -43,4 +47,11 @@ public class AtlasifyGeoRecord {
         return geometry;
     }
 
+    public String getBrowser(){
+        return browser;
+    }
+
+    public String getLanguage(){
+        return language;
+    }
 }
