@@ -156,7 +156,7 @@ public class LogParser {
         reader = new CSVReader(new FileReader(logFileName), ',');
         writer = new CSVWriter(new FileWriter("AtlasifyLogAnalysis.csv"), ',');
         calculator = new AtlasifyKeywordStatCalculator();
-        String[] rowWrite = new String[14];
+        String[] rowWrite = new String[17];
         rowWrite[0] = "userId";
         rowWrite[1] = "queryType";
         rowWrite[2] = "keyword";
