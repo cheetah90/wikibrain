@@ -30,12 +30,7 @@ public class AtlasifyKeywordStatCalculator {
         Configurator conf = env.getConfigurator();
         lpDao = conf.get(LocalPageDao.class);
         countryMap = new HashMap<Integer, String>();
-        FileReader fileReader = new FileReader("countries.js");
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
-        String s;
-        while((s = bufferedReader.readLine()) != null){}
-        fileReader.close();
-        System.out.println(s);
+        String s = new Scanner( new File("countries.js") ).useDelimiter("\\A").next();
         JSONObject jsonObject = new JSONObject(s);
         Iterator<String> nameItr = jsonObject.keys();
         while(nameItr.hasNext()){
