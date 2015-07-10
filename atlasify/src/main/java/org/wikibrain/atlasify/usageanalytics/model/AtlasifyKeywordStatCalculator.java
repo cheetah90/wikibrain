@@ -47,59 +47,73 @@ public class AtlasifyKeywordStatCalculator {
     }
 
     private static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN, boolean spatialOnly) throws Exception {
-        Language language = lang;
-        String url = "";
-        if(topN == -1 && spatialOnly){
-            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId() + "&spatial=true";
-        }
-        else if (topN == -1){
-            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId();
-        }
-        else {
-            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId()+ "&top=" + topN.toString();
-        }
-        //System.out.println("NU QUERY " + url);
-
-        URLConnection urlConnection = new URL(url).openConnection();
-        urlConnection.setConnectTimeout(NorthwesternTimeout);
-        urlConnection.setReadTimeout(NorthwesternTimeout);
-
-        InputStream inputStream = urlConnection.getInputStream();
-
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder stringBuilder = new StringBuilder();
-        int currentChar;
-        while ((currentChar = bufferedReader.read()) != -1) {
-            stringBuilder.append((char) currentChar);
-        }
-
-        JSONObject jsonObject = new JSONObject(stringBuilder.toString());
-        Iterator<String> nameItr = jsonObject.keys();
         Map<LocalId, Double> result = new HashMap<LocalId, Double>();
+        try{
+            //hack
+            Language language = Language.EN;
+            String url = "";
+            if(topN == -1 && spatialOnly){
+                url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId() + "&spatial=true";
+            }
+            else if (topN == -1){
+                url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId();
+            }
+            else {
+                url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId()+ "&top=" + topN.toString();
+            }
+            //System.out.println("NU QUERY " + url);
 
-        while(nameItr.hasNext()) {
-            try{
-                String name = nameItr.next();
-                LocalId page = new LocalId(language, Integer.parseInt(name));
-                Double sr = new Double(jsonObject.getDouble(name));
-                result.put(page, sr);
+            URLConnection urlConnection = new URL(url).openConnection();
+            urlConnection.setConnectTimeout(NorthwesternTimeout);
+            urlConnection.setReadTimeout(NorthwesternTimeout);
+
+            InputStream inputStream = urlConnection.getInputStream();
+
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            StringBuilder stringBuilder = new StringBuilder();
+            int currentChar;
+            while ((currentChar = bufferedReader.read()) != -1) {
+                stringBuilder.append((char) currentChar);
             }
-            catch (Exception e){
-                continue;
+
+            JSONObject jsonObject = new JSONObject(stringBuilder.toString());
+            Iterator<String> nameItr = jsonObject.keys();
+
+
+            while(nameItr.hasNext()) {
+                try{
+                    String name = nameItr.next();
+                    LocalId page = new LocalId(language, Integer.parseInt(name));
+                    Double sr = new Double(jsonObject.getDouble(name));
+                    result.put(page, sr);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    continue;
+                }
             }
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
 
         return result;
     }
 
     public static Map<LocalId, Double> getFilteredSRMap(Set<Integer> filter, String title, boolean spatialOnly) throws DaoException, Exception{
-        LocalId id =  new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
-        Map<LocalId, Double> nuResults = accessNorthwesternAPI(id, -1, spatialOnly);
         Map<LocalId, Double> returnVal = new HashMap<LocalId, Double>();
-        for(Map.Entry<LocalId, Double> result : nuResults.entrySet()){
-            if(filter.contains(result.getKey())){
-                returnVal.put(result.getKey(), result.getValue());
+        try{
+            LocalId id =  new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
+            Map<LocalId, Double> nuResults = accessNorthwesternAPI(id, -1, spatialOnly);
+            for(Map.Entry<LocalId, Double> result : nuResults.entrySet()){
+                if(filter.contains(result.getKey().getId())){
+                    returnVal.put(result.getKey(), result.getValue());
+                }
             }
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
         return returnVal;
     }

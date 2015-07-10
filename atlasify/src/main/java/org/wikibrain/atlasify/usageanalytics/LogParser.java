@@ -182,7 +182,7 @@ public class LogParser {
         //read query sessions
         for(int i = 0; i < rows.size(); i++){
             if(count++ % 1 == 0){
-                System.out.println("Done with " + count + " out of " + rows.size());
+                System.out.println("Done with " + count + "rows out of " + rows.size());
             }
             String[] row = rows.get(i);
 
