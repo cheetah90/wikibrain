@@ -139,7 +139,7 @@ public class AtlasifyKeywordStatCalculator {
         Double mean = getSRMean(srMap);
         Double sumDiff = 0.0;
         for(Double sr: srMap.values()){
-            sumDiff += (sr - mean);
+            sumDiff += (sr - mean) * (sr - mean);
         }
         return Math.sqrt(sumDiff / srMap.size());
     }
