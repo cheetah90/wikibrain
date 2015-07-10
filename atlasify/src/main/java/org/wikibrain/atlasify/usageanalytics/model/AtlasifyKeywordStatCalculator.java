@@ -58,7 +58,7 @@ public class AtlasifyKeywordStatCalculator {
         else {
             url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId()+ "&top=" + topN.toString();
         }
-        System.out.println("NU QUERY " + url);
+        //System.out.println("NU QUERY " + url);
 
         URLConnection urlConnection = new URL(url).openConnection();
         urlConnection.setConnectTimeout(NorthwesternTimeout);

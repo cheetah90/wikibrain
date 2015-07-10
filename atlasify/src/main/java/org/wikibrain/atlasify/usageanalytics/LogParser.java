@@ -146,13 +146,14 @@ public class LogParser {
         rowWrite[14] = String.valueOf(calculator.getSRMean(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
         rowWrite[15] = String.valueOf(calculator.getSRRange(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
         rowWrite[16] = String.valueOf(calculator.getSRStdDev(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
-
+        System.out.println(queryRecord.getKeyWord() + " mean: " + rowWrite[14] + " range: " + rowWrite[15] + " stdDev: " + rowWrite[16]);
         writer.writeNext(rowWrite);
         writer.flush();
     }
 
 
     public static void main(String args[])  throws IOException, ParseException, ConfigurationException {
+        int count = 0;
         reader = new CSVReader(new FileReader(logFileName), ',');
         writer = new CSVWriter(new FileWriter("AtlasifyLogAnalysis.csv"), ',');
         calculator = new AtlasifyKeywordStatCalculator();
@@ -180,6 +181,9 @@ public class LogParser {
         List<String[]> rows = reader.readAll();
         //read query sessions
         for(int i = 0; i < rows.size(); i++){
+            if(count++ % 1 == 0){
+                System.out.println("Done with " + count + " out of " + rows.size());
+            }
             String[] row = rows.get(i);
 
             //Filter out developers' sessions
