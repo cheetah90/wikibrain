@@ -35,6 +35,7 @@ public class AtlasifyKeywordStatCalculator {
         String s;
         while((s = bufferedReader.readLine()) != null){}
         fileReader.close();
+        System.out.println(s);
         JSONObject jsonObject = new JSONObject(s);
         Iterator<String> nameItr = jsonObject.keys();
         while(nameItr.hasNext()){
