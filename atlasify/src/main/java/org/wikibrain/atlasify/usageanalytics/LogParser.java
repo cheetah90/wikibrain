@@ -3,10 +3,8 @@ package org.wikibrain.atlasify.usageanalytics;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.lang.time.DateUtils;
-import org.wikibrain.atlasify.usageanalytics.model.AtlasifyExplanationRecord;
-import org.wikibrain.atlasify.usageanalytics.model.AtlasifyGeoRecord;
-import org.wikibrain.atlasify.usageanalytics.model.AtlasifyQueryRecord;
-import org.wikibrain.atlasify.usageanalytics.model.AtlasifyZoomRecord;
+import org.wikibrain.atlasify.usageanalytics.model.*;
+import org.wikibrain.conf.ConfigurationException;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -27,6 +25,7 @@ public class LogParser {
     private static CSVReader reader;
     private static CSVWriter writer;
     private static Set<Integer> consumedLoadData = new HashSet<Integer>();
+    private static AtlasifyKeywordStatCalculator calculator;
 
     private static AtlasifyQueryRecord searchSessionEnd(List<String[]> rows, Integer startIndex, boolean searchFromUserDefined) throws ParseException{
         List<AtlasifyZoomRecord> zoomRecords = new ArrayList<AtlasifyZoomRecord>();
@@ -129,7 +128,7 @@ public class LogParser {
         return new AtlasifyQueryRecord(geoRecord, userId, queryType, keyWord, refSystem, startDate, endDate, zoomRecords, explanationRecords, rating, feedback);
 
     }
-    private static void printQueryRecord(String[] rowWrite, CSVWriter writer, AtlasifyQueryRecord queryRecord) throws IOException{
+    private static void printQueryRecord(String[] rowWrite, CSVWriter writer, AtlasifyQueryRecord queryRecord) throws IOException, Exception{
         rowWrite[0] = queryRecord.getUserCookieId().toString();
         rowWrite[1] = queryRecord.queryType().toString();
         rowWrite[2] = queryRecord.getKeyWord();
@@ -144,14 +143,19 @@ public class LogParser {
         rowWrite[11] = queryRecord.getRefSystem();
         rowWrite[12] = queryRecord.getRating().toString();
         rowWrite[13] = queryRecord.getFeedback();
+        rowWrite[14] = String.valueOf(calculator.getSRMean(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
+        rowWrite[15] = String.valueOf(calculator.getSRRange(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
+        rowWrite[16] = String.valueOf(calculator.getSRStdDev(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
+
         writer.writeNext(rowWrite);
         writer.flush();
     }
 
 
-    public static void main(String args[])  throws IOException, ParseException {
+    public static void main(String args[])  throws IOException, ParseException, ConfigurationException {
         reader = new CSVReader(new FileReader(logFileName), ',');
         writer = new CSVWriter(new FileWriter("AtlasifyLogAnalysis.csv"), ',');
+        calculator = new AtlasifyKeywordStatCalculator();
         String[] rowWrite = new String[14];
         rowWrite[0] = "userId";
         rowWrite[1] = "queryType";
@@ -167,6 +171,9 @@ public class LogParser {
         rowWrite[11] = "refSystem";
         rowWrite[12] = "rating";
         rowWrite[13] = "feedback";
+        rowWrite[14] = "STAT_MEAN";
+        rowWrite[15] = "STAT_RANGE";
+        rowWrite[16] = "STAT_STDDEV";
         writer.writeNext(rowWrite);
         writer.flush();
 
