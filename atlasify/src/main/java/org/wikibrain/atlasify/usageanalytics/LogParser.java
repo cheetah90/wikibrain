@@ -183,31 +183,35 @@ public class LogParser {
             String[] row = rows.get(i);
 
             //Filter out developers' sessions
+            try{
+                if(row[11].contentEquals("Minneapolis") || row[11].contentEquals("Evanston") || row[11].contentEquals("Madison"))
+                    continue;
 
-            if(row[11].contentEquals("Minneapolis") || row[11].contentEquals("Evanston") || row[11].contentEquals("Madison"))
+                if(row[5].contentEquals("REGULAR-LOAD-RANDOM")){
+                    //System.out.println(searchSessionEnd(rows, i, false));
+                    printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, false));
+                }
+                if(row[5].contentEquals("REGULAR-AUTO-COMPLETION-PRESSED")){
+                    //System.out.println(searchSessionEnd(rows, i, false));
+                    printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, false));
+                }
+                if(row[5].contentEquals("FEATURE_ARTICLE-SEARCH")){
+                    //System.out.println(searchSessionEnd(rows, i, false));
+                    printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, false));
+                }
+                if(row[5].contentEquals("GAME-SEARCH")){
+                    //System.out.println(searchSessionEnd(rows, i, false));
+                    printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, false));
+                }
+                if(row[5].contentEquals("LOAD-DATA") && (!consumedLoadData.contains(i))){
+                    consumedLoadData.add(i);
+                    //System.out.println(searchSessionEnd(rows, i, true));
+                    printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, true));
+                    //search query from a user-defined keyword
+                }
+            }
+            catch (Exception e){
                 continue;
-
-            if(row[5].contentEquals("REGULAR-LOAD-RANDOM")){
-                //System.out.println(searchSessionEnd(rows, i, false));
-                printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, false));
-            }
-            if(row[5].contentEquals("REGULAR-AUTO-COMPLETION-PRESSED")){
-                //System.out.println(searchSessionEnd(rows, i, false));
-                printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, false));
-            }
-            if(row[5].contentEquals("FEATURE_ARTICLE-SEARCH")){
-                //System.out.println(searchSessionEnd(rows, i, false));
-                printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, false));
-            }
-            if(row[5].contentEquals("GAME-SEARCH")){
-                //System.out.println(searchSessionEnd(rows, i, false));
-                printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, false));
-            }
-            if(row[5].contentEquals("LOAD-DATA") && (!consumedLoadData.contains(i))){
-                consumedLoadData.add(i);
-                //System.out.println(searchSessionEnd(rows, i, true));
-                printQueryRecord(rowWrite, writer, searchSessionEnd(rows, i, true));
-                //search query from a user-defined keyword
             }
 
         }
