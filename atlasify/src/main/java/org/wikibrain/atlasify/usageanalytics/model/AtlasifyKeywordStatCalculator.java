@@ -144,6 +144,103 @@ public class AtlasifyKeywordStatCalculator {
         return Math.sqrt(sumDiff / srMap.size());
     }
 
+    public static Double getSRMedian(Map<LocalId, Double> srMap){
+        ArrayList<Double> list = new ArrayList<Double>();
+        for(Double sr: srMap.values()){
+            list.add(sr);
+        }
+        Collections.sort(list);
+        if(list.size() % 2 == 0)
+            return (list.get(list.size()/2) + list.get(list.size()/2 - 1))/2;
+        else
+            return list.get(list.size()/2);
+    }
+
+    public static Double getSRMaxMedianDifference(Map<LocalId, Double> srMap){
+        Double max = 0.0;
+        for(Double sr : srMap.values()){
+            max = sr > max ? sr : max;
+        }
+        return max - getSRMedian(srMap);
+    }
+
+    private static double[] getSRClassDistribution(Map<LocalId, Double> srMap){
+        double[] retVal = new double[9];
+        for(int i = 0; i < 9; i++)
+            retVal[i] = 0.0;
+        for(Double sr : srMap.values()){
+            int category = 0;
+            if(sr > 0.39)
+                category = 1;
+            if(sr > 0.42)
+                category = 2;
+            if(sr > 0.445)
+                category = 3;
+            if(sr > 0.475)
+                category = 4;
+            if(sr > 0.51)
+                category = 5;
+            if(sr > 0.58)
+                category = 6;
+            if(sr > 0.66)
+                category = 7;
+            if(sr > 0.75)
+                category = 8;
+            retVal[category] ++;
+        }
+        return retVal;
+    }
+
+    public static double getSRClassMean(Map<LocalId, Double> srMap){
+        double[] distribution = getSRClassDistribution(srMap);
+        double sum = 0.0;
+        for(int i = 0; i < distribution.length; i++){
+            sum += distribution[i];
+        }
+        return sum / distribution.length;
+    }
+
+    public static double getSRClassMedian(Map<LocalId, Double> srMap){
+        double[] distribution = getSRClassDistribution(srMap);
+        Arrays.sort(distribution);
+        if(distribution.length % 2 == 0)
+            return (distribution[distribution.length/2] + distribution[distribution.length/2 - 1])/2;
+        else
+            return distribution[distribution.length/2];
+    }
+
+    public static double getSRClassMaxMedianDifference(Map<LocalId, Double> srMap){
+        double[] distribution = getSRClassDistribution(srMap);
+        double max = 0.0;
+        for(int i = 0; i < distribution.length; i++){
+            max = distribution[i] > max ? distribution[i] : max;
+        }
+        return max - getSRClassMedian(srMap);
+    }
+
+    public static double getSRClassMaxMeanDifference(Map<LocalId, Double> srMap){
+        double[] distribution = getSRClassDistribution(srMap);
+        double max = 0.0;
+        for(int i = 0; i < distribution.length; i++){
+            max = distribution[i] > max ? distribution[i] : max;
+        }
+        return max - getSRClassMean(srMap);
+    }
+
+    public static double getSRClassStdDev(Map<LocalId, Double> srMap){
+        double[] distribution = getSRClassDistribution(srMap);
+        double mean = getSRClassMean(srMap);
+        double sum = 0;
+        for(int i = 0; i < distribution.length; i++){
+            sum += (distribution[i] - mean) * (distribution[i] - mean);
+        }
+        return Math.sqrt(sum / distribution.length);
+    }
+
+
+
+
+
 
 
 

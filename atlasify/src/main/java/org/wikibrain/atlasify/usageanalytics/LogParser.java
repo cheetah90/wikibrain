@@ -5,6 +5,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.lang.time.DateUtils;
 import org.wikibrain.atlasify.usageanalytics.model.*;
 import org.wikibrain.conf.ConfigurationException;
+import org.wikibrain.core.lang.LocalId;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -80,13 +81,18 @@ public class LogParser {
                     break;
                 }
 
+                if(rows.get(i)[5].contentEquals("REGULAR-LOAD-RANDOM") || rows.get(i)[5].contentEquals("REGULAR-AUTO-COMPLETION-PRESSED") || rows.get(i)[5].contentEquals("FEATURE_ARTICLE-SEARCH") || rows.get(i)[5].contentEquals("LOAD-DATA") || rows.get(startIndex)[5].contentEquals("GAME-SEARCH")){
+                    //found the end of the session
+                    endDate = dateFormat.parse(rows.get(i)[9]);
+                    break;
+                }
                 if(rows.get(i)[5].contentEquals("LOAD-DATA") && (!loadDataFound)){
                     loadDataFound = true;
                     refSystem = rows.get(i)[2];
                     consumedLoadData.add(i);
                     continue;
                 }
-
+                //either explanation, zoom, or feedback at this point. should log it.
                 if(rows.get(i)[5].contains("ZOOM")){
                     zoomRecords.add(new AtlasifyZoomRecord((rows.get(i)[5]), Double.parseDouble(rows.get(i)[12]), Double.parseDouble(rows.get(i)[13]), dateFormat.parse(rows.get(i)[9])));
                     continue;
@@ -106,18 +112,7 @@ public class LogParser {
                     continue;
                 }
 
-                if(rows.get(i)[5].contentEquals("REGULAR-LOAD-RANDOM") || rows.get(i)[5].contentEquals("REGULAR-AUTO-COMPLETION-PRESSED") || rows.get(i)[5].contentEquals("FEATURE_ARTICLE-SEARCH") || rows.get(i)[5].contentEquals("LOAD-DATA") || rows.get(startIndex)[5].contentEquals("GAME-SEARCH")){
-                    //found the end of the session
-                    endDate = dateFormat.parse(rows.get(i)[9]);
-                    break;
-                }
 
-
-
-
-
-
-                //either explanation, zoom, or feedback at this point. should log it.
             }
             catch (Exception e){
                 continue;
@@ -128,6 +123,8 @@ public class LogParser {
         return new AtlasifyQueryRecord(geoRecord, userId, queryType, keyWord, refSystem, startDate, endDate, zoomRecords, explanationRecords, rating, feedback);
 
     }
+
+    private static Map<String, String> statCache = new HashMap<String, String>();
     private static void printQueryRecord(String[] rowWrite, CSVWriter writer, AtlasifyQueryRecord queryRecord) throws IOException, Exception{
         rowWrite[0] = queryRecord.getUserCookieId().toString();
         rowWrite[1] = queryRecord.queryType().toString();
@@ -139,13 +136,41 @@ public class LogParser {
         rowWrite[7] = queryRecord.getGeoRecord().getProvider();
         rowWrite[8] = String.valueOf(queryRecord.getExplanationRecords().size());
         rowWrite[9] = String.valueOf(queryRecord.getZoomRecords().size());
-        rowWrite[10] = String.valueOf(((double)queryRecord.getQueryEndTime().getTime() -(double) queryRecord.getQueryStartTime().getTime())/1000);
+        rowWrite[10] = String.valueOf(((double) queryRecord.getQueryEndTime().getTime() - (double) queryRecord.getQueryStartTime().getTime()) / 1000);
         rowWrite[11] = queryRecord.getRefSystem();
         rowWrite[12] = queryRecord.getRating().toString();
         rowWrite[13] = queryRecord.getFeedback();
-        rowWrite[14] = String.valueOf(calculator.getSRMean(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
-        rowWrite[15] = String.valueOf(calculator.getSRRange(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
-        rowWrite[16] = String.valueOf(calculator.getSRStdDev(calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true)));
+        String keyword = queryRecord.getKeyWord();
+        if(statCache.containsKey(queryRecord.getKeyWord())){
+            rowWrite[14] = statCache.get(keyword + "SRMean");
+            rowWrite[15] = statCache.get(keyword + "SRRange");
+            rowWrite[16] = statCache.get(keyword + "SRStdDev");
+            rowWrite[17] = statCache.get(keyword + "SRMaxMedianDiff");
+            rowWrite[18] = statCache.get(keyword + "SRClassMean");
+            rowWrite[19] = statCache.get(keyword + "SRClassMedian");
+            rowWrite[20] = statCache.get(keyword + "SRClassMaxMedianDiff");
+            rowWrite[21] = statCache.get(keyword + "SRClassStdDev");
+
+        }
+        else{
+            Map<LocalId, Double> srMap = calculator.getFilteredSRMap(calculator.countryMap.keySet(), queryRecord.getKeyWord(), true);
+            rowWrite[14] = String.valueOf(calculator.getSRMean(srMap));
+            statCache.put(keyword + "SRMean", rowWrite[14]);
+            rowWrite[15] = String.valueOf(calculator.getSRRange(srMap));
+            statCache.put(keyword + "SRRange", rowWrite[15]);
+            rowWrite[16] = String.valueOf(calculator.getSRStdDev(srMap));
+            statCache.put(keyword + "SRStdDev", rowWrite[16]);
+            rowWrite[17] = String.valueOf(calculator.getSRMaxMedianDifference(srMap));
+            statCache.put(keyword + "SRMaxMedianDiff", rowWrite[17]);
+            rowWrite[18] = String.valueOf(calculator.getSRClassMean(srMap));
+            statCache.put(keyword + "SRClassMean", rowWrite[18]);
+            rowWrite[19] = String.valueOf(calculator.getSRClassMedian(srMap));
+            statCache.put(keyword + "SRClassMedian", rowWrite[19]);
+            rowWrite[20] = String.valueOf(calculator.getSRClassMaxMedianDifference(srMap));
+            statCache.put(keyword + "SRClassMaxMedianDiff", rowWrite[20]);
+            rowWrite[21] = String.valueOf(calculator.getSRClassStdDev(srMap));
+            statCache.put(keyword + "SRClassStdDev", rowWrite[21]);
+        }
         System.out.println(queryRecord.getKeyWord() + " mean: " + rowWrite[14] + " range: " + rowWrite[15] + " stdDev: " + rowWrite[16]);
         writer.writeNext(rowWrite);
         writer.flush();
@@ -157,7 +182,7 @@ public class LogParser {
         reader = new CSVReader(new FileReader(logFileName), ',');
         writer = new CSVWriter(new FileWriter("AtlasifyLogAnalysis.csv"), ',');
         calculator = new AtlasifyKeywordStatCalculator();
-        String[] rowWrite = new String[17];
+        String[] rowWrite = new String[22];
         rowWrite[0] = "userId";
         rowWrite[1] = "queryType";
         rowWrite[2] = "keyword";
@@ -175,6 +200,11 @@ public class LogParser {
         rowWrite[14] = "STAT_MEAN";
         rowWrite[15] = "STAT_RANGE";
         rowWrite[16] = "STAT_STDDEV";
+        rowWrite[17] = "STAT_MAX_MEDIAN_DIFFERENCE";
+        rowWrite[18] = "STAT_CLASS_MEAN";
+        rowWrite[19] = "STAT_CLASS MEDIAN";
+        rowWrite[20] = "STAT_CLASS_MAX_MEDIAN_DIFFERENCE";
+        rowWrite[21] = "STAT_CLASS_STD_DEV";
         writer.writeNext(rowWrite);
         writer.flush();
 
