@@ -83,6 +83,24 @@ public class LogParser {
 
                 if(rows.get(i)[5].contentEquals("REGULAR-LOAD-RANDOM") || rows.get(i)[5].contentEquals("REGULAR-AUTO-COMPLETION-PRESSED") || rows.get(i)[5].contentEquals("FEATURE_ARTICLE-SEARCH") || rows.get(i)[5].contentEquals("LOAD-DATA") || rows.get(startIndex)[5].contentEquals("GAME-SEARCH")){
                     //found the end of the session
+                    if(((double)dateFormat.parse(rows.get(i)[9]).getTime() - (double)startDate.getTime())/1000 < 0.5){
+                        //potential reversed order
+                        if(rows.get(i)[5].contentEquals("REGULAR-LOAD-RANDOM"))
+                            queryType = AtlasifyQueryRecord.QueryType.RANDOM_QUERY;
+                        if(rows.get(i)[5].contentEquals("REGULAR-AUTO-COMPLETION-PRESSED"))
+                            queryType = AtlasifyQueryRecord.QueryType.AUTO_COMPLETE_QUERY;
+                        if(rows.get(i)[5].contentEquals("FEATURE_ARTICLE-SEARCH"))
+                            queryType = AtlasifyQueryRecord.QueryType.FEATURED_QUERY;
+                        if(rows.get(startIndex)[5].contentEquals("GAME-SEARCH"))
+                            queryType = AtlasifyQueryRecord.QueryType.GAME_QUERY;
+                        continue;
+                    }
+                    else{
+                        endDate = dateFormat.parse(rows.get(i)[9]);
+                        break;
+                    }
+                }
+                if(rows.get(i)[5].contentEquals("LOAD-DATA") && loadDataFound){
                     endDate = dateFormat.parse(rows.get(i)[9]);
                     break;
                 }
