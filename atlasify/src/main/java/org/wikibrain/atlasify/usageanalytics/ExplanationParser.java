@@ -106,7 +106,7 @@ public class ExplanationParser {
             }
             Collections.sort(srList);
             for(int j = 0; j < srList.size(); j ++){
-                if(j < srList.get(j)){
+                if(featureSRValue < srList.get(j)){
                     writeRow[13] = String.valueOf((double)j / (double)srList.size());
                 }
             }
@@ -129,7 +129,7 @@ public class ExplanationParser {
                 category = 8;
             writeRow[12] = String.valueOf(category);
 
-            writeRow[14] = String.valueOf(calculator.getSRClassMedian(filteredSRMap));
+            writeRow[14] = String.valueOf(calculator.getSRMedianClass(filteredSRMap));
             writer.writeNext(writeRow);
             writer.flush();
 

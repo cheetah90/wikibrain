@@ -226,6 +226,17 @@ public class AtlasifyKeywordStatCalculator {
             return distribution[distribution.length/2];
     }
 
+    public static int getSRMedianClass(Map<LocalId, Double> srMap){
+        double[] distribution = getSRClassDistribution(srMap);
+        int count = 0;
+        for(int i = 0; i < 9; i++){
+            count += distribution[i];
+            if(count > srMap.size()/2)
+                return i;
+        }
+        return 8;
+    }
+
     public static double getSRClassMaxMedianDifference(Map<LocalId, Double> srMap){
         double[] distribution = getSRClassDistribution(srMap);
         double max = 0.0;
