@@ -39,7 +39,7 @@ public class ExplanationParser {
         List<String[]> rows = reader.readAll();
         calculator = new AtlasifyKeywordStatCalculator();
 
-        String[] writeRow = new String[15];
+        String[] writeRow = new String[18];
         writeRow[0] = "userId";
         writeRow[1] = "clickLatLon";
         writeRow[2] = "feature";
@@ -55,6 +55,9 @@ public class ExplanationParser {
         writeRow[12] = "clickedFeatureSRClass";
         writeRow[13] = "clikedFeatureSRPercentile";
         writeRow[14] = "medianClass";
+        writeRow[15] = "25th percentile";
+        writeRow[16] = "50th percentile";
+        writeRow[17] = "75th percentile";
         writer.writeNext(writeRow);
         writer.flush();
         int count = 0;
@@ -81,6 +84,9 @@ public class ExplanationParser {
             writeRow[12] = "";
             writeRow[13] = "";
             writeRow[14] = "";
+            writeRow[15] = "";
+            writeRow[16] = "";
+            writeRow[17] = "";
             Map<LocalId, Double> filteredSRMap = calculator.getFilteredSRMap(calculator.countryMap.keySet(), keyword, true);
             Map<LocalId, Double> fullSRMap = calculator.getFilteredSRMap(null, keyword, true);
             LocalId id;
@@ -105,6 +111,9 @@ public class ExplanationParser {
                 srList.add(d);
             }
             Collections.sort(srList);
+            writeRow[15] = String.valueOf(srList.get(srList.size()/4));
+            writeRow[16] = String.valueOf(srList.get(srList.size()/2));
+            writeRow[17] = String.valueOf(srList.get((srList.size() * 3)/4));
             for(int j = 0; j < srList.size(); j ++){
                 if(featureSRValue < srList.get(j)){
                     writeRow[13] = String.valueOf((double)j / (double)srList.size());
