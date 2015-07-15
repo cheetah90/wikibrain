@@ -107,7 +107,7 @@ public class ExplanationParser {
             Collections.sort(srList);
             for(int j = 0; j < srList.size(); j ++){
                 if(j < srList.get(j)){
-                    writeRow[13] = String.valueOf((double)i / (double)srList.size());
+                    writeRow[13] = String.valueOf((double)j / (double)srList.size());
                 }
             }
             int category = 0;
