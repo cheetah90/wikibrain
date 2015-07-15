@@ -83,7 +83,15 @@ public class ExplanationParser {
             writeRow[14] = "";
             Map<LocalId, Double> filteredSRMap = calculator.getFilteredSRMap(calculator.countryMap.keySet(), keyword, true);
             Map<LocalId, Double> fullSRMap = calculator.getFilteredSRMap(null, keyword, true);
-            LocalId id =  new LocalId(Language.EN, lpDao.getByTitle(Language.EN, feature).getLocalId());
+            LocalId id;
+            try{
+                id =  new LocalId(Language.EN, lpDao.getByTitle(Language.EN, feature).getLocalId());
+            }
+            catch (Exception e){
+                writer.writeNext(writeRow);
+                writer.flush();
+                continue;
+            }
             Double featureSRValue = fullSRMap.get(id);
             if(featureSRValue == null){
                 writer.writeNext(writeRow);
