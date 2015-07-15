@@ -106,6 +106,8 @@ public class AtlasifyKeywordStatCalculator {
         try{
             LocalId id =  new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
             Map<LocalId, Double> nuResults = accessNorthwesternAPI(id, -1, spatialOnly);
+            if(filter == null)
+                return nuResults;
             for(Map.Entry<LocalId, Double> result : nuResults.entrySet()){
                 if(filter.contains(result.getKey().getId())){
                     returnVal.put(result.getKey(), result.getValue());
