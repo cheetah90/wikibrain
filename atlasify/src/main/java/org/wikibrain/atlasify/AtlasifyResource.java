@@ -451,7 +451,12 @@ public class AtlasifyResource {
 
 
         //temp
-        return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
+        try{
+            return new LocalId(lang, lpDao.getByTitle(lang, title).getLocalId());
+        }
+        catch (Exception e){
+            return null;
+        }
     }
 
     /**
@@ -465,13 +470,13 @@ public class AtlasifyResource {
         Language language = lang;
         String url = "";
         if(topN == -1 && spatialOnly){
-            url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId() + "/spatial/true";
+            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId() + "&spatial=true";
         }
         else if (topN == -1){
-            url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId();
+            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId();
         }
         else {
-            url = "http://downey-n2.cs.northwestern.edu:8080/wikisr/sr/sID/" + id.getId() + "/langID/" + language.getId()+ "/top/" + topN.toString();
+            url = "http://downey-n2.cs.northwestern.edu:8080/wwsr/sr/q?sID=" + id.getId() + "&langID=" + language.getId()+ "&top=" + topN.toString();
         }
         System.out.println("NU QUERY " + url);
 
@@ -489,15 +494,14 @@ public class AtlasifyResource {
         }
 
         JSONObject jsonObject = new JSONObject(stringBuilder.toString());
-        JSONArray jsonArray = jsonObject.getJSONArray("result");
+        Iterator<String> nameItr = jsonObject.keys();
         Map<LocalId, Double> result = new HashMap<LocalId, Double>();
-        int length = jsonArray.length();
 
-        for (int i = 0; i < length; i++) {
+        while(nameItr.hasNext()) {
             try{
-                JSONObject pageSRPair = jsonArray.getJSONObject(i);
-                LocalId page = new LocalId(language, pageSRPair.getInt("wikiPageId"));
-                Double sr = new Double(pageSRPair.getDouble("srMeasure"));
+                String name = nameItr.next();
+                LocalId page = new LocalId(language, Integer.parseInt(name));
+                Double sr = new Double(jsonObject.getDouble(name));
                 result.put(page, sr);
             }
             catch (Exception e){
@@ -1120,7 +1124,7 @@ public class AtlasifyResource {
             */
 
             /* Wikimedia */
-            URL wikipediaQueryUrl = new URL("https://en.wikipedia.org/w/api.php?action=opensearch&search=" + query.getKeyword());
+            URL wikipediaQueryUrl = new URL("https://en.wikipedia.org/w/api.php?action=opensearch&search=" + query.getKeyword().replace(" ", "_"));
             HttpURLConnection connection = (HttpURLConnection)wikipediaQueryUrl.openConnection();
             connection.setRequestMethod("GET");
             BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
@@ -1132,13 +1136,13 @@ public class AtlasifyResource {
 
 
             JSONArray wikipediaResponse = new JSONArray(sb.toString());
-            System.out.println("got wikipedia response: " + wikipediaResponse);
+            //System.out.println("got wikipedia response: " + wikipediaResponse);
             JSONArray autoCompleteResults = wikipediaResponse.getJSONArray(1);
-            System.out.println("got wikipedia auto complete results: " + autoCompleteResults);
+            //System.out.println("got wikipedia auto complete results: " + autoCompleteResults);
             for(int j = 0; j < autoCompleteResults.length() && j < 10; j++){
 
                 String title = autoCompleteResults.getString(j);
-                System.out.println("got auto complete result " + title);
+                //System.out.println("got auto complete result " + title);
                 LocalPage page = new LocalPage(language, 0, "");
                 try{
                     page = lpDao.getById(wikibrainPhaseResolution(title));
@@ -1149,7 +1153,7 @@ public class AtlasifyResource {
                 }
                 catch (Exception e) {
                     System.out.println("Error when getting auto-completion result for " + query.getKeyword());
-                    e.printStackTrace();
+                    //e.printStackTrace();
 
                     // There was an error, lets keep keep going
                 }
@@ -1213,7 +1217,7 @@ public class AtlasifyResource {
             }*/
         } catch (Exception e) {
             System.out.println("Error when getting auto-completion result for " + query.getKeyword());
-            e.printStackTrace();
+            //e.printStackTrace();
             autocompleteMap = new HashMap<String, String>();
         }
 
@@ -1225,6 +1229,103 @@ public class AtlasifyResource {
         //System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
         return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
     }
+
+
+    @POST
+    @Path("/relatedQuery")
+    @Consumes("application/json")
+    @Produces("text/plain")
+
+    public Response relatedQuerySearch(AtlasifyQuery query) throws Exception {
+        if(wikibrainLoadingInProcess == true){
+            System.out.println("Waiting for Wikibrain Loading");
+            return Response.serverError().entity("Wikibrain not ready").build();
+        }
+        if (lpDao == null) {
+            wikibrainSRinit();
+        }
+
+        Language language = lang;
+        System.out.println("Received Auto Complete Query " + query.getKeyword());
+        Map<String, String> autocompleteMap;
+
+        if ((autocompleteMap = autocompleteCache.get(query.getKeyword())) != null) {
+            //System.out.println("Get Auto Complete Result from cache " + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+            return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
+        }
+
+        autocompleteMap = new HashMap<String, String>();
+        try {
+            int i = 0;
+
+
+            /* Bing */
+
+            String bingAccountKey = "w7BfCNSWaTSs+txYDpUfIFOAlM6MRbJmZxv0Fz/z0tI=";
+            byte[] bingAccountKeyBytes = Base64.encodeBase64((bingAccountKey + ":" + bingAccountKey).getBytes());
+            String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
+
+            String bingQuery = query.getKeyword();
+            URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/Search/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
+
+            HttpURLConnection connection = (HttpURLConnection)bingQueryurl.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Authorization", "Basic " + bingAccountKeyEncoded);
+            connection.setRequestProperty("Accept", "application/json");
+            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+
+            String output;
+            StringBuilder sb = new StringBuilder();
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
+            }
+            //System.out.println(sb.toString());
+
+            JSONObject bingResponse = new JSONObject(sb.toString());
+            bingResponse = bingResponse.getJSONObject("d");
+            JSONArray bingResponses = bingResponse.getJSONArray("results");
+            JSONObject response;
+
+            for (int j = 0; j < bingResponses.length() && i < 10; j++) {
+                response = bingResponses.getJSONObject(j);
+                URL url = new URL(response.getString("Url"));
+                String path = url.getPath();
+                String title = path.substring(path.lastIndexOf('/') + 1).replace('_', ' ');
+                LocalPage page = new LocalPage(language, 0, "");
+                try {
+                    for (LocalId p : pa.resolve(language, title, 1).keySet()) {
+                        page = lpDao.getById(p);
+                    }
+                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
+                        autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
+                        i++;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error when getting auto-completion result for " + query.getKeyword());
+                    //e.printStackTrace();
+
+                    // There was an error, lets keep keep going
+                }
+            }
+
+
+
+        } catch (Exception e) {
+            System.out.println("Error when getting auto-completion result for " + query.getKeyword());
+            //e.printStackTrace();
+            autocompleteMap = new HashMap<String, String>();
+        }
+
+        // Cache the autocomplete
+        if (autocompleteMap.size() > 0) {
+            autocompleteCache.put(query.getKeyword(), autocompleteMap);
+        }
+
+        //System.out.println("Get Auto Complete Result" + new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString());
+        return Response.ok(new JSONObject(new autoCompeleteResponse(autocompleteMap, query.getChecksum()), new String[] { "resultList", "autoCompleteChecksum" }).toString()).build();
+    }
+
+
     public String getExplanation(String keyword, String feature, boolean useCaches) throws Exception{
         if (lpDao == null && wikibrainLoadingInProcess == false) {
             wikibrainSRinit();

@@ -7,7 +7,6 @@ import org.wikibrain.core.cmd.Env;
 import org.wikibrain.core.cmd.EnvBuilder;
 import org.wikibrain.core.dao.LocalPageDao;
 import org.wikibrain.core.dao.UniversalPageDao;
-import org.wikibrain.core.jooq.tables.LocalPage;
 import org.wikibrain.core.lang.Language;
 import org.wikibrain.spatial.dao.SpatialDataDao;
 
