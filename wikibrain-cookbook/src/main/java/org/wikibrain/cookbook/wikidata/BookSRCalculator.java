@@ -25,7 +25,7 @@ public class BookSRCalculator {
         Configurator conf = env.getConfigurator();
         UniversalPageDao upDao = conf.get(UniversalPageDao.class);
         LocalPageDao lpDao = conf.get(LocalPageDao.class);
-        SRMetric sr = conf.get(SRMetric.class, "ensemble","language", "en");
+        //SRMetric sr = conf.get(SRMetric.class, "ensemble","language", "en");
         WikidataDao wdDao = conf.get(WikidataDao.class);
         Set<Integer> conceptSet = wdDao.conceptsWithValue("instance of", WikidataValue.forItem(5));
         int count = 0;
