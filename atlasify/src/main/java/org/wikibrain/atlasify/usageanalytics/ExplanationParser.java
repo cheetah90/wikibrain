@@ -110,6 +110,11 @@ public class ExplanationParser {
             for(Double d : filteredSRMap.values()){
                 srList.add(d);
             }
+            if(srList.size() == 0){
+                writer.writeNext(writeRow);
+                writer.flush();
+                continue;
+            }
             Collections.sort(srList);
             writeRow[15] = String.valueOf(srList.get(srList.size()/4));
             writeRow[16] = String.valueOf(srList.get(srList.size()/2));
