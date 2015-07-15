@@ -25,7 +25,8 @@ public class BookSRCalculator {
     private static LocalPageDao lpDao;
     public BookSRCalculator(Env env, Language lang) throws ConfigurationException{
         Configurator conf = env.getConfigurator();
-        sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
+        //switch between SR metrics here
+        sr = conf.get(SRMetric.class, "milnewitten", "language", lang.getLangCode());
         upDao =  conf.get(UniversalPageDao.class);
         lpDao = conf.get(LocalPageDao.class);
     }
