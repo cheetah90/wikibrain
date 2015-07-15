@@ -77,10 +77,20 @@ public class ExplanationParser {
             writeRow[8] = row[14];
             writeRow[9] = row[12];
             writeRow[10] = row[13];
+            writeRow[11] = "";
+            writeRow[12] = "";
+            writeRow[13] = "";
+            writeRow[14] = "";
             Map<LocalId, Double> filteredSRMap = calculator.getFilteredSRMap(calculator.countryMap.keySet(), keyword, true);
             Map<LocalId, Double> fullSRMap = calculator.getFilteredSRMap(null, keyword, true);
             LocalId id =  new LocalId(Language.EN, lpDao.getByTitle(Language.EN, feature).getLocalId());
             Double featureSRValue = fullSRMap.get(id);
+            if(featureSRValue == null){
+                writer.writeNext(writeRow);
+                writer.flush();
+                continue;
+            }
+
             writeRow[11] = String.valueOf(featureSRValue);
             List<Double> srList = new ArrayList<Double>();
             for(Double d : filteredSRMap.values()){
