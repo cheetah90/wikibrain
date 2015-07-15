@@ -24,12 +24,17 @@ public class AtlasifyKeywordStatCalculator {
     private static Integer NorthwesternTimeout = 100000;
     public static Map<Integer, String> countryMap;
     private static LocalPageDao lpDao;
+    private static Map<LocalId, Map<LocalId, Double>> nuSpatialAPICache;
+    private static Map<LocalId, Map<LocalId, Double>> nuNonSpatialAPICache;
+
 
     public AtlasifyKeywordStatCalculator() throws ConfigurationException, FileNotFoundException, IOException{
         Env env = new EnvBuilder().build();
         Configurator conf = env.getConfigurator();
         lpDao = conf.get(LocalPageDao.class);
         countryMap = new HashMap<Integer, String>();
+        nuSpatialAPICache = new HashMap<LocalId, Map<LocalId, Double>>();
+        nuNonSpatialAPICache = new HashMap<LocalId, Map<LocalId, Double>>();
         String s = new Scanner( new File("countries.js") ).useDelimiter("\\A").next();
         JSONObject jsonObject = new JSONObject(s);
         Iterator<String> nameItr = jsonObject.keys();
@@ -47,6 +52,11 @@ public class AtlasifyKeywordStatCalculator {
     }
 
     private static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN, boolean spatialOnly) throws Exception {
+        if(topN == -1 && spatialOnly == true && nuSpatialAPICache.containsKey(id))
+            return nuSpatialAPICache.get(id);
+        if(topN == -1 && spatialOnly == false && nuNonSpatialAPICache.containsKey(id))
+            return nuNonSpatialAPICache.get(id);
+
         Map<LocalId, Double> result = new HashMap<LocalId, Double>();
         try{
             //hack
@@ -98,7 +108,12 @@ public class AtlasifyKeywordStatCalculator {
             e.printStackTrace();
         }
 
-        return result;
+        if(topN == -1 && spatialOnly == true)
+            nuSpatialAPICache.put(id, result);
+        if(topN == -1 && spatialOnly == false)
+            nuNonSpatialAPICache.put(id, result);
+
+         return result;
     }
 
     public static Map<LocalId, Double> getFilteredSRMap(Set<Integer> filter, String title, boolean spatialOnly) throws DaoException, Exception{
