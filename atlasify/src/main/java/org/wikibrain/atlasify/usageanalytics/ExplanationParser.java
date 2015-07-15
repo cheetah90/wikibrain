@@ -122,6 +122,7 @@ public class ExplanationParser {
             for(int j = 0; j < srList.size(); j ++){
                 if(featureSRValue < srList.get(j)){
                     writeRow[13] = String.valueOf((double)j / (double)srList.size());
+                    break;
                 }
             }
             int category = 0;
