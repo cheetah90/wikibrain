@@ -146,6 +146,52 @@ public class LogParser {
         return new AtlasifyQueryRecord(geoRecord, userId, queryType, keyWord, refSystem, startDate, endDate, zoomRecords, explanationRecords, rating, feedback);
 
     }
+    private static double getWeightedSR(Map<LocalId, Double> fullSRMap){
+        /*
+        double srUSA = fullSRMap.get(new LocalId(Language.EN, 3434750)) * 0.2953;
+        double srIndia = fullSRMap.get(new LocalId(Language.EN, 14533)) * 0.1827;
+        double srGermany = fullSRMap.get(new LocalId(Language.EN, 11867)) * 0.1326;
+        double srSpain = fullSRMap.get(new LocalId(Language.EN, 26667)) * 0.1232;
+        double srMexico = fullSRMap.get(new LocalId(Language.EN, 3966054)) * 0.0501;
+        double srUK = fullSRMap.get(new LocalId(Language.EN, 31717)) * 0.0426;
+        double srCanada = fullSRMap.get(new LocalId(Language.EN, 5042916)) * 0.0425;
+        double srGreece = fullSRMap.get(new LocalId(Language.EN, 12108)) * 0.0199;
+        double srAus = fullSRMap.get(new LocalId(Language.EN, 4689264)) * 0.0182;
+        double srArgentina = fullSRMap.get(new LocalId(Language.EN, 18951905)) * 0.0164;
+        double srFrance = fullSRMap.get(new LocalId(Language.EN, 5843419)) * 0.0147;
+        double srNet = fullSRMap.get(new LocalId(Language.EN, 21148)) * 0.0133;
+        double srSwit = fullSRMap.get(new LocalId(Language.EN, 26748)) * 0.0129;
+        double srChina = fullSRMap.get(new LocalId(Language.EN, 5405)) * 0.0128;
+        double srSweden = fullSRMap.get(new LocalId(Language.EN, 5058739)) * 0.0118;
+        double srIsrael = fullSRMap.get(new LocalId(Language.EN, 9282173)) * 0.0108;
+        */
+
+        List<Double> srList = new ArrayList<Double>();
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 3434750)) * 0.2953);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 14533)) * 0.1827);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 11867)) * 0.1326);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 26667)) * 0.1232);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 3966054)) * 0.0501);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 31717)) * 0.0426);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 5042916)) * 0.0425);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 12108)) * 0.0199);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 4689264)) * 0.0182);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 18951905)) * 0.0164);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 5843419)) * 0.0147);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 21148)) * 0.0133);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 26748)) * 0.0129);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 5405)) * 0.0128);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 5058739)) * 0.0118);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 9282173)) * 0.0108);
+        double sum = 0;
+        for(Double d : srList){
+            if(d == null)
+                continue;
+            sum += d;
+        }
+        return  sum;
+
+    }
 
     private static Map<String, String> statCache = new HashMap<String, String>();
     private static void printQueryRecord(String[] rowWrite, CSVWriter writer, AtlasifyQueryRecord queryRecord) throws IOException, Exception{
@@ -202,6 +248,10 @@ public class LogParser {
         rowWrite[26] = "";
         rowWrite[27] = "";
         rowWrite[28] = "";
+        rowWrite[29] = "";
+        rowWrite[30] = "";
+        rowWrite[31] = "";
+
 
         Map<LocalId, Double> filteredSRMap = calculator.getFilteredSRMap(calculator.countryMap.keySet(), keyword, true);
         Map<LocalId, Double> fullSRMap = calculator.getFilteredSRMap(null, keyword, true);
@@ -261,6 +311,32 @@ public class LogParser {
         rowWrite[25] = String.valueOf(calculator.getSRMedianClass(filteredSRMap));
 
 
+        Double baselineSR = getWeightedSR(fullSRMap);
+        rowWrite[29] = String.valueOf(baselineSR);
+        for(int j = 0; j < srList.size(); j ++){
+            if(baselineSR < srList.get(j)){
+                rowWrite[30] = String.valueOf((double)j / (double)srList.size());
+                break;
+            }
+        }
+        category = 0;
+        if(baselineSR > 0.39)
+            category = 1;
+        if(baselineSR > 0.42)
+            category = 2;
+        if(baselineSR > 0.445)
+            category = 3;
+        if(baselineSR > 0.475)
+            category = 4;
+        if(baselineSR > 0.51)
+            category = 5;
+        if(baselineSR > 0.58)
+            category = 6;
+        if(baselineSR > 0.66)
+            category = 7;
+        if(baselineSR > 0.75)
+            category = 8;
+        rowWrite[31] = String.valueOf(category);
 
 
         writer.writeNext(rowWrite);
@@ -275,7 +351,7 @@ public class LogParser {
         reader = new CSVReader(new FileReader(logFileName), ',');
         writer = new CSVWriter(new FileWriter("AtlasifyLogAnalysis_withUserLocationSR.csv"), ',');
         calculator = new AtlasifyKeywordStatCalculator();
-        String[] rowWrite = new String[29];
+        String[] rowWrite = new String[32];
         rowWrite[0] = "userId";
         rowWrite[1] = "queryType";
         rowWrite[2] = "keyword";
@@ -305,6 +381,9 @@ public class LogParser {
         rowWrite[26] = "25th Percentile";
         rowWrite[27] = "50th Percentile";
         rowWrite[28] = "75th Percentile";
+        rowWrite[29] = "WeightedMeanSR";
+        rowWrite[30] = "WeightedMeanSRPercentile";
+        rowWrite[31] = "WeightedSRClass";
         writer.writeNext(rowWrite);
         writer.flush();
 
