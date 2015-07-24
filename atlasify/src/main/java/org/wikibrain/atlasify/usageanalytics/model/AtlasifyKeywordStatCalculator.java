@@ -32,7 +32,6 @@ public class AtlasifyKeywordStatCalculator {
         Env env = new EnvBuilder().build();
         Configurator conf = env.getConfigurator();
         lpDao = conf.get(LocalPageDao.class);
-        countryMap = new HashMap<Integer, String>();
         nuSpatialAPICache = new HashMap<LocalId, Map<LocalId, Double>>();
         nuNonSpatialAPICache = new HashMap<LocalId, Map<LocalId, Double>>();
         String s = new Scanner( new File("countries.js") ).useDelimiter("\\A").next();
@@ -51,7 +50,7 @@ public class AtlasifyKeywordStatCalculator {
 
     }
 
-    private static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN, boolean spatialOnly) throws Exception {
+    public static Map<LocalId, Double> accessNorthwesternAPI(LocalId id, Integer topN, boolean spatialOnly) throws Exception {
         if(topN == -1 && spatialOnly == true && nuSpatialAPICache.containsKey(id))
             return nuSpatialAPICache.get(id);
         if(topN == -1 && spatialOnly == false && nuNonSpatialAPICache.containsKey(id))
