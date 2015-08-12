@@ -85,6 +85,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                     countryLocalIdLocalIdDistanceMap.put(new AbstractMap.SimpleEntry<Integer, Integer>(localId1, localId2), geoCalc.getOrthodromicDistance()/1000);
                 }
                 catch (Exception e){
+                    e.printStackTrace();
                     System.out.println("Failed to get geom for " + localId1 + " and " + localId2);
                 }
             }
