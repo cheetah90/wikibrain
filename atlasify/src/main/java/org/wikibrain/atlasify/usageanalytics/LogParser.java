@@ -7,6 +7,7 @@ import org.wikibrain.atlasify.usageanalytics.model.*;
 import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.core.cmd.Env;
 import org.wikibrain.core.cmd.EnvBuilder;
+import org.wikibrain.core.dao.DaoException;
 import org.wikibrain.core.dao.LocalPageDao;
 import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.lang.LocalId;
@@ -337,21 +338,23 @@ public class LogParser {
         if(baselineSR > 0.75)
             category = 8;
         rowWrite[31] = String.valueOf(category);
+        rowWrite[32] = String.valueOf(moranCalc.CalculateMoransI(keyword));
 
 
         writer.writeNext(rowWrite);
         writer.flush();
     }
 
-
-    public static void main(String args[])  throws IOException, ParseException, ConfigurationException {
+    private static AtlasifyInvertedDistanceMatrixGenerator moranCalc;
+    public static void main(String args[])  throws IOException, ParseException, ConfigurationException, DaoException {
         Env env = EnvBuilder.envFromArgs(args);
         lpDao = env.getConfigurator().get(LocalPageDao.class);
         int count = 0;
         reader = new CSVReader(new FileReader(logFileName), ',');
         writer = new CSVWriter(new FileWriter("AtlasifyLogAnalysis_withUserLocationSR.csv"), ',');
         calculator = new AtlasifyKeywordStatCalculator();
-        String[] rowWrite = new String[32];
+        moranCalc = new AtlasifyInvertedDistanceMatrixGenerator();
+        String[] rowWrite = new String[33];
         rowWrite[0] = "userId";
         rowWrite[1] = "queryType";
         rowWrite[2] = "keyword";
@@ -384,6 +387,7 @@ public class LogParser {
         rowWrite[29] = "WeightedMeanSR";
         rowWrite[30] = "WeightedMeanSRPercentile";
         rowWrite[31] = "WeightedSRClass";
+        rowWrite[32] = "Moran's I";
         writer.writeNext(rowWrite);
         writer.flush();
 
