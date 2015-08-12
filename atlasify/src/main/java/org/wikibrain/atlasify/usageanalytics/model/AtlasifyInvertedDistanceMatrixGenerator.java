@@ -63,6 +63,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                 countryUniIdNameMap.put(uniId, countryLocalIdNameMap.get(localId));
                 countryUniIdGeomMap.put(uniId, geom);
                 countryLocalIdGeomMap.put(localId, geom);
+                System.out.println("Got geom for " + localId + " is " + geom.toText());
             }
             catch (Exception e){
                 System.out.println("Can't get geometry for " + countryLocalIdGeomMap.get(localId));
