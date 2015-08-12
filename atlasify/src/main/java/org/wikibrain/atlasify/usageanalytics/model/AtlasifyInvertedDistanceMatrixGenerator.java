@@ -31,6 +31,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
     private static UniversalPageDao upDao;
     private static LocalPageDao lpDao;
     private static SpatialDataDao sdDao;
+    private static Set<Integer> countriesWithGeom = new HashSet<Integer>();
     public AtlasifyInvertedDistanceMatrixGenerator() throws ConfigurationException, FileNotFoundException, DaoException{
         Env env = new EnvBuilder().build();
         Configurator conf = env.getConfigurator();
@@ -71,11 +72,21 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
         GeodeticCalculator geoCalc = new GeodeticCalculator();
         for(Integer localId1 : countryLocalIdGeomMap.keySet()){
             for(Integer localId2 : countryLocalIdGeomMap.keySet()){
-                Point p1 = countryLocalIdGeomMap.get(localId1).getCentroid();
-                Point p2 = countryLocalIdGeomMap.get(localId2).getCentroid();
-                geoCalc.setStartingGeographicPoint(p1.getX(), p1.getY());
-                geoCalc.setDestinationGeographicPoint(p2.getX(), p2.getY());
-                countryLocalIdLocalIdDistanceMap.put(new AbstractMap.SimpleEntry<Integer, Integer>(localId1, localId2), geoCalc.getOrthodromicDistance()/1000);
+                try{
+                    Point p1 = countryLocalIdGeomMap.get(localId1).getCentroid();
+                    if(p1.isValid())
+                        countriesWithGeom.add(localId1);
+                    Point p2 = countryLocalIdGeomMap.get(localId2).getCentroid();
+                        countriesWithGeom.add(localId2);
+                    if(p2.isValid())
+                        countriesWithGeom.add(localId2);
+                    geoCalc.setStartingGeographicPoint(p1.getX(), p1.getY());
+                    geoCalc.setDestinationGeographicPoint(p2.getX(), p2.getY());
+                    countryLocalIdLocalIdDistanceMap.put(new AbstractMap.SimpleEntry<Integer, Integer>(localId1, localId2), geoCalc.getOrthodromicDistance()/1000);
+                }
+                catch (Exception e){
+                    System.out.println("Failed to get geom for " + localId1 + " and " + localId2);
+                }
             }
         }
         System.out.println("Finished constructing distance matrix");
@@ -101,14 +112,16 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
         }
         meanSR = meanSR / SRCount;
         Double wijSum = 0.0, wijTimeSum = 0.0, wiTimeSum = 0.0;
-        for(Integer countryI : countryLocalIdSRMap.keySet()){
+        Integer nCounter = 0;
+        for(Integer countryI : countriesWithGeom) {
             wiTimeSum += (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryI) - meanSR);
-            for (Integer countryJ : countryLocalIdSRMap.keySet()){
+            for (Integer countryJ : countriesWithGeom){
                 wijSum += (1 / countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ)));
                 wijTimeSum += (1 / countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ))) * (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryJ) - meanSR);
             }
+            nCounter ++;
         }
-        Double result = (SRCount / wijSum) * (wijTimeSum / wiTimeSum);
+        Double result = (countriesWithGeom.size() / wijSum) * (wijTimeSum / wiTimeSum);
         System.out.println("Moran's I for " + keyword + " is " + result.toString());
         return result;
 
