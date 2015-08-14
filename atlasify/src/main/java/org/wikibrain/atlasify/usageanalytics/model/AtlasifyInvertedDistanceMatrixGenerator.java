@@ -127,7 +127,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                 for(Integer countryI : countriesWithGeom) {
                     wiTimeSum += (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryI) - meanSR);
                     for (Integer countryJ : countriesWithGeom){
-                        if(countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ)) == null){
+                        if(countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ)) == null || countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ)) < 1){
                             System.out.println("Failed to get distance between " + countryI + " and " +countryJ);
                             continue;
                         }
