@@ -122,6 +122,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
             meanSR = meanSR / SRCount;
             Double wijSum = 0.0, wijTimeSum = 0.0, wiTimeSum = 0.0;
             Integer nCounter = 0;
+            Double result = -1.0;
             try{
                 for(Integer countryI : countriesWithGeom) {
                     wiTimeSum += (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryI) - meanSR);
@@ -131,7 +132,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                     }
                     nCounter ++;
                 }
-                Double result = (countriesWithGeom.size() / wijSum) * (wijTimeSum / wiTimeSum);
+                result = (countriesWithGeom.size() / wijSum) * (wijTimeSum / wiTimeSum);
             }
             catch (Exception e){
                 e.printStackTrace();
