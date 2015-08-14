@@ -66,7 +66,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                 System.out.println("Got geom for " + localId + " is " + geom.toText());
             }
             catch (Exception e){
-                System.out.println("Can't get geometry for " + countryLocalIdGeomMap.get(localId));
+                System.out.println("Can't get geometry for " + lpDao.getById(Language.EN, localId).getTitle().getCanonicalTitle());
             }
         }
         System.out.println("Finished constructing index maps");
@@ -87,7 +87,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                 }
                 catch (Exception e){
                     e.printStackTrace();
-                    System.out.println("Failed to get geom for " + localId1 + " and " + localId2);
+                    System.out.println("Failed to get geom for " + lpDao.getById(Language.EN, localId1).getTitle().getCanonicalTitle() + " and " + lpDao.getById(Language.EN, localId2).getTitle().getCanonicalTitle());
                 }
             }
         }
