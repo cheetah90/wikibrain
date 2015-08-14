@@ -106,7 +106,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
             Map<Integer, Double> countryLocalIdSRMap = new HashMap<Integer, Double>();
             Double meanSR = 0.0;
             Integer SRCount = 0;
-            for(Integer countryLocalId : countryLocalIdSRMap.keySet()){
+            for(Integer countryLocalId : countriesWithGeom){
                 try{
                     countryLocalIdSRMap.put(countryLocalId, nuResults.get(new LocalId(Language.EN, countryLocalId)));
                     meanSR += countryLocalIdSRMap.get(countryLocalId);
@@ -118,6 +118,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                     SRCount ++;
                 }
             }
+            System.out.println("Finished getting SR for " + keyword + " , Got NU result size of " + nuResults.size());
             meanSR = meanSR / SRCount;
             Double wijSum = 0.0, wijTimeSum = 0.0, wiTimeSum = 0.0;
             Integer nCounter = 0;
