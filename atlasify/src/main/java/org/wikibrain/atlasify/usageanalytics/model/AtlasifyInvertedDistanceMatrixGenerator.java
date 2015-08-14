@@ -79,15 +79,14 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
             for(Integer localId2 : countryLocalIdGeomMap.keySet()){
                 try{
                     Point p1 = countryLocalIdGeomMap.get(localId1).getCentroid();
-                    if(p1.isValid())
-                        countriesWithGeom.add(localId1);
+
                     Point p2 = countryLocalIdGeomMap.get(localId2).getCentroid();
-                        countriesWithGeom.add(localId2);
-                    if(p2.isValid())
-                        countriesWithGeom.add(localId2);
+
                     geoCalc.setStartingGeographicPoint(p1.getX(), p1.getY());
                     geoCalc.setDestinationGeographicPoint(p2.getX(), p2.getY());
                     countryLocalIdLocalIdDistanceMap.put(new AbstractMap.SimpleEntry<Integer, Integer>(localId1, localId2), geoCalc.getOrthodromicDistance()/1000);
+                    countriesWithGeom.add(localId1);
+                    countriesWithGeom.add(localId2);
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -95,7 +94,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                 }
             }
         }
-        System.out.println("Finished constructing distance matrix");
+        System.out.println("Finished constructing distance matrix, Got " + countriesWithGeom.size() + "countries with geom");
 
     }
     public double CalculateMoransI(String keyword){
@@ -127,14 +126,20 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
                 for(Integer countryI : countriesWithGeom) {
                     wiTimeSum += (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryI) - meanSR);
                     for (Integer countryJ : countriesWithGeom){
+                        if(countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ)) == null){
+                            System.out.println("Failed to get distance between " + countryI + " and " +countryJ);
+                            continue;
+                        }
                         wijSum += (1 / countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ)));
                         wijTimeSum += (1 / countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ))) * (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryJ) - meanSR);
+
                     }
                     nCounter ++;
                 }
                 result = (countriesWithGeom.size() / wijSum) * (wijTimeSum / wiTimeSum);
             }
             catch (Exception e){
+                System.out.println("Error in calculating moran's i");
                 e.printStackTrace();
                 return -1;
             }
