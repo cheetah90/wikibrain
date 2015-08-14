@@ -59,7 +59,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
         for(Integer localId : countryLocalIdNameMap.keySet()){
             try{
                 Integer uniId = upDao.getByLocalPage(lpDao.getById(Language.EN, localId)).getUnivId();
-                Geometry geom = sdDao.getGeometry(uniId, "country");
+                Geometry geom = sdDao.getGeometry(uniId, "wikidata");
                 countryUniIdNameMap.put(uniId, countryLocalIdNameMap.get(localId));
                 countryUniIdGeomMap.put(uniId, geom);
                 countryLocalIdGeomMap.put(localId, geom);
