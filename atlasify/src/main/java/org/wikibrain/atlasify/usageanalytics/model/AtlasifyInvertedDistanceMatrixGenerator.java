@@ -60,6 +60,10 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
             try{
                 Integer uniId = upDao.getByLocalPage(lpDao.getById(Language.EN, localId)).getUnivId();
                 Geometry geom = sdDao.getGeometry(uniId, "wikidata");
+                if(geom == null){
+                    System.out.println("Can't get geometry for " + lpDao.getById(Language.EN, localId).getTitle().getCanonicalTitle());
+                    continue;
+                }
                 countryUniIdNameMap.put(uniId, countryLocalIdNameMap.get(localId));
                 countryUniIdGeomMap.put(uniId, geom);
                 countryLocalIdGeomMap.put(localId, geom);
@@ -94,38 +98,44 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
         System.out.println("Finished constructing distance matrix");
 
     }
-    public double CalculateMoransI(String keyword) throws DaoException, Exception{
-        LocalId keywordId = lpDao.getByTitle(Language.EN, keyword).toLocalId();
-        Map<LocalId, Double> nuResults = AtlasifyKeywordStatCalculator.accessNorthwesternAPI(keywordId, -1, true);
-        Map<Integer, Double> countryLocalIdSRMap = new HashMap<Integer, Double>();
-        Double meanSR = 0.0;
-        Integer SRCount = 0;
-        for(Integer countryLocalId : countryLocalIdSRMap.keySet()){
-            try{
-                countryLocalIdSRMap.put(countryLocalId, nuResults.get(new LocalId(Language.EN, countryLocalId)));
-                meanSR += countryLocalIdSRMap.get(countryLocalId);
-                SRCount ++;
+    public double CalculateMoransI(String keyword){
+        try {
+            LocalId keywordId = lpDao.getByTitle(Language.EN, keyword).toLocalId();
+            Map<LocalId, Double> nuResults = AtlasifyKeywordStatCalculator.accessNorthwesternAPI(keywordId, -1, true);
+            Map<Integer, Double> countryLocalIdSRMap = new HashMap<Integer, Double>();
+            Double meanSR = 0.0;
+            Integer SRCount = 0;
+            for(Integer countryLocalId : countryLocalIdSRMap.keySet()){
+                try{
+                    countryLocalIdSRMap.put(countryLocalId, nuResults.get(new LocalId(Language.EN, countryLocalId)));
+                    meanSR += countryLocalIdSRMap.get(countryLocalId);
+                    SRCount ++;
+                }
+                catch (Exception e){
+                    //Consider SR to be 0 if we have no SR
+                    countryLocalIdSRMap.put(countryLocalId, 0.0);
+                    SRCount ++;
+                }
             }
-            catch (Exception e){
-                //Consider SR to be 0 if we have no SR
-                countryLocalIdSRMap.put(countryLocalId, 0.0);
-                SRCount ++;
+            meanSR = meanSR / SRCount;
+            Double wijSum = 0.0, wijTimeSum = 0.0, wiTimeSum = 0.0;
+            Integer nCounter = 0;
+            for(Integer countryI : countriesWithGeom) {
+                wiTimeSum += (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryI) - meanSR);
+                for (Integer countryJ : countriesWithGeom){
+                    wijSum += (1 / countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ)));
+                    wijTimeSum += (1 / countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ))) * (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryJ) - meanSR);
+                }
+                nCounter ++;
             }
+            Double result = (countriesWithGeom.size() / wijSum) * (wijTimeSum / wiTimeSum);
+            System.out.println("Moran's I for " + keyword + " is " + result.toString());
+            return result;
         }
-        meanSR = meanSR / SRCount;
-        Double wijSum = 0.0, wijTimeSum = 0.0, wiTimeSum = 0.0;
-        Integer nCounter = 0;
-        for(Integer countryI : countriesWithGeom) {
-            wiTimeSum += (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryI) - meanSR);
-            for (Integer countryJ : countriesWithGeom){
-                wijSum += (1 / countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ)));
-                wijTimeSum += (1 / countryLocalIdLocalIdDistanceMap.get(new AbstractMap.SimpleEntry<Integer, Integer>(countryI, countryJ))) * (countryLocalIdSRMap.get(countryI) - meanSR) * (countryLocalIdSRMap.get(countryJ) - meanSR);
-            }
-            nCounter ++;
+        catch (Exception e){
+            e.printStackTrace();
+            return  -1;
         }
-        Double result = (countriesWithGeom.size() / wijSum) * (wijTimeSum / wiTimeSum);
-        System.out.println("Moran's I for " + keyword + " is " + result.toString());
-        return result;
 
 
 
