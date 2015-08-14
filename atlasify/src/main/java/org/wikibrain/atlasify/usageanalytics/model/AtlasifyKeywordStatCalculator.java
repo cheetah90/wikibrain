@@ -37,6 +37,7 @@ public class AtlasifyKeywordStatCalculator {
         String s = new Scanner( new File("countries.js") ).useDelimiter("\\A").next();
         JSONObject jsonObject = new JSONObject(s);
         Iterator<String> nameItr = jsonObject.keys();
+        countryMap = new HashMap<Integer, String>();
         while(nameItr.hasNext()){
             try {
                 String name = nameItr.next();
