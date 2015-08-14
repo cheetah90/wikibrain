@@ -100,6 +100,7 @@ public class AtlasifyInvertedDistanceMatrixGenerator {
     }
     public double CalculateMoransI(String keyword){
         try {
+            System.out.println("Calculating Moran's I for " + keyword);
             LocalId keywordId = lpDao.getByTitle(Language.EN, keyword).toLocalId();
             Map<LocalId, Double> nuResults = AtlasifyKeywordStatCalculator.accessNorthwesternAPI(keywordId, -1, true);
             Map<Integer, Double> countryLocalIdSRMap = new HashMap<Integer, Double>();
