@@ -38,6 +38,6 @@ public class BookSRCalculator {
         Language lang = Language.EN;
         Env env = EnvBuilder.envFromArgs(args);
         BookSRCalculator calculator = new BookSRCalculator(env, lang);
-        calculator.getSR(89, 503, lang);
+        System.out.println(calculator.getSR(89, 503, lang));
     }
 }

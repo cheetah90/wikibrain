@@ -5,6 +5,11 @@ import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.lang.time.DateUtils;
 import org.wikibrain.atlasify.usageanalytics.model.*;
 import org.wikibrain.conf.ConfigurationException;
+import org.wikibrain.core.cmd.Env;
+import org.wikibrain.core.cmd.EnvBuilder;
+import org.wikibrain.core.dao.DaoException;
+import org.wikibrain.core.dao.LocalPageDao;
+import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.lang.LocalId;
 
 import java.io.FileReader;
@@ -26,6 +31,7 @@ public class LogParser {
     private static CSVReader reader;
     private static CSVWriter writer;
     private static Set<Integer> consumedLoadData = new HashSet<Integer>();
+    private static LocalPageDao lpDao;
     private static AtlasifyKeywordStatCalculator calculator;
 
     private static AtlasifyQueryRecord searchSessionEnd(List<String[]> rows, Integer startIndex, boolean searchFromUserDefined) throws ParseException{
@@ -141,6 +147,52 @@ public class LogParser {
         return new AtlasifyQueryRecord(geoRecord, userId, queryType, keyWord, refSystem, startDate, endDate, zoomRecords, explanationRecords, rating, feedback);
 
     }
+    private static double getWeightedSR(Map<LocalId, Double> fullSRMap){
+        /*
+        double srUSA = fullSRMap.get(new LocalId(Language.EN, 3434750)) * 0.2953;
+        double srIndia = fullSRMap.get(new LocalId(Language.EN, 14533)) * 0.1827;
+        double srGermany = fullSRMap.get(new LocalId(Language.EN, 11867)) * 0.1326;
+        double srSpain = fullSRMap.get(new LocalId(Language.EN, 26667)) * 0.1232;
+        double srMexico = fullSRMap.get(new LocalId(Language.EN, 3966054)) * 0.0501;
+        double srUK = fullSRMap.get(new LocalId(Language.EN, 31717)) * 0.0426;
+        double srCanada = fullSRMap.get(new LocalId(Language.EN, 5042916)) * 0.0425;
+        double srGreece = fullSRMap.get(new LocalId(Language.EN, 12108)) * 0.0199;
+        double srAus = fullSRMap.get(new LocalId(Language.EN, 4689264)) * 0.0182;
+        double srArgentina = fullSRMap.get(new LocalId(Language.EN, 18951905)) * 0.0164;
+        double srFrance = fullSRMap.get(new LocalId(Language.EN, 5843419)) * 0.0147;
+        double srNet = fullSRMap.get(new LocalId(Language.EN, 21148)) * 0.0133;
+        double srSwit = fullSRMap.get(new LocalId(Language.EN, 26748)) * 0.0129;
+        double srChina = fullSRMap.get(new LocalId(Language.EN, 5405)) * 0.0128;
+        double srSweden = fullSRMap.get(new LocalId(Language.EN, 5058739)) * 0.0118;
+        double srIsrael = fullSRMap.get(new LocalId(Language.EN, 9282173)) * 0.0108;
+        */
+
+        List<Double> srList = new ArrayList<Double>();
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 3434750)) * 0.2953);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 14533)) * 0.1827);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 11867)) * 0.1326);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 26667)) * 0.1232);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 3966054)) * 0.0501);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 31717)) * 0.0426);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 5042916)) * 0.0425);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 12108)) * 0.0199);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 4689264)) * 0.0182);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 18951905)) * 0.0164);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 5843419)) * 0.0147);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 21148)) * 0.0133);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 26748)) * 0.0129);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 5405)) * 0.0128);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 5058739)) * 0.0118);
+        srList.add(fullSRMap.get(new LocalId(Language.EN, 9282173)) * 0.0108);
+        double sum = 0;
+        for(Double d : srList){
+            if(d == null)
+                continue;
+            sum += d;
+        }
+        return  sum;
+
+    }
 
     private static Map<String, String> statCache = new HashMap<String, String>();
     private static void printQueryRecord(String[] rowWrite, CSVWriter writer, AtlasifyQueryRecord queryRecord) throws IOException, Exception{
@@ -190,17 +242,119 @@ public class LogParser {
             statCache.put(keyword + "SRClassStdDev", rowWrite[21]);
         }
         System.out.println(queryRecord.getKeyWord() + " mean: " + rowWrite[14] + " range: " + rowWrite[15] + " stdDev: " + rowWrite[16]);
+        rowWrite[22] = "";
+        rowWrite[23] = "";
+        rowWrite[24] = "";
+        rowWrite[25] = "";
+        rowWrite[26] = "";
+        rowWrite[27] = "";
+        rowWrite[28] = "";
+        rowWrite[29] = "";
+        rowWrite[30] = "";
+        rowWrite[31] = "";
+
+
+        Map<LocalId, Double> filteredSRMap = calculator.getFilteredSRMap(calculator.countryMap.keySet(), keyword, true);
+        Map<LocalId, Double> fullSRMap = calculator.getFilteredSRMap(null, keyword, true);
+        LocalId id = new LocalId(Language.EN, -1);
+        try{
+            id =  new LocalId(Language.EN, lpDao.getByTitle(Language.EN, queryRecord.getGeoRecord().getCountry()).getLocalId());
+        }
+        catch (Exception e){
+            writer.writeNext(rowWrite);
+            writer.flush();
+        }
+        Double featureSRValue = fullSRMap.get(id);
+        if(featureSRValue == null){
+            writer.writeNext(rowWrite);
+            writer.flush();
+        }
+
+        rowWrite[22] = String.valueOf(featureSRValue);
+
+        List<Double> srList = new ArrayList<Double>();
+        for(Double d : filteredSRMap.values()){
+            srList.add(d);
+        }
+        if(srList.size() == 0){
+            writer.writeNext(rowWrite);
+            writer.flush();
+        }
+        Collections.sort(srList);
+        rowWrite[26] = String.valueOf(srList.get(srList.size()/4));
+        rowWrite[27] = String.valueOf(srList.get(srList.size()/2));
+        rowWrite[28] = String.valueOf(srList.get((srList.size() * 3)/4));
+        for(int j = 0; j < srList.size(); j ++){
+            if(featureSRValue < srList.get(j)){
+                rowWrite[23] = String.valueOf((double)j / (double)srList.size());
+                break;
+            }
+        }
+        int category = 0;
+        if(featureSRValue > 0.39)
+            category = 1;
+        if(featureSRValue > 0.42)
+            category = 2;
+        if(featureSRValue > 0.445)
+            category = 3;
+        if(featureSRValue > 0.475)
+            category = 4;
+        if(featureSRValue > 0.51)
+            category = 5;
+        if(featureSRValue > 0.58)
+            category = 6;
+        if(featureSRValue > 0.66)
+            category = 7;
+        if(featureSRValue > 0.75)
+            category = 8;
+        rowWrite[24] = String.valueOf(category);
+
+        rowWrite[25] = String.valueOf(calculator.getSRMedianClass(filteredSRMap));
+
+
+        Double baselineSR = getWeightedSR(fullSRMap);
+        rowWrite[29] = String.valueOf(baselineSR);
+        for(int j = 0; j < srList.size(); j ++){
+            if(baselineSR < srList.get(j)){
+                rowWrite[30] = String.valueOf((double)j / (double)srList.size());
+                break;
+            }
+        }
+        category = 0;
+        if(baselineSR > 0.39)
+            category = 1;
+        if(baselineSR > 0.42)
+            category = 2;
+        if(baselineSR > 0.445)
+            category = 3;
+        if(baselineSR > 0.475)
+            category = 4;
+        if(baselineSR > 0.51)
+            category = 5;
+        if(baselineSR > 0.58)
+            category = 6;
+        if(baselineSR > 0.66)
+            category = 7;
+        if(baselineSR > 0.75)
+            category = 8;
+        rowWrite[31] = String.valueOf(category);
+        rowWrite[32] = String.valueOf(moranCalc.CalculateMoransI(keyword));
+
+
         writer.writeNext(rowWrite);
         writer.flush();
     }
 
-
-    public static void main(String args[])  throws IOException, ParseException, ConfigurationException {
+    private static AtlasifyInvertedDistanceMatrixGenerator moranCalc;
+    public static void main(String args[])  throws IOException, ParseException, ConfigurationException, DaoException {
+        Env env = EnvBuilder.envFromArgs(args);
+        lpDao = env.getConfigurator().get(LocalPageDao.class);
         int count = 0;
         reader = new CSVReader(new FileReader(logFileName), ',');
-        writer = new CSVWriter(new FileWriter("AtlasifyLogAnalysis.csv"), ',');
+        writer = new CSVWriter(new FileWriter("AtlasifyLogAnalysis_withUserLocationSR.csv"), ',');
         calculator = new AtlasifyKeywordStatCalculator();
-        String[] rowWrite = new String[22];
+        moranCalc = new AtlasifyInvertedDistanceMatrixGenerator();
+        String[] rowWrite = new String[33];
         rowWrite[0] = "userId";
         rowWrite[1] = "queryType";
         rowWrite[2] = "keyword";
@@ -223,6 +377,17 @@ public class LogParser {
         rowWrite[19] = "STAT_CLASS MEDIAN";
         rowWrite[20] = "STAT_CLASS_MAX_MEDIAN_DIFFERENCE";
         rowWrite[21] = "STAT_CLASS_STD_DEV";
+        rowWrite[22] = "userLocationSR";
+        rowWrite[23] = "userLocationSRPercentile";
+        rowWrite[24] = "userLocationSRClass";
+        rowWrite[25] = "medianClass";
+        rowWrite[26] = "25th Percentile";
+        rowWrite[27] = "50th Percentile";
+        rowWrite[28] = "75th Percentile";
+        rowWrite[29] = "WeightedMeanSR";
+        rowWrite[30] = "WeightedMeanSRPercentile";
+        rowWrite[31] = "WeightedSRClass";
+        rowWrite[32] = "Moran's I";
         writer.writeNext(rowWrite);
         writer.flush();
 
