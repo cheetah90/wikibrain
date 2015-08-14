@@ -428,6 +428,7 @@ public class LogParser {
                 }
             }
             catch (Exception e){
+                e.printStackTrace();
                 continue;
             }
 
