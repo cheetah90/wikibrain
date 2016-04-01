@@ -334,6 +334,13 @@ public class ComputeFeatures {
         return result;
     }
 
+    /**
+     *
+     * @param rp_main: the rawpage of the main article
+     * @param t:
+     * @param subarticleParser
+     * @return
+     */
     private List<String> getSubArticle(RawPage rp_main, Template t, SubarticleParser subarticleParser){
 
         ParsedLink.SubarticleType tempSubType = null;
@@ -844,7 +851,7 @@ public class ComputeFeatures {
 
     }
 
-    public ArrayList<Double> Compute_OccurInSubSummary(){
+    public ArrayList<Double> Compute_MaxMainTFInSub(){
         MediaWikiParserFactory pf = new MediaWikiParserFactory();
         pf.setCalculateSrcSpans(true);
         MediaWikiParser jwpl = pf.createParser();
@@ -877,29 +884,29 @@ public class ComputeFeatures {
                     continue;
                 }
 
-                double numLangs = 0;
-                double numOccur = 0;
+                double maxTF = 0;
                 for (Language lang : up_main.getLanguageSet()) {
                     if (up_sub.getLanguageSet().containsLanguage(lang)){
 
-                        int curOccur = 0;
-                        numLangs++;
+                        int curTF = 0;
 
                         LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
                         LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
 
                         RawPage rp_sub = rpDao.getById(lang, lang_sub.getLocalId());
-                        List<String> main_tokens;
 
-                        if (lang.getLangCode().equals("zh")){
-                            main_tokens = new ArrayList<String>(Arrays.asList(lang_main.getTitle().getCanonicalTitle().split("")));
-                            if(main_tokens.get(0).equals(""))
-                                main_tokens.remove(0);
-
-                        } else {
-                            StringTokenizer tokenizer = new StringTokenizer();
-                            main_tokens = tokenizer.getWords(lang, lang_main.getTitle().getCanonicalTitle());
-                        }
+                        //Get the token of the main titile
+//                        List<String> main_tokens;
+//
+//                        if (lang.getLangCode().equals("zh")){
+//                            main_tokens = new ArrayList<String>(Arrays.asList(lang_main.getTitle().getCanonicalTitle().split("")));
+//                            if(main_tokens.get(0).equals(""))
+//                                main_tokens.remove(0);
+//
+//                        } else {
+//                            StringTokenizer tokenizer = new StringTokenizer();
+//                            main_tokens = tokenizer.getWords(lang, lang_main.getTitle().getCanonicalTitle());
+//                        }
 
                         ParsedPage pp_main = jwpl.parse(rp_sub.getBody());
 
@@ -921,25 +928,20 @@ public class ComputeFeatures {
                         if (StringUtils.containsIgnoreCase(summary, main_title)){
                             summary = summary.toLowerCase();
                             main_title = main_title.toLowerCase();
-                            curOccur += StringUtils.countMatches(summary, main_title);
-                        } else {
-                            for (String token: main_tokens){
-                                if (summary.contains(token)){
-                                    curOccur++;
-                                }
-                            }
-                            curOccur = curOccur / main_tokens.size();
+                            curTF += StringUtils.countMatches(summary, main_title);
                         }
 
-                        numOccur += curOccur;
+                        StringTokenizer st = new StringTokenizer();
+                        List<String> summaryTokens = st.getWords(lang, summary);
+                        curTF = curTF / summaryTokens.size();
 
-
+                        maxTF = curTF > maxTF ? curTF : maxTF;
                     }
                 }
 
-                if (numLangs != 0){
-                    result.add(numOccur/numLangs);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + ":" + numOccur/numLangs);
+                if (maxTF != 0){
+                    result.add(maxTF);
+                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + ":" + maxTF);
                 }
                 else {
                     result.add(-100.00);
@@ -1032,6 +1034,110 @@ public class ComputeFeatures {
         return result;
     }
 
+    public ArrayList<Double> Compute_MainTemplatePct(){
+        MediaWikiParserFactory pf = new MediaWikiParserFactory();
+        pf.setCalculateSrcSpans(true);
+        MediaWikiParser jwpl = pf.createParser();
+
+        ArrayList<Double> result = new ArrayList<Double>();
+
+        try {
+
+            for (List<String> pagePair : pages){
+
+                Language language = Language.getByLangCode(pagePair.get(1));
+
+                LocalPage lp_mainArticle = lpDao.getByTitle(language, pagePair.get(2));
+                LocalPage lp_subArticle = lpDao.getByTitle(language, pagePair.get(3));
+
+                if (lp_mainArticle == null || lp_subArticle == null){
+                    result.add(-100.00);
+                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
+                    continue;
+                }
+
+                int numLangMainTemplates = 0;
+                int numLangPot = 0;
+
+                UniversalPage up_main = conceptDao.getByLocalPage(lp_mainArticle);
+                UniversalPage up_sub = conceptDao.getByLocalPage(lp_subArticle);
+
+                if (up_main == null || up_sub == null){
+                    result.add(-100.00);
+                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
+                    continue;
+                }
+
+                for (Language lang : up_main.getLanguageSet()) {
+                    if (up_sub.getLanguageSet().containsLanguage(lang)){
+                        boolean potential = false;
+                        boolean mainTemplate = false;
+
+                        LanguageInfo localLangInfo= LanguageInfo.getByLanguage(lang);
+                        SubarticleParser subarticleParser = new SubarticleParser(localLangInfo);
+
+                        LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
+                        LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
+
+                        RawPage rp_main = rpDao.getById(lang, lang_main.getLocalId());
+
+                        ParsedPage pp_main = jwpl.parse(rp_main.getBody());
+                        //This checks if the sub title is in the main template. If yes, this pair has both main template and potential relationships
+                        for (Template template: pp_main.getTemplates()){
+
+                            String templateName = new Title(template.getName(), false, LanguageInfo.getByLanguage(rp_main.getLanguage())).getCanonicalTitle();
+                            ParsedLink.SubarticleType subarticleType = subarticleParser.isTemplateSubarticle(templateName, template.toString());
+                            //If this template is a subarticle template and contains the potential subarticle title, change the flag
+                            if (subarticleType != null && template.toString().contains(lang_sub.getTitle().getCanonicalTitle())){
+                                potential = true;
+                                //additionally, if it's main template, change the flag
+                                if (subarticleType.equals(ParsedLink.SubarticleType.MAIN_TEMPLATE) ){
+                                    mainTemplate = true;
+                                    //No need to go further since we've already decided that this pair is potential subarticle.
+                                    break;
+                                }
+                            }
+                        }
+
+                        //if the pair is not template subarticle, then check if it is a see also section subarticle.
+                        if (!potential){
+                            for (Section curSection: pp_main.getSections()){
+                                ParsedLink.SubarticleType secSubType = subarticleParser.isSeeAlsoHeader(localLangInfo, curSection.getTitle());
+                                if (secSubType != null){
+                                    if (curSection.getText().contains(lang_sub.getTitle().getCanonicalTitle())){
+                                        potential = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (potential){
+                            numLangPot++;
+                        }
+                        if (mainTemplate){
+                            numLangMainTemplates++;
+                        }
+                    }
+                }
+
+                if (numLangPot != 0 ){
+                    double mainTemplatePct = (double) numLangMainTemplates/ (double) numLangPot;
+                    result.add(mainTemplatePct);
+                    System.out.println("similarity between "+ pagePair.get(2) + " and " + pagePair.get(3) + ": "+ mainTemplatePct);
+                }
+                else {
+                    result.add(-100.00);
+                    System.out.println("similarity between "+ pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
+                }
+            }
+        } catch (DaoException daoException){
+            daoException.printStackTrace();
+        }
+
+
+        return result;
+    }
+
 
     public static void main(String[] args){
         Options options = new Options();
@@ -1050,11 +1156,14 @@ public class ComputeFeatures {
 
         ComputeFeatures tp_computeFeature = new ComputeFeatures("trainingdata_all.csv", cmd);
 
-        ArrayList<Double> InlinksRatio = tp_computeFeature.Compute_InlinkRatio();
-        tp_computeFeature.writeToFile("InlinksRatio.csv", InlinksRatio);
+//        ArrayList<Double> InlinksRatio = tp_computeFeature.Compute_InlinkRatio();
+//        tp_computeFeature.writeToFile("InlinksRatio.csv", InlinksRatio);
 
-//        ArrayList<Double> OccurInSubSummary = tp_computeFeature.Compute_OccurInSubSummary();
-//        tp_computeFeature.writeToFile("OccurInSubSummary.csv", OccurInSubSummary);
+//        ArrayList<Double> MaxMainTFInSub = tp_computeFeature.Compute_MaxMainTFInSub();
+//        tp_computeFeature.writeToFile("MaxMainTFInSub.csv", MaxMainTFInSub);
+
+        ArrayList<Double> MainTagPct = tp_computeFeature.Compute_MainTemplatePct();
+        tp_computeFeature.writeToFile("MainTagPct.csv", MainTagPct);
 
 //        ArrayList<Double> MaxTokenOverlap = tp_computeFeature.Compute_MaxTokenOverlap();
 //        tp_computeFeature.writeToFile("MaxTokenOverlap.csv", MaxTokenOverlap);
@@ -1077,8 +1186,8 @@ public class ComputeFeatures {
 //        ArrayList<Double> NumLangRatio = tp_computeFeature.Compute_NumLangsRatio();
 //        tp_computeFeature.writeToFile("NumLangRatio.csv", NumLangRatio);
 
-//        ArrayList<Double> PageRankRatio = tp_computeFeature.Compute_PageRankRatio();
-//        tp_computeFeature.writeToFile("pageRank.csv", PageRankRatio);
+        //ArrayList<Double> PageRankRatio = tp_computeFeature.Compute_PageRankRatio();
+        //tp_computeFeature.writeToFile("pageRank.csv", PageRankRatio);
 
 //        ArrayList<Double> milnewitten = tp_computeFeature.ComputeSR("milnewitten", "en");
 //        ArrayList<Double> category = tp_computeFeature.ComputeSR("category");
