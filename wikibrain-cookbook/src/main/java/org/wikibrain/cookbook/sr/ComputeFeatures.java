@@ -3,6 +3,7 @@ package org.wikibrain.cookbook.sr;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import org.apache.commons.cli.*;
+import org.apache.commons.codec.language.bm.Lang;
 import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.conf.Configurator;
 import org.wikibrain.core.cmd.Env;
@@ -10,23 +11,26 @@ import org.wikibrain.core.cmd.EnvBuilder;
 import org.wikibrain.core.dao.*;
 import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.lang.LanguageInfo;
+import org.wikibrain.core.lang.LanguageSet;
 import org.wikibrain.core.model.*;
 import org.wikibrain.core.nlp.StringTokenizer;
+import org.wikibrain.lucene.LuceneOptions;
+import org.wikibrain.lucene.tokenizers.LanguageTokenizer;
 import org.wikibrain.parser.wiki.ParsedLink;
 import org.wikibrain.parser.wiki.SubarticleParser;
+import org.wikibrain.spatial.util.ClosestPointIndex;
 import org.wikibrain.sr.SRMetric;
 import org.wikibrain.sr.SRResult;
 import de.tudarmstadt.ukp.wikipedia.parser.*;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.print.attribute.standard.Media;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by rodney-user on 12/7/15.
- */
 public class ComputeFeatures {
     public LocalPageDao lpDao;
     public LocalLinkDao llDao;
@@ -35,10 +39,10 @@ public class ComputeFeatures {
     public Configurator conf;
     public UniversalPageDao conceptDao;
 
-    public ArrayList<List<String>> readCsv2Array(String fileName){
+    private ArrayList<List<String>> readCsv2Array(String fileName){
         BufferedReader br = null;
         String line;
-        String cvsSplitBy = ",";
+        String cvsSplitBy = "\t";
 
         ArrayList<List<String>> pagesPair = new ArrayList<List<String>>();
 
@@ -143,34 +147,34 @@ public class ComputeFeatures {
         return SR_results;
     }
 
-    public ArrayList<Double> Compute_PageRankRatio(){
-        ArrayList<Double> result = new ArrayList<Double>();
-
-        try {
-            for (List<String> pagePair : pages){
-
-                Language language = Language.getByLangCode(pagePair.get(1));
-
-                LocalPage lp_mainArticle = lpDao.getByTitle(language, pagePair.get(2));
-                LocalPage lp_subArticle = lpDao.getByTitle(language, pagePair.get(3));
-
-
-                if (lp_mainArticle != null && lp_subArticle != null){
-                    //double pageRankRatio = llDao.getPageRank(language, lp_mainArticle.getLocalId())/llDao.getPageRank(language,lp_subArticle.getLocalId());
-                    //result.add(pageRankRatio);
-                }
-                else {
-                    result.add(-100.00);
-                    System.out.println("similarity between "+ pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
-                }
-            }
-        } catch (DaoException daoException){
-            daoException.printStackTrace();
-        }
-
-        return result;
-
-    }
+//    public ArrayList<Double> Compute_PageRankRatio(){
+//        ArrayList<Double> result = new ArrayList<Double>();
+//
+//        try {
+//            for (List<String> pagePair : pages){
+//
+//                Language language = Language.getByLangCode(pagePair.get(1));
+//
+//                LocalPage lp_mainArticle = lpDao.getByTitle(language, pagePair.get(2));
+//                LocalPage lp_subArticle = lpDao.getByTitle(language, pagePair.get(3));
+//
+//
+//                if (lp_mainArticle != null && lp_subArticle != null){
+//                    //double pageRankRatio = llDao.getPageRank(language, lp_mainArticle.getLocalId())/llDao.getPageRank(language,lp_subArticle.getLocalId());
+//                    //result.add(pageRankRatio);
+//                }
+//                else {
+//                    result.add(-100.00);
+//                    System.out.println("similarity between "+ pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
+//                }
+//            }
+//        } catch (DaoException daoException){
+//            daoException.printStackTrace();
+//        }
+//
+//        return result;
+//
+//    }
 
     public ArrayList<Double> Compute_NumLangsRatio(){
         ArrayList<Double> result = new ArrayList<Double>();
@@ -189,34 +193,25 @@ public class ComputeFeatures {
                     continue;
                 }
 
+                int main_NumLang = 0;
+                int sub_NumLang = 0;
 
                 UniversalPage up_main = conceptDao.getByLocalPage(lp_mainArticle);
                 UniversalPage up_sub = conceptDao.getByLocalPage(lp_subArticle);
 
                 if (up_main == null || up_sub == null){
-                    result.add(-100.00);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
-                    continue;
-                }
-
-                int main_NumLang = 0;
-                for (Language lang : up_main.getLanguageSet()) {
-                    LocalPage tp_page = lpDao.getById(lang, up_main.getLocalId(lang));
-                    if (tp_page != null){
-                        main_NumLang++;
-                        System.out.println("main: "+lp_mainArticle.getTitle()+" in " + lang.getEnLangName());
-                        System.out.println("local page title: " + tp_page.getTitle());
+                    if (up_main == null){
+                        main_NumLang = 1;
+                        sub_NumLang = up_sub.getLanguageSet().size();
                     }
-
-                }
-
-                int sub_NumLang = 0;
-                for (Language lang : up_sub.getLanguageSet()) {
-                    LocalPage tp_page = lpDao.getById(lang, up_sub.getLocalId(lang));
-                    if (tp_page != null){
-                        sub_NumLang++;
-                        System.out.println("sub: "+lp_subArticle.getTitle()+" in " + lang.getEnLangName());
+                    else {
+                        sub_NumLang = 1;
+                        main_NumLang = up_main.getLanguageSet().size();
                     }
+                }
+                else {
+                    main_NumLang = up_main.getLanguageSet().size();
+                    sub_NumLang = up_sub.getLanguageSet().size();
                 }
 
                 if (sub_NumLang != 0 ){
@@ -267,52 +262,25 @@ public class ComputeFeatures {
                 UniversalPage up_sub = conceptDao.getByLocalPage(lp_subArticle);
 
                 if (up_main == null || up_sub == null){
-                    result.add(-100.00);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
-                    continue;
+                    numLangCoexist++;
+                    ResultPotentialArticle currentResult = decidePotentialSubarticle(lp_mainArticle, lp_subArticle, jwpl);
+
+                    if (currentResult.getPotential()){
+                        numLangPot++;
+                    }
                 }
+                else {
+                    for (Language lang : up_main.getLanguageSet()) {
+                        if (up_sub.getLanguageSet().containsLanguage(lang)){
 
-                for (Language lang : up_main.getLanguageSet()) {
-                    if (up_sub.getLanguageSet().containsLanguage(lang)){
-                        boolean flagPot = false;
+                            numLangCoexist++;
+                            LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
+                            LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
 
-                        numLangCoexist++;
-
-                        LanguageInfo localLangInfo= LanguageInfo.getByLanguage(lang);
-                        SubarticleParser subarticleParser = new SubarticleParser(localLangInfo);
-                        LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
-                        LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
-
-                        RawPage rp_main = rpDao.getById(lang, lang_main.getLocalId());
-
-                        ParsedPage pp_main = jwpl.parse(rp_main.getBody());
-                        for (Section curSection: pp_main.getSections()){
-                            ParsedLink.SubarticleType secSubType = subarticleParser.isSeeAlsoHeader(localLangInfo, curSection.getTitle());
-                            if (secSubType != null){
-                                if (curSection.getText().contains(lang_sub.getTitle().getCanonicalTitle())){
-                                    flagPot = true;
-                                }
+                            ResultPotentialArticle currentResult = decidePotentialSubarticle(lang_main, lang_sub, jwpl);
+                            if (currentResult.getPotential()){
+                                numLangPot++;
                             }
-                            for (Content curContent : curSection.getContentList()){
-                                for (Template t : curContent.getTemplates()){
-                                    List<String> tp_subarticleSet = getSubArticle(rp_main, t, subarticleParser);
-                                    String sub_title = lang_sub.getTitle().getCanonicalTitle();
-                                    if (tp_subarticleSet != null){
-                                        if (lang.getLangCode().equals("zh")){
-                                            ZhTradition2Simplified(tp_subarticleSet);
-                                            sub_title = ZhTradition2Simplified(sub_title);
-                                        }
-
-                                        if(tp_subarticleSet.contains(sub_title)) {
-                                            flagPot = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (flagPot){
-                            numLangPot++;
                         }
                     }
                 }
@@ -508,56 +476,31 @@ public class ComputeFeatures {
                 UniversalPage up_sub = conceptDao.getByLocalPage(lp_subArticle);
 
                 if (up_main == null || up_sub == null){
-                    result.add(-100.00);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
-                    continue;
+                    ResultPotentialArticle currentResult = decidePotentialSubarticle(lp_mainArticle, lp_subArticle, jwpl);
+
+                    if (currentResult.getPotential()){
+                        numLangPot++;
+                    }
+                    if (currentResult.getSeeAlsoSection()){
+                        numSeeAlso++;
+                    }
+
                 }
+                else {
+                    for (Language lang : up_main.getLanguageSet()) {
+                        if (up_sub.getLanguageSet().containsLanguage(lang)){
 
-                for (Language lang : up_main.getLanguageSet()) {
-                    if (up_sub.getLanguageSet().containsLanguage(lang)){
-                        boolean potential = false;
-                        boolean seeAlso = false;
+                            LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
+                            LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
 
-                        LanguageInfo localLangInfo= LanguageInfo.getByLanguage(lang);
-                        SubarticleParser subarticleParser = new SubarticleParser(localLangInfo);
+                            ResultPotentialArticle currentResult = decidePotentialSubarticle(lang_main, lang_sub, jwpl);
 
-                        LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
-                        LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
-
-                        RawPage rp_main = rpDao.getById(lang, lang_main.getLocalId());
-
-                        ParsedPage pp_main = jwpl.parse(rp_main.getBody());
-                        for (Section curSection: pp_main.getSections()){
-                            ParsedLink.SubarticleType secSubType = subarticleParser.isSeeAlsoHeader(localLangInfo, curSection.getTitle());
-                            if (secSubType != null){
-                                if (curSection.getText().contains(lang_sub.getTitle().getCanonicalTitle())){
-                                    seeAlso = true;
-                                    potential = true;
-                                }
+                            if (currentResult.getPotential()){
+                                numLangPot++;
                             }
-                            for (Content curContent : curSection.getContentList()){
-                                for (Template t : curContent.getTemplates()){
-                                    List<String> tp_subarticleSet = getSubArticle(rp_main, t, subarticleParser);
-                                    String sub_title = lang_sub.getTitle().getCanonicalTitle();
-                                    if (tp_subarticleSet != null){
-                                        if (lang.getLangCode().equals("zh")){
-                                            ZhTradition2Simplified(tp_subarticleSet);
-                                            sub_title = ZhTradition2Simplified(sub_title);
-                                        }
-
-                                        if(tp_subarticleSet.contains(sub_title)) {
-                                            potential = true;
-                                        }
-                                    }
-                                }
+                            if (currentResult.getSeeAlsoSection()){
+                                numSeeAlso++;
                             }
-                        }
-
-                        if (potential){
-                            numLangPot++;
-                        }
-                        if (seeAlso){
-                            numSeeAlso++;
                         }
                     }
                 }
@@ -582,6 +525,10 @@ public class ComputeFeatures {
 
     private String ZhTradition2Simplified(String inputZh){
         ZHConverter converter = ZHConverter.getInstance(ZHConverter.SIMPLIFIED);
+
+        if (converter == null){
+            System.out.println("The ZHConverter does not exist!");
+        }
 
         return converter.convert(inputZh);
     }
@@ -669,6 +616,23 @@ public class ComputeFeatures {
         return (double) overlap/ (double) main_tokens.size();
     }
 
+    public String getCorrespondingMainSectionTitle(LocalPage lang_main, LocalPage lang_sub, MediaWikiParser jwpl) throws DaoException{
+        Language lang = lang_main.getLanguage();
+
+        RawPage rp_main = rpDao.getById(lang, lang_main.getLocalId());
+        ParsedPage pp_main = jwpl.parse(rp_main.getBody());
+
+        for (Section curSection: pp_main.getSections()){
+            for (Content curContent : curSection.getContentList()){
+                if (containLangAgnostic(curContent.getTemplates().toString(), lang_sub.getTitle().getCanonicalTitle(), lang)){
+                    return lang_main.getTitle().getCanonicalTitle() + curSection.getTitle();
+                }
+            }
+        }
+
+        return lang_main.getTitle().getCanonicalTitle();
+    }
+
     public ArrayList<Double> Compute_SectionTokenOverlap(){
         MediaWikiParserFactory pf = new MediaWikiParserFactory();
         pf.setCalculateSrcSpans(true);
@@ -697,70 +661,31 @@ public class ComputeFeatures {
                 UniversalPage up_sub = conceptDao.getByLocalPage(lp_subArticle);
 
                 if (up_main == null || up_sub == null){
-                    result.add(-100.00);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
-                    continue;
+                    String mainSectionTitle = getCorrespondingMainSectionTitle(lp_mainArticle, lp_subArticle, jwpl);
+
+                    List<String> mainSectionTokens = tokenizeLanguageAgnostic(mainSectionTitle, lp_mainArticle.getLanguage());
+                    List<String> subSectionTokens = tokenizeLanguageAgnostic(lp_subArticle.getTitle().getCanonicalTitle(), lp_subArticle.getLanguage());
+
+                    double curTokenOverlap = countTokenOverlap(mainSectionTokens, subSectionTokens);
+                    if (curTokenOverlap > max_overlap){
+                        max_overlap = curTokenOverlap;
+                    }
                 }
+                else {
+                    for (Language lang : up_main.getLanguageSet()) {
+                        if (up_sub.getLanguageSet().containsLanguage(lang)){
 
+                            LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
+                            LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
 
-                for (Language lang : up_main.getLanguageSet()) {
-                    if (up_sub.getLanguageSet().containsLanguage(lang)){
+                            String mainSectionTitle = getCorrespondingMainSectionTitle(lang_main, lang_sub, jwpl);
 
-                        LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
-                        LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
+                            List<String> mainSectionTokens = tokenizeLanguageAgnostic(mainSectionTitle, lang_main.getLanguage());
+                            List<String> subSectionTokens = tokenizeLanguageAgnostic(lang_sub.getTitle().getCanonicalTitle(), lang_sub.getLanguage());
 
-                        RawPage rp_main = rpDao.getById(lang, lang_main.getLocalId());
-
-                        ParsedPage pp_main = jwpl.parse(rp_main.getBody());
-                        for (Section curSection: pp_main.getSections()){
-                            for (Content curContent : curSection.getContentList()){
-                                for (Template t : curContent.getTemplates()){
-                                    for (String parameter: t.getParameters()){
-                                        if (parameter.contains(lang_sub.getTitle().getCanonicalTitle())){
-                                            List<String> sub_tokens;
-                                            List<String> main_sec_tokens;
-
-                                            if (lang.getLangCode().equals("zh")){
-                                                String tp_sub_title = lang_sub.getTitle().getCanonicalTitle();
-                                                sub_tokens = new ArrayList<String>(Arrays.asList(tp_sub_title.split("")));
-                                                if(sub_tokens.get(0).equals(""))
-                                                    sub_tokens.remove(0);
-                                                ZhTradition2Simplified(sub_tokens);
-
-                                                if (curContent instanceof SectionContent){
-                                                    String tp_main_sec_title = lang_main.getTitle().getCanonicalTitle()+((SectionContent) curContent).getTitle();
-                                                    main_sec_tokens = new ArrayList<String>(Arrays.asList(tp_main_sec_title.split("")));
-                                                } else {
-                                                    String tp_main_sec_title = lang_main.getTitle().getCanonicalTitle() + curSection.getTitle();
-                                                    main_sec_tokens = new ArrayList<String>(Arrays.asList(tp_main_sec_title.split("")));
-                                                }
-                                                if (main_sec_tokens.get(0).equals(""))
-                                                    main_sec_tokens.remove(0);
-                                                ZhTradition2Simplified(main_sec_tokens);
-                                            } else {
-                                                StringTokenizer tokenizer = new StringTokenizer();
-                                                sub_tokens = tokenizer.getWords(lang,lang_sub.getTitle().getCanonicalTitle());
-                                                if (curContent instanceof SectionContent){
-                                                    main_sec_tokens = tokenizer.getWords(lang,lang_main.getTitle().getCanonicalTitle() + " " + ((SectionContent) curContent).getTitle());
-
-                                                } else {
-                                                    main_sec_tokens = tokenizer.getWords(lang,lang_main.getTitle().getCanonicalTitle() + " " + curSection.getTitle());
-                                                }
-                                            }
-
-                                            System.out.println("language: "+ lang  +" main tokens: "+ main_sec_tokens + " sub tokens: " + sub_tokens);
-
-                                            double curTokenOverlap = countTokenOverlap(main_sec_tokens, sub_tokens);
-                                            if (curTokenOverlap > max_overlap){
-                                                max_overlap = curTokenOverlap;
-                                            }
-                                        }
-
-                                        /**
-                                         * Another route
-                                         */
-                                    }
-                                }
+                            double curTokenOverlap = countTokenOverlap(mainSectionTokens, subSectionTokens);
+                            if (curTokenOverlap > max_overlap){
+                                max_overlap = curTokenOverlap;
                             }
                         }
                     }
@@ -776,6 +701,26 @@ public class ComputeFeatures {
         return result;
     }
 
+    private List<String> tokenizeLanguageAgnostic(String first, Language lang){
+        String first_processed = first;
+        List<String> tokens;
+
+        if (lang.getLangCode().equals("zh")){
+            first_processed = ZhTradition2Simplified(first);
+        }
+        if (lang.getLangCode().equals("zh") || lang.getLangCode().equals("ja")){
+            //Handle zh and ja differently since they are not space separated
+            tokens = Arrays.asList(first_processed.split(""));
+            if(tokens.get(0).equals(""))
+                tokens.remove(0);
+        }
+        else {
+            StringTokenizer tokenizer = new StringTokenizer();
+            tokens = tokenizer.getWords(lang,first_processed);
+        }
+
+        return tokens;
+    }
 
 
     public ArrayList<Double> Compute_MaxTokenOverlap(){
@@ -802,43 +747,34 @@ public class ComputeFeatures {
                 UniversalPage up_sub = conceptDao.getByLocalPage(lp_subArticle);
 
                 if ( up_main == null || up_sub == null){
-                    result.add(-100.00);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
-                    continue;
+                    List<String> main_token = tokenizeLanguageAgnostic(lp_mainArticle.getTitle().getCanonicalTitle(), lp_mainArticle.getLanguage());
+                    List<String> sub_tokens = tokenizeLanguageAgnostic(lp_subArticle.getTitle().getCanonicalTitle(), lp_subArticle.getLanguage());
+
+                    double curTokenOverlap = countTokenOverlap(main_token, sub_tokens);
+                    if (curTokenOverlap > max_overlap){
+                        max_overlap = curTokenOverlap;
+                    }
                 }
+                else {
+                    for (Language lang : up_main.getLanguageSet()) {
+                        if (up_sub.getLanguageSet().containsLanguage(lang)){
 
+                            LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
+                            LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
 
-                for (Language lang : up_main.getLanguageSet()) {
-                    if (up_sub.getLanguageSet().containsLanguage(lang)){
-                        List<String> main_tokens;
-                        List<String> sub_tokens;
+                            List<String> main_tokens = tokenizeLanguageAgnostic(lang_main.getTitle().getCanonicalTitle(), lang_main.getLanguage());
+                            List<String> sub_tokens = tokenizeLanguageAgnostic(lang_sub.getTitle().getCanonicalTitle(), lang_sub.getLanguage());
 
-                        LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
-                        LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
-
-                        if (lang.getLangCode().equals("zh")){
-                            main_tokens = new ArrayList<String>(Arrays.asList(lang_main.getTitle().getCanonicalTitle().split("")));
-                            if(main_tokens.get(0).equals(""))
-                                main_tokens.remove(0);
-
-                            ZhTradition2Simplified(main_tokens);
-                            System.out.println(main_tokens);
-                            sub_tokens = new ArrayList<String>(Arrays.asList(lang_sub.getTitle().getCanonicalTitle().split("")));
-                            if(sub_tokens.get(0).equals(""))
-                                sub_tokens.remove(0);
-                            ZhTradition2Simplified(sub_tokens);
-                        } else {
-                            StringTokenizer tokenizer = new StringTokenizer();
-                            sub_tokens = tokenizer.getWords(lang,lang_sub.getTitle().getCanonicalTitle());
-                            main_tokens = tokenizer.getWords(lang, lang_main.getTitle().getCanonicalTitle());
-                        }
-
-                        double curTokenOverlap = countTokenOverlap(main_tokens, sub_tokens);
-                        if (curTokenOverlap > max_overlap){
-                            max_overlap = curTokenOverlap;
+                            double curTokenOverlap = countTokenOverlap(main_tokens, sub_tokens);
+                            if (curTokenOverlap > max_overlap){
+                                max_overlap = curTokenOverlap;
+                            }
                         }
                     }
                 }
+
+
+
 
                 result.add(max_overlap);
                 System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + ":" + max_overlap);
@@ -873,81 +809,62 @@ public class ComputeFeatures {
                     continue;
                 }
 
-
-
                 UniversalPage up_main = conceptDao.getByLocalPage(lp_mainArticle);
                 UniversalPage up_sub = conceptDao.getByLocalPage(lp_subArticle);
 
-                if ( up_main == null || up_sub == null){
-                    result.add(-100.00);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
-                    continue;
-                }
-
                 double maxTF = 0;
-                for (Language lang : up_main.getLanguageSet()) {
-                    if (up_sub.getLanguageSet().containsLanguage(lang)){
 
-                        int curTF = 0;
+                if ( up_main == null || up_sub == null){
+                    double curTF = 0;
+                    RawPage rp_sub = rpDao.getById(lp_subArticle.getLanguage(), lp_subArticle.getLocalId());
 
-                        LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
-                        LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
+                    ParsedPage pp_sub = jwpl.parse(rp_sub.getBody());
 
-                        RawPage rp_sub = rpDao.getById(lang, lang_sub.getLocalId());
+                    String summary = pp_sub.getFirstParagraph().getText();
+                    String main_title = lp_mainArticle.getTitle().getCanonicalTitle();
 
-                        //Get the token of the main titile
-//                        List<String> main_tokens;
-//
-//                        if (lang.getLangCode().equals("zh")){
-//                            main_tokens = new ArrayList<String>(Arrays.asList(lang_main.getTitle().getCanonicalTitle().split("")));
-//                            if(main_tokens.get(0).equals(""))
-//                                main_tokens.remove(0);
-//
-//                        } else {
-//                            StringTokenizer tokenizer = new StringTokenizer();
-//                            main_tokens = tokenizer.getWords(lang, lang_main.getTitle().getCanonicalTitle());
-//                        }
+                    if (containLangAgnostic(summary, main_title, lp_mainArticle.getLanguage())){
+                        summary = summary.toLowerCase();
+                        main_title = main_title.toLowerCase();
+                        curTF += StringUtils.countMatches(summary, main_title);
+                    }
 
-                        ParsedPage pp_main = jwpl.parse(rp_sub.getBody());
+                    List<String> summaryTokens = tokenizeLanguageAgnostic(summary,lp_mainArticle.getLanguage());
+                    curTF = curTF / summaryTokens.size();
 
+                    maxTF = curTF > maxTF ? curTF : maxTF;
+                }
+                else {
+                    for (Language lang : up_main.getLanguageSet()) {
+                        if (up_sub.getLanguageSet().containsLanguage(lang)){
+                            LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
+                            LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
 
-                        String summary = "";
-                        String main_title = lang_main.getTitle().getCanonicalTitle();
-                        for (Content curContent : pp_main.getSection(0).getContentList()){
-                            if (curContent.getText().startsWith("TEMPLATE")){
-                                continue;
+                            double curTF = 0;
+                            RawPage rp_sub = rpDao.getById(lang, lang_sub.getLocalId());
+
+                            ParsedPage pp_sub = jwpl.parse(rp_sub.getBody());
+
+                            String summary = pp_sub.getFirstParagraph().getText();
+                            String main_title = lang_main.getTitle().getCanonicalTitle();
+
+                            if (containLangAgnostic(summary, main_title, lang)){
+                                summary = summary.toLowerCase();
+                                main_title = main_title.toLowerCase();
+                                curTF += StringUtils.countMatches(summary, main_title);
                             }
 
-                            summary += curContent.getText();
-                        }
+                            List<String> summaryTokens = tokenizeLanguageAgnostic(summary,lang);
+                            curTF = curTF / summaryTokens.size();
 
-                        if (lang.getLangCode().equals("zh")){
-                            summary = ZhTradition2Simplified(summary);
-                            main_title = ZhTradition2Simplified(main_title);
+                            maxTF = curTF > maxTF ? curTF : maxTF;
                         }
-                        if (StringUtils.containsIgnoreCase(summary, main_title)){
-                            summary = summary.toLowerCase();
-                            main_title = main_title.toLowerCase();
-                            curTF += StringUtils.countMatches(summary, main_title);
-                        }
-
-                        StringTokenizer st = new StringTokenizer();
-                        List<String> summaryTokens = st.getWords(lang, summary);
-                        curTF = curTF / summaryTokens.size();
-
-                        maxTF = curTF > maxTF ? curTF : maxTF;
                     }
                 }
 
-                if (maxTF != 0){
-                    result.add(maxTF);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + ":" + maxTF);
-                }
-                else {
-                    result.add(-100.00);
-                    System.out.println("similarity between "+ pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
+                result.add(maxTF);
+                System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + ":" + maxTF);
 
-                }
 
             }
         } catch (DaoException daoException){
@@ -1034,6 +951,103 @@ public class ComputeFeatures {
         return result;
     }
 
+    private boolean containLangAgnostic(String first, String second, Language lang){
+        String first_synced = first;
+        String second_synced = second;
+
+        if (lang.getLangCode().equals("zh")){
+            first_synced = ZhTradition2Simplified(first);
+            second_synced = ZhTradition2Simplified(second);
+        }
+
+        return  StringUtils.containsIgnoreCase(first_synced, second_synced);
+    }
+
+    private boolean equalLangAgnostic(String first, String second, Language lang){
+        String first_synced = first;
+        String second_synced = second;
+
+        if (lang.getLangCode().equals("zh")){
+            first_synced = ZhTradition2Simplified(first);
+            second_synced = ZhTradition2Simplified(second);
+        }
+
+        return  StringUtils.equalsIgnoreCase(first_synced, second_synced);
+    }
+
+    private ResultPotentialArticle decidePotentialSubarticle(LocalPage lang_main, LocalPage lang_sub, MediaWikiParser jwpl) throws DaoException{
+        boolean potential = false;
+        boolean mainTemplate = false;
+        boolean seeAlsoSection = false;
+
+        Language currentLang = lang_main.getLanguage();
+
+        LanguageInfo localLangInfo= LanguageInfo.getByLanguage(currentLang);
+        SubarticleParser subarticleParser = new SubarticleParser(localLangInfo);
+
+        RawPage rp_main = rpDao.getById(currentLang, lang_main.getLocalId());
+        ParsedPage pp_main = jwpl.parse(rp_main.getBody());
+
+
+        //This checks if the sub title is in the main template. If yes, this pair has both main template and potential relationships
+        for (Template template: pp_main.getTemplates()){
+
+            String templateName = new Title(template.getName(), false, LanguageInfo.getByLanguage(currentLang)).getCanonicalTitle();
+            ParsedLink.SubarticleType subarticleType = subarticleParser.isTemplateSubarticle(templateName, template.toString());
+            //If this template is a subarticle template and contains the potential subarticle title, change the flag
+            if (subarticleType != null && containLangAgnostic(template.toString(),lang_sub.getTitle().getCanonicalTitle(), lang_main.getLanguage())){
+                potential = true;
+                //additionally, if it's main template, change the flag
+                if (subarticleType.equals(ParsedLink.SubarticleType.MAIN_TEMPLATE) ){
+                    mainTemplate = true;
+                    //No need to go further since we've already decided that this pair is potential subarticle.
+                    break;
+                }
+            }
+        }
+
+        //if the pair is not template subarticle, then check if it is a see also section subarticle.
+        if (!potential){
+            for (Section curSection: pp_main.getSections()){
+                ParsedLink.SubarticleType secSubType = subarticleParser.isSeeAlsoHeader(localLangInfo, curSection.getTitle());
+                if (secSubType != null){
+                    if (containLangAgnostic(curSection.getText(),lang_sub.getTitle().getCanonicalTitle(), lang_main.getLanguage())){
+                        potential = true;
+                        seeAlsoSection = true;
+
+                    }
+                }
+            }
+        }
+
+        return new ResultPotentialArticle(potential, mainTemplate, seeAlsoSection);
+    }
+
+    public final class ResultPotentialArticle {
+        private boolean potential;
+        private boolean mainTemplate;
+        private boolean seeAlsoSection;
+
+        public ResultPotentialArticle(boolean potential, boolean mainTemplate, boolean seeAlsoSection){
+            this.potential = potential;
+            this.mainTemplate = mainTemplate;
+            this.seeAlsoSection = seeAlsoSection;
+        }
+
+        public boolean getPotential(){
+            return this.potential;
+        }
+
+        public boolean getMainTemplate(){
+            return this.mainTemplate;
+        }
+
+        public boolean getSeeAlsoSection(){
+            return this.seeAlsoSection;
+        }
+
+    }
+
     public ArrayList<Double> Compute_MainTemplatePct(){
         MediaWikiParserFactory pf = new MediaWikiParserFactory();
         pf.setCalculateSrcSpans(true);
@@ -1062,63 +1076,37 @@ public class ComputeFeatures {
                 UniversalPage up_main = conceptDao.getByLocalPage(lp_mainArticle);
                 UniversalPage up_sub = conceptDao.getByLocalPage(lp_subArticle);
 
+                //If either up_main and up_sub does not exist, at least
                 if (up_main == null || up_sub == null){
-                    result.add(-100.00);
-                    System.out.println(pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
-                    continue;
+                    ResultPotentialArticle currentResult = decidePotentialSubarticle(lp_mainArticle, lp_subArticle, jwpl);
+                    if (currentResult.getPotential()){
+                        numLangPot++;
+                    }
+                    if (currentResult.getMainTemplate()){
+                        numLangMainTemplates++;
+                    }
                 }
+                else{
+                    for (Language lang : up_main.getLanguageSet()) {
+                        if (up_sub.getLanguageSet().containsLanguage(lang)){
 
-                for (Language lang : up_main.getLanguageSet()) {
-                    if (up_sub.getLanguageSet().containsLanguage(lang)){
-                        boolean potential = false;
-                        boolean mainTemplate = false;
 
-                        LanguageInfo localLangInfo= LanguageInfo.getByLanguage(lang);
-                        SubarticleParser subarticleParser = new SubarticleParser(localLangInfo);
+                            LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
+                            LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
 
-                        LocalPage lang_main = lpDao.getById(lang, up_main.getLocalId(lang));
-                        LocalPage lang_sub = lpDao.getById(lang, up_sub.getLocalId(lang));
+                            ResultPotentialArticle currentResult = decidePotentialSubarticle(lang_main, lang_sub, jwpl);
 
-                        RawPage rp_main = rpDao.getById(lang, lang_main.getLocalId());
 
-                        ParsedPage pp_main = jwpl.parse(rp_main.getBody());
-                        //This checks if the sub title is in the main template. If yes, this pair has both main template and potential relationships
-                        for (Template template: pp_main.getTemplates()){
-
-                            String templateName = new Title(template.getName(), false, LanguageInfo.getByLanguage(rp_main.getLanguage())).getCanonicalTitle();
-                            ParsedLink.SubarticleType subarticleType = subarticleParser.isTemplateSubarticle(templateName, template.toString());
-                            //If this template is a subarticle template and contains the potential subarticle title, change the flag
-                            if (subarticleType != null && template.toString().contains(lang_sub.getTitle().getCanonicalTitle())){
-                                potential = true;
-                                //additionally, if it's main template, change the flag
-                                if (subarticleType.equals(ParsedLink.SubarticleType.MAIN_TEMPLATE) ){
-                                    mainTemplate = true;
-                                    //No need to go further since we've already decided that this pair is potential subarticle.
-                                    break;
-                                }
+                            if (currentResult.getPotential()){
+                                numLangPot++;
                             }
-                        }
-
-                        //if the pair is not template subarticle, then check if it is a see also section subarticle.
-                        if (!potential){
-                            for (Section curSection: pp_main.getSections()){
-                                ParsedLink.SubarticleType secSubType = subarticleParser.isSeeAlsoHeader(localLangInfo, curSection.getTitle());
-                                if (secSubType != null){
-                                    if (curSection.getText().contains(lang_sub.getTitle().getCanonicalTitle())){
-                                        potential = true;
-                                    }
-                                }
+                            if (currentResult.getMainTemplate()){
+                                numLangMainTemplates++;
                             }
-                        }
-
-                        if (potential){
-                            numLangPot++;
-                        }
-                        if (mainTemplate){
-                            numLangMainTemplates++;
                         }
                     }
                 }
+
 
                 if (numLangPot != 0 ){
                     double mainTemplatePct = (double) numLangMainTemplates/ (double) numLangPot;
@@ -1154,16 +1142,16 @@ public class ComputeFeatures {
         }
 
 
-        ComputeFeatures tp_computeFeature = new ComputeFeatures("trainingdata_all.csv", cmd);
+        ComputeFeatures tp_computeFeature = new ComputeFeatures("trainingdata_all.tsv", cmd);
 
 //        ArrayList<Double> InlinksRatio = tp_computeFeature.Compute_InlinkRatio();
 //        tp_computeFeature.writeToFile("InlinksRatio.csv", InlinksRatio);
 
-//        ArrayList<Double> MaxMainTFInSub = tp_computeFeature.Compute_MaxMainTFInSub();
-//        tp_computeFeature.writeToFile("MaxMainTFInSub.csv", MaxMainTFInSub);
+        ArrayList<Double> MaxMainTFInSub = tp_computeFeature.Compute_MaxMainTFInSub();
+        tp_computeFeature.writeToFile("MaxMainTFInSub.csv", MaxMainTFInSub);
 
-        ArrayList<Double> MainTagPct = tp_computeFeature.Compute_MainTemplatePct();
-        tp_computeFeature.writeToFile("MainTagPct.csv", MainTagPct);
+//        ArrayList<Double> MainTagPct = tp_computeFeature.Compute_MainTemplatePct();
+//        tp_computeFeature.writeToFile("MainTagPct.csv", MainTagPct);
 
 //        ArrayList<Double> MaxTokenOverlap = tp_computeFeature.Compute_MaxTokenOverlap();
 //        tp_computeFeature.writeToFile("MaxTokenOverlap.csv", MaxTokenOverlap);
