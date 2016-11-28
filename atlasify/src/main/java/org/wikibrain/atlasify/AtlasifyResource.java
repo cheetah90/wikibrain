@@ -636,7 +636,7 @@ public class AtlasifyResource {
                     continue;
                 }
                 //session cache
-                else if (srCache.containsKey(pair)) {
+                else if (srCache != null && srCache.containsKey(pair)) {
                     srMap.put(featureNameList.get(i), srCache.get(pair));
                     featureNameList.remove(i);
                     featureIdList.remove(i);
