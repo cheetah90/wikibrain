@@ -280,7 +280,8 @@ public class AtlasifyResource {
 
         } catch (Exception e) {
             System.out.println("Exception when initializing WikiBrain: "+e.getMessage());
-            wikibrainLoadingInProcess = false;
+            e.printStackTrace();
+	    wikibrainLoadingInProcess = false;
         }
 
     }
