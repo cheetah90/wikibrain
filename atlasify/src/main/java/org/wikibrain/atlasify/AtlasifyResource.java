@@ -824,7 +824,7 @@ public class AtlasifyResource {
             }
 
             // Cache all of the retrieved results
-            if (gotUsefulDataToCache) {
+            if (srCache != null && gotUsefulDataToCache) {
                 for (int i = 0; i < featureNameList.size(); i++) {
                     String feature = featureNameList.get(i);
                     srCache.put(keyword + pairSeperator + feature, srMap.get(feature));
