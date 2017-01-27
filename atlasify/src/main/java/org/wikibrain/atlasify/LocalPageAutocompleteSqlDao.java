@@ -123,7 +123,7 @@ public class LocalPageAutocompleteSqlDao extends AbstractSqlDao<LocalPage> imple
                     try {
                         return buildLocalPage(r, daoFilter);
                     } catch (DaoException e) {
-                        LOG.log(Level.WARNING, e.getMessage(), e);
+                        //LOG.log(Level.WARNING, e.getMessage(), e);
                         return null;
                     }
                 }
@@ -385,7 +385,7 @@ public class LocalPageAutocompleteSqlDao extends AbstractSqlDao<LocalPage> imple
                 return;
             }
         }
-        LOG.info("Building title to id cache. This will only happen once!");
+        //LOG.info("Building title to id cache. This will only happen once!");
         final int n = getCount(new DaoFilter());
         DSLContext context = getJooq();
         try {
@@ -424,12 +424,12 @@ public class LocalPageAutocompleteSqlDao extends AbstractSqlDao<LocalPage> imple
                                 }
                             }
                             if (map.size() % 500000 == 0) {
-                                LOG.info("built title cache entry " + map.size() + " of " + n);
+                                //LOG.info("built title cache entry " + map.size() + " of " + n);
                             }
 
                         }
                     }, Integer.MAX_VALUE);
-            LOG.info("resolved " + numResolved + " of " + numRedirects + " redirects.");
+            //LOG.info("resolved " + numResolved + " of " + numRedirects + " redirects.");
             if (cache!=null){
                 cache.put(key, map);
             }
