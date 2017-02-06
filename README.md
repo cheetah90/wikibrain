@@ -50,7 +50,7 @@ Edit `atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java`. set 
 Host `https://github.com/cheetah90/Atlasify` with your favorite http server (e.g. Apache)
 
 ### 11. Configure the front end
-change the baseURL and featureArticleURL in atlasify.js based on the host info
+change the baseURL and featureArticleURL in atlasify.js based on the host info. Minimally, you just need to change the server name
 
 ### 12. Start Server
 run `./wb-java.sh org.wikibrain.atlasify.AtlasifyLauncher`
