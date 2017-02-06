@@ -44,7 +44,7 @@ To add it to java cacert, first locate the cercate  `keytool -keystore cacerts -
 `
 
 ### 9. Configure the URL
-Edit `atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java`. set externalURL and portNo according to the information of the host
+Edit `atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java`. set externalURL and portNo according to the information of the host. These are the URL and PortNo for the wikibrain backend. It **seems** that wikibrain needs its own port so make sure this port is open through the firewall.
 
 ### 10. Host the front end
 Host `https://github.com/cheetah90/Atlasify` with your favorite http server (e.g. Apache)
