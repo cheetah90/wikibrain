@@ -53,7 +53,7 @@ Host https://github.com/tobyli/Atlasify with your favorite http server (e.g. Apa
 change the baseURL and featureArticleURL in atlasify.js based on the host info
 
 ### 12. Start Server
-run `./wb-java-sh org.wikibrain.atlasify.AtlasifyLauncher`
+run `./wb-java.sh org.wikibrain.atlasify.AtlasifyLauncher`
 
 ### 13. Test
 Open index.html to try if everything works. Note: run a query first -- and then the back-end will start loading. Wait till the loading finishes to try another query.
