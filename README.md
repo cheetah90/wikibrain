@@ -38,6 +38,10 @@ autovacuum = off
 #### Debug: 
 If SSL Certificate error occurs, you need to add the certificate from dump.wikimedia.org to the java keystore
 
+To download the cert `echo -n | openssl s_client -connect dumps.wikimedia.org:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ~/dumpswikimedia.cert`
+
+To add it to java cacert, first locate the cercate  `keytool -keystore cacerts -importcert -alias equifaxsecureca -file Equifax_Secure_Certificate_Authority.cer
+`
 
 ### 9. Configure the URL
 Edit `atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java`. set externalURL and portNo according to the information of the host
