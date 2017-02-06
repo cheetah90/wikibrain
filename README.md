@@ -47,7 +47,7 @@ To add it to java cacert, first locate the cercate  `keytool -keystore cacerts -
 Edit `atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java`. set externalURL and portNo according to the information of the host
 
 ### 10. Host the front end
-Host https://github.com/tobyli/Atlasify with your favorite http server (e.g. Apache)
+Host `https://github.com/cheetah90/Atlasify` with your favorite http server (e.g. Apache)
 
 ### 11. Configure the front end
 change the baseURL and featureArticleURL in atlasify.js based on the host info
