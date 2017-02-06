@@ -1,2 +1,2 @@
 # Setup WikiBrain - Atlasify
-1. Environment
+### 1. Environment
