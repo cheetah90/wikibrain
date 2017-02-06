@@ -35,6 +35,9 @@ autovacuum = off
 ```
 ### 7. Start Data Ingestion
 `./wb-java.sh org.wikibrain.Loader -l en -s wikidata -s spatial`
+#### Debug: 
+If SSL Certificate error occurs, you need to add the certificate from dump.wikimedia.org to the java keystore
+
 
 ### 9. Configure the URL
 Edit `atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java`. set externalURL and portNo according to the information of the host
