@@ -34,10 +34,10 @@ checkpoint_completion_target = 0.9
 autovacuum = off
 ```
 ### 7. Start Data Ingestion
-**Minimal**
+#### Minimal
 `./wb-java.sh org.wikibrain.Loader -l en -s wikidata -s spatial`  
 (Only running the above script will get the Atlasify running but with limitted function. Good for a feasibility test.)  
-**Full**
+#### Full
 `./wb-java.sh org.wikibrain.Loader -l en -s wikidata -s spatial -s sr`
 
 
