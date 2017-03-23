@@ -63,3 +63,14 @@ run `./wb-java.sh org.wikibrain.atlasify.AtlasifyLauncher`
 
 ### 13. Test
 Open index.html to try if everything works. Note: run a query first -- and then the back-end will start loading. Wait till the loading finishes to try another query.
+
+# Set up development environment
+### 1. Connect to the postgres database
+#### SSH tunneling
+Opening up the 5432 on server to receive all requests
+
+#### Local database
+
+### 2. Using InteliJ
+**Issue 1:** ClassNotFound issue  
+In dependencies tab, change the “scope” from “Provided” to “Compile”
