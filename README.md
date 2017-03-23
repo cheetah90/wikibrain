@@ -66,10 +66,11 @@ Open index.html to try if everything works. Note: run a query first -- and then 
 
 # Set up development environment
 ### 1. Connect to the postgres database
-#### SSH tunneling
+**Option 1:** SSH tunneling  
 Opening up the 5432 on server to receive all requests
 
-#### Local database
+**Option** Local database  
+Ingest the Simple English edition of Wikipedia to your local database
 
 ### 2. Using InteliJ
 **Issue 1:** ClassNotFound issue  
