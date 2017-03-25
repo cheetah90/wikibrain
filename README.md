@@ -48,7 +48,7 @@ To download the cert
 `echo -n | openssl s_client -connect dumps.wikimedia.org:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ~/dumpswikimedia.cert`
 
 To add it to java cacert, first locate the java cacerts and then, in that directory, add the downloaded cert to cacerts  
-`keytool -keystore cacerts -importcert -alias equifaxsecureca -file [dumpswikimedia.cert]`
+`keytool -keystore cacerts -importcert -alias dumpswikimedia -file [dumpswikimedia.cert]`
 
 ### 9. Configure the URL
 Edit `atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java`. set `externalURL` and `portNo` and `helloWorldUrl` according to the information of the host. These are the URL and PortNo for the wikibrain backend. Wikibrain needs its own port so make sure this port is open through the firewall.
