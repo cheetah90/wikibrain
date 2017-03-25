@@ -26,7 +26,7 @@ target/
 */tmp/
 .tmp/
 tmp/
-# dat/
+dat/
 db/
 lib/
 
