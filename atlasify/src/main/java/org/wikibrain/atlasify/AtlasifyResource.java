@@ -212,7 +212,7 @@ public class AtlasifyResource {
             String defaultPassword = "dfG-6Zh-Rzm-TzV";*/
             Date time = new Date(2000, 0, 0, 3, 0, 0); // 3 am
             try{
-                articleManager = new FeatureArticleManager(time);
+                //articleManager = new FeatureArticleManager(time);
             }
             catch (Exception e){
                 e.printStackTrace();

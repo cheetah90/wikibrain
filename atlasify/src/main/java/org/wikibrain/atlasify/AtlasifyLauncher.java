@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  * Created by toby on 4/18/15.
  */
 public class AtlasifyLauncher {
-    public static final boolean useLocalHost = false;
+    public static final boolean useLocalHost = true;
     private static final Logger LOG = Logger.getLogger(AtlasifyLauncher.class.getName());
     private static CSVWriter serverLogWriter;
     private static String baseURL = new String(useLocalHost ? "http://localhost" : "http://0.0.0.0");

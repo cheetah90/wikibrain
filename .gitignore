@@ -52,6 +52,9 @@ featured-articles/
 # Explanation Logs
 explanation-logs/
 
+# java files that have config
+AtlasifyLauncher.java
+/wikibrain-core/src/main/resources/reference.conf
 
 
 
