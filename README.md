@@ -74,5 +74,5 @@ Opening up the 5432 on server to receive all requests
 Ingest the Simple English edition of Wikipedia to your local database
 
 ### 2. Using InteliJ
-**Issue 1:** ClassNotFound issue  
+**Issue 1:** java.lang.NoClassDefFoundError issue  
 In dependencies tab, change the “scope” from “Provided” to “Compile”
