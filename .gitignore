@@ -13,14 +13,13 @@
 .DS_Store
 
 # Maven
-log/
+#log/
 target/
 
 # Dumps
 /download/
 *.bz2
 *.gz
-#*.csv
 
 # tmp
 */tmp/
