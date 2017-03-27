@@ -23,9 +23,9 @@ target/
 */tmp/
 .tmp/
 tmp/
-dat/
-db/
-lib/
+/dat/
+/db/
+/lib/
 /*.csv
 /SRCacheDB*
 
