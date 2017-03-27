@@ -167,6 +167,26 @@ public class AtlasifyLogger {
     CSVWriter logExplanationsDataWriter;
 
     AtlasifyLogger(String loginPath, String queryPath, String crowdSourceDataPath, String explanationsDataPath)throws IOException{
+        //Create ./log if not exists
+        File logDir = new File("./log");
+        if (!logDir.exists())
+            logDir.mkdir();
+
+        //Create new files if not exist
+        File loginFile = new File(loginPath);
+        File logQueryFile = new File(queryPath);
+        File crowdSourceDataFile = new File(crowdSourceDataPath);
+        File explanationsDataFile = new File(explanationsDataPath);
+        loginFile.createNewFile();
+        logQueryFile.createNewFile();
+        crowdSourceDataFile.createNewFile();
+        explanationsDataFile.createNewFile();
+
+        logLoginWriter = new CSVWriter(new FileWriter(new File(loginPath), true), ',');
+        logQueryWriter = new CSVWriter(new FileWriter(new File(queryPath), true), ',');
+        logCrowdSourceDataWriter = new CSVWriter(new FileWriter(new File(crowdSourceDataPath), true), ',');
+        logExplanationsDataWriter = new CSVWriter(new FileWriter(new File(explanationsDataPath), true), ',');
+        
         logLoginWriter = new CSVWriter(new FileWriter(new File(loginPath), true), ',');
         logQueryWriter = new CSVWriter(new FileWriter(new File(queryPath), true), ',');
         logCrowdSourceDataWriter = new CSVWriter(new FileWriter(new File(crowdSourceDataPath), true), ',');
