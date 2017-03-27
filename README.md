@@ -38,7 +38,8 @@ autovacuum = off
 `./wb-java.sh org.wikibrain.Loader -l en -s wikidata -s spatial`  
 (Only running the above script will get the Atlasify running but with limitted function. Good for a feasibility test.)  
 #### Full
-`./wb-java.sh org.wikibrain.Loader -l en -s wikidata -s spatial -s sr`
+`./wb-java.sh org.wikibrain.Loader -l en -s wikidata -s spatial -s sr`  
+`./wb-java.sh org.wikibrain.sr.SRBuilder -l simple -m ensemble -o both`
 
 
 #### Debug: 
@@ -67,11 +68,13 @@ Open index.html to try if everything works. Note: run a query first -- and then 
 
 # Set up development environment
 ### 1. Connect to the postgres database
-**Option 1:** SSH tunneling  
-Opening up the 5432 on server to receive all requests
-
-**Option** Local database  
+**Option 1 (recommended):** Local database  
 Ingest the Simple English edition of Wikipedia to your local database
+
+**Option 2:** SSH tunneling plus local copy of the intermediary files
+Opening up the 5432 on server to receive all requests and copy the `wikibrain` rooy folder to local
+
+
 
 ### 2. Using InteliJ
 **Issue 1:** java.lang.NoClassDefFoundError issue  
