@@ -26,14 +26,14 @@ tmp/
 dat/
 db/
 lib/
+/*.csv
+/SRCacheDB*
 
 # lib
 */lib/
 
 # misc
 wp-java.sh
-
-
 
 *.jar
 
@@ -52,4 +52,6 @@ featured-articles/
 # Explanation Logs
 explanation-logs/
 
-atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyResource.java~
+
+
+

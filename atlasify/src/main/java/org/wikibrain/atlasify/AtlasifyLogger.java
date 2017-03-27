@@ -55,13 +55,14 @@ public class AtlasifyLogger {
         private String centroid;
         private String browser;
         private String language;
+        private String ipAddress;
 
 
         public logQuery(){
 
         }
 
-        public logQuery(String userId, String type, String keyword, String refSys, String centroid, String browser, String language){
+        public logQuery(String userId, String type, String keyword, String refSys, String centroid, String browser, String language, String ipAddress){
             this.userId = userId;
             this.type = type;
             this.keyword = keyword;
@@ -69,6 +70,8 @@ public class AtlasifyLogger {
             this.centroid = centroid;
             this.browser = browser;
             this.language = language;
+            this.ipAddress = ipAddress;
+
         }
 
         public String getUserId(){
@@ -98,6 +101,8 @@ public class AtlasifyLogger {
         public String getLanguage(){
             return language;
         }
+
+        public String getIpAddress() { return ipAddress; }
 
     }
 
@@ -186,11 +191,6 @@ public class AtlasifyLogger {
         logQueryWriter = new CSVWriter(new FileWriter(new File(queryPath), true), ',');
         logCrowdSourceDataWriter = new CSVWriter(new FileWriter(new File(crowdSourceDataPath), true), ',');
         logExplanationsDataWriter = new CSVWriter(new FileWriter(new File(explanationsDataPath), true), ',');
-        
-        logLoginWriter = new CSVWriter(new FileWriter(new File(loginPath), true), ',');
-        logQueryWriter = new CSVWriter(new FileWriter(new File(queryPath), true), ',');
-        logCrowdSourceDataWriter = new CSVWriter(new FileWriter(new File(crowdSourceDataPath), true), ',');
-        logExplanationsDataWriter = new CSVWriter(new FileWriter(new File(explanationsDataPath), true), ',');
     }
 
     public void LoginLogger(logLogin data, String ip) throws IOException{
@@ -213,7 +213,7 @@ public class AtlasifyLogger {
         row[5] = data.type;
         row[6] = data.browser;
         row[7] = data.language;
-        row[8] = ip;
+        row[8] = data.ipAddress;
         row[9] = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         logQueryWriter.writeNext(row);
         logQueryWriter.flush();

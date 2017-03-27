@@ -29,6 +29,7 @@ import org.wikibrain.spatial.dao.SpatialDataDao;
 import javax.ws.rs.core.Response;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -56,7 +57,10 @@ public class POIGenerator {
         geometryMap = sdDao.getAllGeometriesInLayer("wikidata");
 
         //construct black list for GADM0/1 in POI Generation
-        CSVReader reader = new CSVReader(new FileReader("gadm_matched.csv"), ',');
+        File gadm_matched = new File("gadm_matched.csv");
+        //Create new file if not exists
+        gadm_matched.createNewFile();
+        CSVReader reader = new CSVReader(new FileReader(gadm_matched), ',');
         List<String[]> gadmList = reader.readAll();
         for(String[] gadmItem : gadmList){
             if(Integer.parseInt(gadmItem[2]) < 2)
