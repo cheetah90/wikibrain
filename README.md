@@ -55,7 +55,7 @@ To add it to java cacert, first locate the java cacerts and then, in that direct
 Edit `atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java`. set `externalURL` and `portNo` and `helloWorldUrl` according to the information of the host. These are the URL and PortNo for the wikibrain backend. Wikibrain needs its own port so make sure this port is open through the firewall.
 
 ### 10. Host the front end
-Host `https://github.com/cheetah90/Atlasify` with your favorite http server (e.g. Apache)
+Host [https://github.com/cheetah90/Atlasify](https://github.com/cheetah90/Atlasify) with your favorite http server (e.g. Apache)
 
 ### 11. Configure the front end
 change the baseURL and featureArticleURL in atlasify.js based on the host info. Minimally, you just need to change the server name.
@@ -73,7 +73,6 @@ Ingest the Simple English edition of Wikipedia to your local database
 
 **Option 2:** SSH tunneling plus local copy of the intermediary files
 Opening up the 5432 on server to receive all requests and copy the `wikibrain` rooy folder to local
-
 
 
 ### 2. Using InteliJ
