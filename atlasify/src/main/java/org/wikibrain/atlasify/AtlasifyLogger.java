@@ -56,6 +56,11 @@ public class AtlasifyLogger {
         private String browser;
         private String language;
         private String ipAddress;
+        private String ipLat;
+        private String ipLon;
+        private String ipOrg;
+        private String ipCountry;
+        private String ipCity;
 
 
         public logQuery(){
@@ -103,6 +108,25 @@ public class AtlasifyLogger {
         }
 
         public String getIpAddress() { return ipAddress; }
+
+        public String getIpLat() { return ipLat; }
+
+        public String getIpLon() {
+            return ipLon;
+        }
+
+        public String getIpOrg() {
+            return ipOrg;
+        }
+
+        public String getIpCountry() {
+            return ipCountry;
+        }
+
+        public String getIpCity() {
+            return ipCity;
+        }
+
 
     }
 
