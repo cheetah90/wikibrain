@@ -53,7 +53,7 @@ featured-articles/
 explanation-logs/
 
 # java files that have config
-AtlasifyLauncher.java
+/atlasify/src/main/java/org/wikibrain/atlasify/AtlasifyLauncher.java
 /wikibrain-core/src/main/resources/reference.conf
 
 

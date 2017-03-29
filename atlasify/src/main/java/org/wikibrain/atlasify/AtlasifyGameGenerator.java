@@ -47,7 +47,7 @@ public class AtlasifyGameGenerator {
         Configurator conf = env.getConfigurator();
         PageViewDao viewDao = env.getConfigurator().get(PageViewDao.class);
         LocalPageDao pageDao = conf.get(LocalPageDao.class);
-        SRMetric sr = conf.get(SRMetric.class, "ensemble", "language", lang.getLangCode());
+        SRMetric sr = conf.get(SRMetric.class, "milnewitten", "language", lang.getLangCode());
         WikidataDao wdDao = conf.get(WikidataDao.class);
         LocalPageDao lpDao = conf.get(LocalPageDao.class);
 

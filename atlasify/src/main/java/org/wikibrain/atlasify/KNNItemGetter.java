@@ -80,7 +80,7 @@ public class KNNItemGetter {
         Double lon = -93.234167;
 
         SRMetric sr = c.get(
-                SRMetric.class, "ensemble",
+                SRMetric.class, "milnewitten",
                 "language", "simple");
 
         Map<Integer, Geometry> containedResult = itemGetter.getContainingPolygon("states", "earth", lat, lon);
