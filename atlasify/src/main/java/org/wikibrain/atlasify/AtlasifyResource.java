@@ -76,6 +76,7 @@ import java.util.concurrent.RunnableFuture;
 // The Java class will be hosted at the URI path "/helloworld"
 @Path("/wikibrain")
 public class AtlasifyResource {
+    
 
     /**
      * Class used to transfer a atlasify query
@@ -914,6 +915,8 @@ public class AtlasifyResource {
     @Produces("text/plain")
 
     public Response autocompleteSearch(AtlasifyQuery query) throws Exception {
+
+
         if(wikibrainLoadingInProcess == true){
             System.out.println("Waiting for Wikibrain Loading");
             return Response.serverError().entity("Wikibrain not ready").build();
@@ -952,48 +955,48 @@ public class AtlasifyResource {
             } */
 
             /* Bing */
-            String bingAccountKey = "Y+KqEsFSCzEzNB85dTXJXnWc7U4cSUduZsUJ3pKrQfs";
-            byte[] bingAccountKeyBytes = Base64.encodeBase64((bingAccountKey + ":" + bingAccountKey).getBytes());
-            String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
-
-            String bingQuery = query.getKeyword();
-            URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/SearchWeb/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
-
-            HttpURLConnection connection = (HttpURLConnection)bingQueryurl.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization", "Basic " + bingAccountKeyEncoded);
-            connection.setRequestProperty("Accept", "application/json");
-            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
-
-            String output;
-            StringBuilder sb = new StringBuilder();
-            while ((output = br.readLine()) != null) {
-                sb.append(output);
-            }
-
-            JSONObject bingResponse = new JSONObject(sb.toString());
-            bingResponse = bingResponse.getJSONObject("d");
-            JSONArray bingResponses = bingResponse.getJSONArray("results");
-            JSONObject response;
-
-            for (int j = 0; j < bingResponses.length() && i < 10; j++) {
-                response = bingResponses.getJSONObject(j);
-                URL url = new URL(response.getString("Url"));
-                String path = url.getPath();
-                String title = path.substring(path.lastIndexOf('/') + 1).replace('_', ' ');
-                LocalPage page = new LocalPage(language, 0, "");
-                try {
-                    for (LocalId p : pa.resolve(language, title, 1).keySet()) {
-                        page = lpDao.getById(p);
-                    }
-                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
-                        autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
-                        i++;
-                    }
-                } catch (Exception e) {
-                    // There was an error, lets keep keep going
-                }
-            }
+//            String bingAccountKey = "Y+KqEsFSCzEzNB85dTXJXnWc7U4cSUduZsUJ3pKrQfs";
+//            byte[] bingAccountKeyBytes = Base64.encodeBase64((bingAccountKey + ":" + bingAccountKey).getBytes());
+//            String bingAccountKeyEncoded = new String(bingAccountKeyBytes);
+//
+//            String bingQuery = query.getKeyword();
+//            URL bingQueryurl = new URL("https://api.datamarket.azure.com/Bing/SearchWeb/v1/Web?Query=%27"+java.net.URLEncoder.encode(bingQuery, "UTF-8")+"%20site%3Aen.wikipedia.org%27&$top=50&$format=json");
+//
+//            HttpURLConnection connection = (HttpURLConnection)bingQueryurl.openConnection();
+//            connection.setRequestMethod("GET");
+//            connection.setRequestProperty("Authorization", "Basic " + bingAccountKeyEncoded);
+//            connection.setRequestProperty("Accept", "application/json");
+//            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+//
+//            String output;
+//            StringBuilder sb = new StringBuilder();
+//            while ((output = br.readLine()) != null) {
+//                sb.append(output);
+//            }
+//
+//            JSONObject bingResponse = new JSONObject(sb.toString());
+//            bingResponse = bingResponse.getJSONObject("d");
+//            JSONArray bingResponses = bingResponse.getJSONArray("results");
+//            JSONObject response;
+//
+//            for (int j = 0; j < bingResponses.length() && i < 10; j++) {
+//                response = bingResponses.getJSONObject(j);
+//                URL url = new URL(response.getString("Url"));
+//                String path = url.getPath();
+//                String title = path.substring(path.lastIndexOf('/') + 1).replace('_', ' ');
+//                LocalPage page = new LocalPage(language, 0, "");
+//                try {
+//                    for (LocalId p : pa.resolve(language, title, 1).keySet()) {
+//                        page = lpDao.getById(p);
+//                    }
+//                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
+//                        autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
+//                        i++;
+//                    }
+//                } catch (Exception e) {
+//                    // There was an error, lets keep keep going
+//                }
+//            }
 
             /* Lucene */
             /*
@@ -1048,6 +1051,44 @@ public class AtlasifyResource {
                     // There was an error, lets keep keep going
                 }
             }*/
+
+            /* Wikimedia */
+            URL wikipediaQueryUrl = new URL("https://en.wikipedia.org/w/api.php?action=opensearch&search=" + query.getKeyword().replace(" ", "_"));
+            HttpURLConnection connection = (HttpURLConnection)wikipediaQueryUrl.openConnection();
+            connection.setRequestMethod("GET");
+            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+            String output;
+            StringBuilder sb = new StringBuilder();
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
+            }
+
+
+            JSONArray wikipediaResponse = new JSONArray(sb.toString());
+            //System.out.println("got wikipedia response: " + wikipediaResponse);
+            JSONArray autoCompleteResults = wikipediaResponse.getJSONArray(1);
+            //System.out.println("got wikipedia auto complete results: " + autoCompleteResults);
+            for(int j = 0; j < autoCompleteResults.length() && j < 10; j++){
+
+                String title = autoCompleteResults.getString(j);
+                //System.out.println("got auto complete result " + title);
+                LocalPage page = new LocalPage(language, 0, "");
+                try{
+                    page = lpDao.getById(wikibrainPhaseResolution(title));
+                    if (page != null && !autocompleteMap.values().contains(page.getTitle().getCanonicalTitle())) {
+                        autocompleteMap.put(i + "", page.getTitle().getCanonicalTitle());
+                        i++;
+                    }
+                }
+                catch (Exception e) {
+                    System.out.println("Error when getting auto-completion result for " + query.getKeyword());
+                    //e.printStackTrace();
+
+                    // There was an error, lets keep keep going
+                }
+
+            }
+
         } catch (Exception e) {
             autocompleteMap = new HashMap<String, String>();
         }
