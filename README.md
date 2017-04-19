@@ -77,7 +77,7 @@ Opening up the 5432 on server to receive all requests and copy the `wikibrain` r
 
 ### 2. Using InteliJ
 **Issue 1:** java.lang.NoClassDefFoundError issue  
-In dependencies tab, change the “scope” from “Provided” to “Compile”
+In IntelliJ, File->Project Structure->Modules->Dependencies In dependencies tab, change the “scope” from “Provided” to “Compile”
 
 ### 3. Sync with remote server
 #### Front-end
