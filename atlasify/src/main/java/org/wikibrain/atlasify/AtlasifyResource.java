@@ -638,7 +638,7 @@ public class AtlasifyResource {
                     Map<LocalId, Double> srValues = new HashMap<LocalId, Double>();
                     boolean srValueLoaded = false;
 
-                    System.out.println("Got NU SR data for keyworld " + query.getKeyword());
+                    System.out.println("Got NU SR data for keyword " + query.getKeyword());
 
 
                     for (int i = 0; i < featureIdList.size(); i++) {
@@ -699,7 +699,22 @@ public class AtlasifyResource {
                     else{
                         try{
                             Runnable srBackgroundLoader = new SRBackgroundLoading(query, featureNameList.toArray(new String[featureNameList.size()]), sr, srCacheDao);
+
                             new Thread(srBackgroundLoader).start();
+
+                            synchronized (srBackgroundLoader){
+
+                                srBackgroundLoader.wait();
+                            }
+
+                            for (int i = 0; i < featureIdList.size(); i++) {
+
+                                if (srCacheDao.checkSRExist(query.getKeyword(), featureNameList.get(i))) {
+                                    srMap.put(featureNameList.get(i), srCacheDao.getSR(query.getKeyword(), featureNameList.get(i)));
+                                    continue;
+                                }
+                            }
+
                         }
                         catch (Exception e){
                             e.printStackTrace();
@@ -802,6 +817,8 @@ public class AtlasifyResource {
 
         return Response.ok(new JSONObject(srMap).toString()).build();
     }
+
+
     int compareSRColorStrings(String s1, String s2) {
         if (s1.contains("#")) {
             s1 = s1.substring(s1.lastIndexOf('#') + 1);
