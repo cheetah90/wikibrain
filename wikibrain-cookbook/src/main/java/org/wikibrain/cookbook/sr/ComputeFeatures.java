@@ -3,7 +3,6 @@ package org.wikibrain.cookbook.sr;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import org.apache.commons.cli.*;
-import org.apache.commons.codec.language.bm.Lang;
 import org.wikibrain.conf.ConfigurationException;
 import org.wikibrain.conf.Configurator;
 import org.wikibrain.core.cmd.Env;
@@ -11,25 +10,21 @@ import org.wikibrain.core.cmd.EnvBuilder;
 import org.wikibrain.core.dao.*;
 import org.wikibrain.core.lang.Language;
 import org.wikibrain.core.lang.LanguageInfo;
-import org.wikibrain.core.lang.LanguageSet;
 import org.wikibrain.core.model.*;
 import org.wikibrain.core.nlp.StringTokenizer;
-import org.wikibrain.lucene.LuceneOptions;
-import org.wikibrain.lucene.tokenizers.LanguageTokenizer;
+import org.wikibrain.core.nlp.ZHConverter;
 import org.wikibrain.parser.wiki.ParsedLink;
 import org.wikibrain.parser.wiki.SubarticleParser;
-import org.wikibrain.spatial.util.ClosestPointIndex;
 import org.wikibrain.sr.SRMetric;
 import org.wikibrain.sr.SRResult;
 import de.tudarmstadt.ukp.wikipedia.parser.*;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.print.attribute.standard.Media;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashMap;
 
 public class ComputeFeatures {
     public LocalPageDao lpDao;
@@ -58,7 +53,6 @@ public class ComputeFeatures {
                 List<String> record = new ArrayList<String>(Arrays.asList(line.split(cvsSplitBy)));
                 pagesPair.add(record);
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -107,27 +101,42 @@ public class ComputeFeatures {
 
     }
 
-    public ArrayList<Double> ComputeSR(String SR_algorithm, String lang_code){
+    public ArrayList<Double> ComputeSR(String SR_algorithm){
 
         ArrayList<Double> SR_results = new ArrayList<Double>();
 
         try {
-
-            SRMetric sr = conf.get(
+            SRMetric sr_en = conf.get(
                     SRMetric.class, SR_algorithm,
-                    "language", lang_code);
+                    "language", "en");
+
+            SRMetric sr_es = conf.get(
+                    SRMetric.class, SR_algorithm,
+                    "language", "es");
+
+            SRMetric sr_zh = conf.get(
+                    SRMetric.class, SR_algorithm,
+                    "language", "zh");
+
+            HashMap<String, SRMetric> dictLanguage2SRMetric = new HashMap<String, SRMetric>();
+
+            dictLanguage2SRMetric.put("en", sr_en);
+            dictLanguage2SRMetric.put("es", sr_es);
+            dictLanguage2SRMetric.put("zh", sr_zh);
 
 
             for (List<String> pagePair : pages){
+                String current_lang = pagePair.get(1);
 
-                Language language = Language.getByLangCode(lang_code);
+                Language language = Language.getByLangCode(current_lang);
 
                 LocalPage lp_mainArticle = lpDao.getByTitle(language, pagePair.get(2));
                 LocalPage lp_subArticle = lpDao.getByTitle(language, pagePair.get(3));
 
                 if (lp_mainArticle != null && lp_subArticle != null){
-                    SRResult similarity = sr.similarity(lp_mainArticle.getLocalId(), lp_subArticle.getLocalId(), false);
-                    SR_results.add(similarity.getScore());
+                    SRResult similarity = dictLanguage2SRMetric.get(current_lang).similarity(lp_mainArticle.getLocalId(), lp_subArticle.getLocalId(), false);
+                    double score = Double.isNaN(similarity.getScore())? 0 : similarity.getScore();
+                    SR_results.add(score);
                 }
                 else {
                     //Missing value = 0
@@ -202,7 +211,12 @@ public class ComputeFeatures {
                 if (up_main == null || up_sub == null){
                     if (up_main == null){
                         main_NumLang = 1;
-                        sub_NumLang = up_sub.getLanguageSet().size();
+                        if (up_sub == null){
+                            sub_NumLang = 1;
+                        } else{
+                            sub_NumLang = up_sub.getLanguageSet().size();
+                        }
+
                     }
                     else {
                         sub_NumLang = 1;
@@ -533,14 +547,6 @@ public class ComputeFeatures {
         return converter.convert(inputZh);
     }
 
-    private void ZhTradition2Simplified(List<String> inputZH){
-        ZHConverter converter = ZHConverter.getInstance(ZHConverter.SIMPLIFIED);
-        for (int i = 0; i<inputZH.size(); i++){
-            String simplifiedStr = converter.convert(inputZH.get(i));
-            inputZH.set(i, simplifiedStr);
-        }
-    }
-
     public ArrayList<Double> Compute_ReferenceRatio(){
 
 
@@ -633,7 +639,7 @@ public class ComputeFeatures {
         return lang_main.getTitle().getCanonicalTitle();
     }
 
-    public ArrayList<Double> Compute_SectionTokenOverlap(){
+    public ArrayList<Double> Compute_MaxSectionTokenOverlap(){
         MediaWikiParserFactory pf = new MediaWikiParserFactory();
         pf.setCalculateSrcSpans(true);
         MediaWikiParser jwpl = pf.createParser();
@@ -710,7 +716,7 @@ public class ComputeFeatures {
         }
         if (lang.getLangCode().equals("zh") || lang.getLangCode().equals("ja")){
             //Handle zh and ja differently since they are not space separated
-            tokens = Arrays.asList(first_processed.split(""));
+            tokens = new ArrayList<String>(Arrays.asList(first_processed.split("")));
             if(tokens.get(0).equals(""))
                 tokens.remove(0);
         }
@@ -845,7 +851,14 @@ public class ComputeFeatures {
 
                             ParsedPage pp_sub = jwpl.parse(rp_sub.getBody());
 
-                            String summary = pp_sub.getFirstParagraph().getText();
+                            String summary;
+                            if (pp_sub.getFirstParagraph() == null){
+                                summary = "";
+                            } else {
+                                summary = pp_sub.getFirstParagraph().getText();
+                            }
+
+
                             String main_title = lang_main.getTitle().getCanonicalTitle();
 
                             if (containLangAgnostic(summary, main_title, lang)){
@@ -910,7 +923,7 @@ public class ComputeFeatures {
                     LocalPage tp_page = lpDao.getById(lang, up_main.getLocalId(lang));
                     if(tp_page != null){
                         DaoFilter dFilter = new DaoFilter()
-                                .setLanguages(language)
+                                .setLanguages(lang)
                                 .setDestIds(tp_page.getLocalId());
                         main_NumInlink += llDao.getCount(dFilter);
                         System.out.println("Main page: " + tp_page.getTitle() + "Inlink: " + main_NumInlink);
@@ -937,7 +950,7 @@ public class ComputeFeatures {
                     result.add(NumLangRatio);
                 }
                 else {
-                    result.add(Double.MAX_VALUE);
+                    result.add(100.00);
                     System.out.println("similarity between "+ pagePair.get(2) + " and " + pagePair.get(3) + " does not exist.");
                 }
 
@@ -1096,7 +1109,6 @@ public class ComputeFeatures {
 
                             ResultPotentialArticle currentResult = decidePotentialSubarticle(lang_main, lang_sub, jwpl);
 
-
                             if (currentResult.getPotential()){
                                 numLangPot++;
                             }
@@ -1142,22 +1154,22 @@ public class ComputeFeatures {
         }
 
 
-        ComputeFeatures tp_computeFeature = new ComputeFeatures("trainingdata_all.tsv", cmd);
+        ComputeFeatures tp_computeFeature = new ComputeFeatures("trainingdata_completely_random.tsv", cmd);
 
 //        ArrayList<Double> InlinksRatio = tp_computeFeature.Compute_InlinkRatio();
 //        tp_computeFeature.writeToFile("InlinksRatio.csv", InlinksRatio);
 
-        ArrayList<Double> MaxMainTFInSub = tp_computeFeature.Compute_MaxMainTFInSub();
-        tp_computeFeature.writeToFile("MaxMainTFInSub.csv", MaxMainTFInSub);
+//        ArrayList<Double> MaxMainTFInSub = tp_computeFeature.Compute_MaxMainTFInSub();
+//        tp_computeFeature.writeToFile("MaxMainTFInSub.csv", MaxMainTFInSub);
 
-//        ArrayList<Double> MainTagPct = tp_computeFeature.Compute_MainTemplatePct();
-//        tp_computeFeature.writeToFile("MainTagPct.csv", MainTagPct);
+        ArrayList<Double> mainTemplatePct = tp_computeFeature.Compute_MainTemplatePct();
+        tp_computeFeature.writeToFile("mainTemplatePct.csv", mainTemplatePct);
 
 //        ArrayList<Double> MaxTokenOverlap = tp_computeFeature.Compute_MaxTokenOverlap();
 //        tp_computeFeature.writeToFile("MaxTokenOverlap.csv", MaxTokenOverlap);
 
-//        ArrayList<Double> SectionTokenOverlap = tp_computeFeature.Compute_SectionTokenOverlap();
-//        tp_computeFeature.writeToFile("SectionTokenOverlap.csv", SectionTokenOverlap);
+        ArrayList<Double> MaxSectionTokenOverlap = tp_computeFeature.Compute_MaxSectionTokenOverlap();
+        tp_computeFeature.writeToFile("MaxSectionTokenOverlap.csv", MaxSectionTokenOverlap);
 
 //        ArrayList<Double> ReferenceRatio = tp_computeFeature.Compute_ReferenceRatio();
 //               tp_computeFeature.writeToFile("ReferenceRatio.csv", ReferenceRatio);
@@ -1171,8 +1183,8 @@ public class ComputeFeatures {
 //        ArrayList<Double> PotSubLangsRatio = tp_computeFeature.Compute_PotSubLangsRatio();
 //        tp_computeFeature.writeToFile("PotSubLangsRatio.csv", PotSubLangsRatio);
 
-//        ArrayList<Double> NumLangRatio = tp_computeFeature.Compute_NumLangsRatio();
-//        tp_computeFeature.writeToFile("NumLangRatio.csv", NumLangRatio);
+        ArrayList<Double> NumLangRatio = tp_computeFeature.Compute_NumLangsRatio();
+        tp_computeFeature.writeToFile("NumLangRatio.csv", NumLangRatio);
 
         //ArrayList<Double> PageRankRatio = tp_computeFeature.Compute_PageRankRatio();
         //tp_computeFeature.writeToFile("pageRank.csv", PageRankRatio);

@@ -20,6 +20,7 @@ import org.wikibrain.core.model.Title;
 import org.wikibrain.utils.ParallelForEach;
 import org.wikibrain.utils.Procedure;
 import org.wikibrain.utils.WpThreadUtils;
+import org.wikibrain.core.nlp.ZHConverter;
 
 import java.io.File;
 import java.util.*;
@@ -372,6 +373,20 @@ public class LocalPageSqlDao extends AbstractSqlDao<LocalPage> implements LocalP
 
     @Override
     public LocalPage getByTitle(Language lang, String title) throws DaoException {
+        if (lang.getLangCode().equals("zh")){
+            ZHConverter trand2simp = ZHConverter.getInstance(ZHConverter.SIMPLIFIED);
+            ZHConverter simp2trand = ZHConverter.getInstance(ZHConverter.TRADITIONAL);
+
+            String simp_title = trand2simp.convert(title);
+            String trand_title = simp2trand.convert(title);
+
+            LocalPage localPage_sim = getByTitle(lang, NameSpace.ARTICLE, simp_title);
+            LocalPage localPage_trand = getByTitle(lang, NameSpace.ARTICLE, trand_title);
+
+            return (localPage_sim == null) ? localPage_trand : localPage_sim;
+
+        }
+
         return getByTitle(lang, NameSpace.ARTICLE, title);
     }
 

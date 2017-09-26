@@ -1,12 +1,7 @@
-package org.wikibrain.cookbook.sr;
+package org.wikibrain.core.nlp;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 
 public class ZHConverter {
@@ -25,8 +20,6 @@ public class ZHConverter {
 		propertyFiles[TRADITIONAL] = "./zh2Hant.properties";
 		propertyFiles[SIMPLIFIED] = "./zh2Hans.properties";
 	}
-
-
 
 	/**
 	 *
